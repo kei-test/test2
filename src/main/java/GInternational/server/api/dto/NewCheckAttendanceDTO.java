@@ -1,0 +1,20 @@
+package GInternational.server.api.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class NewCheckAttendanceDTO {
+    private Long userId;
+    private String username;
+    private String nickname;
+    private int lv;
+    private LocalDateTime attendanceDate;
+}

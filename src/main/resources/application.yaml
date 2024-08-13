@@ -1,0 +1,35 @@
+spring:
+  profiles:
+    active: local
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+# test
+secret:
+  secret-key: B6Uv2S78R5K6jSbKacwThvkgZuH8oeCX
+  ag-code: QWE0002
+  ag-token: VJ91TcLBtTMmP4GIlu4dAlTXjNedrKAh
+sentry:
+  dsn: https://82f588f132953e21183158f6cb2ece1a@o4507327464079360.ingest.us.sentry.io/4507327472664576
+  server-name: server-dev
+  exception-resolver-order: -2147483647
+  max-request-body-size: always
+  send-default-pii: true
+  traces-sample-rate: 1.0
+
+
+
+
+
+
+
+
+
+#logging:
+#  level:
+#    root:

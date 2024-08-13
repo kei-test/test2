@@ -1,0 +1,9 @@
+config:
+  target: 'http://localhost:8080'
+  phases:
+    - duration: 10
+      arrivalRate: 20
+scenarios:
+  - flow:
+      - get:
+          url: "/api/v2/get-preMatchFixture"
