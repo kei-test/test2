@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonMoneyController {
 
@@ -29,7 +29,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 머니 지급 성공 메시지
      */
-    @PatchMapping("/managers/money/{userId}")
+    @PatchMapping("/managers/amazon-money/{userId}")
     public ResponseEntity<?> amazonMoneysToUser(@PathVariable Long userId,
                                                 @RequestBody AmazonMoneyRequestDTO requestDTO,
                                                 Authentication authentication) {
@@ -46,7 +46,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 머니 차감 성공 메시지
      */
-    @PatchMapping("/managers/money/subtract/{userId}")
+    @PatchMapping("/managers/amazon-money/subtract/{userId}")
     public ResponseEntity<?> subtractAmazonMoneysFromUser(@PathVariable Long userId,
                                                           @RequestBody AmazonMoneyRequestDTO requestDTO,
                                                           Authentication authentication) {
@@ -62,7 +62,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 전액 회수 성공 메시지
      */
-    @PatchMapping("/managers/money/reclaim/{userId}")
+    @PatchMapping("/managers/amazon-money/reclaim/{userId}")
     public ResponseEntity<?> reclaimAllAmazonMoneysFromUser(@PathVariable Long userId,
                                                             Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -76,7 +76,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 모든 아마존 머니 거래 내역
      */
-    @GetMapping("/managers/money")
+    @GetMapping("/managers/amazon-money")
     public ResponseEntity<List<AmazonMoney>> getAllMoneys(Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         List<AmazonMoney> moneys = amazonMoneyService.findAllAmazonMoneys(principal);
@@ -90,7 +90,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 해당 사용자의 아마존 머니 거래 내역
      */
-    @GetMapping("/managers/money/user/{userId}")
+    @GetMapping("/managers/amazon-money/user/{userId}")
     public ResponseEntity<List<AmazonMoney>> getAmazonMoneysByUserId(@PathVariable Long userId,
                                                                      Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -107,7 +107,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 지정된 날짜 범위 내 해당 사용자의 아마존 머니 거래 내역
      */
-    @GetMapping("/managers/money/user/{userId}/range")
+    @GetMapping("/managers/amazon-money/user/{userId}/range")
     public ResponseEntity<List<AmazonMoney>> getAmazonMoneysByUserIdAndDateRange(@PathVariable Long userId,
                                                                                  @RequestParam LocalDate startDate,
                                                                                  @RequestParam LocalDate endDate,
@@ -128,7 +128,7 @@ public class AmazonMoneyController {
      * @param authentication 인증 정보
      * @return 지정된 날짜 범위 내 모든 아마존 머니 거래 내역
      */
-    @GetMapping("/managers/money/range")
+    @GetMapping("/managers/amazon-money/range")
     public ResponseEntity<List<AmazonMoney>> getAllAmazonMoneysByDateRange(@RequestParam LocalDate startDate,
                                                                            @RequestParam LocalDate endDate,
                                                                            Authentication authentication) {

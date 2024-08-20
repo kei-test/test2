@@ -16,7 +16,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonCommentController {
 
@@ -31,7 +31,7 @@ public class AmazonCommentController {
      * @param authentication 현재 인증된 사용자 정보
      * @return 생성된 댓글에 대한 응답 DTO와 함께 HTTP 상태 CREATED 반환
      */
-    @PostMapping("/managers/{amazonCategoryId}/{communityId}/comment")
+    @PostMapping("/managers/{amazonCategoryId}/{communityId}/amazon-comment")
     public ResponseEntity insertComment(@PathVariable("amazonCategoryId") Long amazonCategoryId,
                                         @PathVariable("communityId") Long communityId,
                                         @RequestBody AmazonCommentReqDTO commentReqDTO,
@@ -47,7 +47,7 @@ public class AmazonCommentController {
      * @param amazonCommunityId 조회할 커뮤니티 게시글 ID
      * @return 조회된 댓글 목록과 함께 HTTP 상태 OK 반환
      */
-    @GetMapping("/users/{amazonCategoryId}/{amazonCommunityId}/comments")
+    @GetMapping("/users/{amazonCategoryId}/{amazonCommunityId}/amazon-comments")
     public ResponseEntity getCommentsByBoardId(@PathVariable("amazonCommunityId") @Positive Long amazonCommunityId,
                                                Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -66,7 +66,7 @@ public class AmazonCommentController {
      * @return 수정된 댓글 정보를 담은 DTO와 함께 HTTP 상태 200 OK 반환.
      * @throws RuntimeException 유저 없음, 댓글 찾을 수 없음, 또는 권한 없는 경우 예외 발생.
      */
-    @PutMapping("/managers/{amazonCategoryId}/{communityId}/comments/{commentId}")
+    @PutMapping("/managers/{amazonCategoryId}/{communityId}/amazon-comments/{commentId}")
     public ResponseEntity<AmazonCommentResDTO> updateComment(@PathVariable Long amazonCategoryId,
                                                              @PathVariable Long communityId,
                                                              @PathVariable Long commentId,
@@ -86,7 +86,7 @@ public class AmazonCommentController {
      * @param authentication 현재 인증된 사용자 정보
      * @return HTTP 상태 NO_CONTENT 반환
      */
-    @DeleteMapping("/managers/{amazonCategoryId}/{communityId}/{commentId}")
+    @DeleteMapping("/managers/{amazonCategoryId}/{communityId}/{commentId}/amazon")
     public ResponseEntity deleteComment(@PathVariable("amazonCategoryId") Long amazonCategoryId,
                                         @PathVariable("communityId") @Positive Long communityId,
                                         @PathVariable("commentId") @Positive Long commentId,

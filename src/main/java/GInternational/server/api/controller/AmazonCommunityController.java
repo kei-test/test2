@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonCommunityController {
 
@@ -70,7 +70,7 @@ public class AmazonCommunityController {
      * @param authentication 인증 정보
      * @return 조회된 게시물
      */
-    @GetMapping("/users/{communityId}")
+    @GetMapping("/users/amazon/{communityId}")
     public ResponseEntity getCommunity(@PathVariable("communityId") Long communityId,
                                        Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -105,7 +105,7 @@ public class AmazonCommunityController {
      * @param authentication 인증 정보
      * @return 삭제 성공시 HTTP 상태 NO_CONTENT
      */
-    @DeleteMapping("/managers/{communityId}")
+    @DeleteMapping("/managers/amazon/{communityId}")
     public ResponseEntity deleteCommunity(@PathVariable("communityId") @Positive Long communityId,
                                         Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();

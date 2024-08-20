@@ -86,10 +86,12 @@ public class AdminService {
         user.setCanComment(true);
         user.setCanBonus(true);
         user.setCanRecommend(true);
+        User savedAdmin = userRepository.save(user);
 
         Wallet wallet = new Wallet();
+        wallet.setUser(user);
         wallet.setBankName("기본값");
-        wallet.setBankPassword("기본값");
+        wallet.setBankPassword("1234");
         wallet.setOwnerName("기본값");
         wallet.setNumber(1111L);
         wallet.setAmazonMoney(0);
@@ -99,9 +101,8 @@ public class AdminService {
         wallet.setAccumulatedSportsBet(0);
         wallet.setAccumulatedCasinoBet(0);
         wallet.setAccumulatedSlotBet(0);
-
         walletRepository.save(wallet);
-        User savedAdmin = userRepository.save(user);
+
         return userResponseMapper.toDto(savedAdmin);
     }
 
@@ -240,18 +241,9 @@ public class AdminService {
     }
 
     public void adminPasswordChange(AdminPasswordChangeReqDTO adminPasswordChangeReqDTO, PrincipalDetails principalDetails) {
-        User user;
-
-        // 아이디가 입력된 경우 해당 유저의 비밀번호를 변경
-        if (adminPasswordChangeReqDTO.getUsername() != null && !adminPasswordChangeReqDTO.getUsername().isEmpty()) {
-            user = userRepository.findByUsername(adminPasswordChangeReqDTO.getUsername());
-            if (user == null) {
-                throw new RestControllerException(ExceptionCode.USER_NOT_FOUND, "해당 유저를 찾을 수 없습니다.");
-            }
-        } else {
-            // 아이디가 입력되지 않은 경우 현재 접속한 유저의 비밀번호를 변경
-            user = userRepository.findById(principalDetails.getUser().getId())
-                    .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저 정보 없음"));
+        User user = userRepository.findByUsername(adminPasswordChangeReqDTO.getUsername());
+        if (user == null) {
+            throw new RestControllerException(ExceptionCode.USER_NOT_FOUND, "해당 유저를 찾을 수 없습니다.");
         }
 
         // 현재 비밀번호 확인

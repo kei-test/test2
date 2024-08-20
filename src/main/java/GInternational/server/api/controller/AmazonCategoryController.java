@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonCategoryController {
 

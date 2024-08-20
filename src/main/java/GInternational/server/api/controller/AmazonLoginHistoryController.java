@@ -17,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/amazon/api/v2/managers/login-history")
+@RequestMapping("/api/v2/managers/amazon-login-history")
 public class AmazonLoginHistoryController {
 
     private final AmazonLoginHistoryService amazonLoginHistoryService;

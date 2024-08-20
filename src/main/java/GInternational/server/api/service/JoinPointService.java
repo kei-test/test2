@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional(value = "clientServerTransactionManager")
 @RequiredArgsConstructor
@@ -27,13 +30,19 @@ public class JoinPointService {
         return joinPointMapper.toDto(savedJoinPoint);
     }
 
-    public JoinPointDTO updateJoinPoint(Long id, JoinPointDTO joinPointDTO, PrincipalDetails principalDetails) {
-        JoinPoint existingJoinPoint = joinPointRepository.findById(id)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "DailyLimit not found"));
+    public JoinPointDTO updateJoinPoint(JoinPointDTO joinPointDTO, PrincipalDetails principalDetails) {
+        JoinPoint existingJoinPoint = joinPointRepository.findById(1L)
+                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint not found"));
 
         existingJoinPoint.setPoint(joinPointDTO.getPoint());
 
         JoinPoint updatedJoinPoint = joinPointRepository.save(existingJoinPoint);
         return joinPointMapper.toDto(updatedJoinPoint);
+    }
+
+    public JoinPointDTO getJoinPointById(PrincipalDetails principalDetails) {
+        JoinPoint joinPoint = joinPointRepository.findById(1L)
+                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint not found"));
+        return joinPointMapper.toDto(joinPoint);
     }
 }

@@ -44,4 +44,11 @@ public class LevelPointLimitController {
         LevelPointLimitDTO updatedLevelPointLimit = levelPointLimitService.updateLevelPointLimit(levelPointLimitDTO, principal);
         return ResponseEntity.ok(updatedLevelPointLimit);
     }
+
+    @GetMapping("/get")
+    public ResponseEntity<LevelPointLimitDTO> getLevelPointLimit(Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        LevelPointLimitDTO levelPointLimitDTO = levelPointLimitService.getLevelPointLimitById(principal);
+        return ResponseEntity.ok(levelPointLimitDTO);
+    }
 }

@@ -101,8 +101,9 @@ public class ManagerService {
         User savedAdmin = userRepository.save(user);
 
         Wallet wallet = new Wallet();
+        wallet.setUser(user);
         wallet.setBankName("기본값");
-        wallet.setBankPassword("기본값");
+        wallet.setBankPassword("1234");
         wallet.setNumber(1111L);
         wallet.setOwnerName("기본값");
         wallet.setAmazonMoney(0);

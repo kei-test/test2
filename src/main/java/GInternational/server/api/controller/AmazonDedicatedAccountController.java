@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping("/amazon/api/v2/managers/dedicated-account")
+@RequestMapping("/api/v2/managers/amazon-dedicated-account")
 @RequiredArgsConstructor
 public class AmazonDedicatedAccountController {
 

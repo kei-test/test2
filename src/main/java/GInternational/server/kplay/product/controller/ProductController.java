@@ -42,7 +42,8 @@ public class ProductController {
     public ResponseEntity getPrd(@RequestParam int startIndex,
                                  @RequestParam int endIndex) {
         List<Product> response = productService.searchByPrd(startIndex, endIndex);
-        return new ResponseEntity<>(productResponseMapper.toDto(response), HttpStatus.OK);
+        List<ProductResponseDTO.ProductData> productResponseDTOs = productResponseMapper.toDto(response);
+        return new ResponseEntity<>(productResponseDTOs, HttpStatus.OK);
     }
 
     /**

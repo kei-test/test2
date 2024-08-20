@@ -25,7 +25,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonMessageController {
 
@@ -40,7 +40,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 담고 있는 객체
      * @return 전송된 쪽지의 응답 DTO와 HTTP 상태 OK를 반환합니다.
      */
-    @PostMapping("/managers/send")
+    @PostMapping("/managers/amazon-send")
     public ResponseEntity sendMessage(@RequestBody AmazonMessageRequestDTO messageRequestDTO,
                                       HttpServletRequest request,
                                       Authentication authentication) {
@@ -61,7 +61,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 담고 있는 객체
      * @return 조회된 쪽지 목록과 페이징 정보를 포함한 HTTP 상태 OK를 반환.
      */
-    @GetMapping("/managers/{userId}/sender/messages")
+    @GetMapping("/managers/{userId}/sender/amazon-messages")
     public ResponseEntity findSenderMessages(@PathVariable("userId") @Positive Long userId,
                                              @RequestParam(required = false) boolean deletedBySender,
                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -87,7 +87,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 담고 있는 객체
      * @return 조회된 쪽지 목록과 페이징 정보를 포함한 HTTP 상태 OK를 반환.
      */
-    @GetMapping("/users/{userId}/receiver/messages")
+    @GetMapping("/users/{userId}/receiver/amazon-messages")
     public ResponseEntity findReceiverMessages(@PathVariable("userId") @Positive Long userId,
                                                @RequestParam(required = false) boolean deletedByReceiver,
                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -114,7 +114,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 포함하는 객체
      * @return 조회된 쪽지 목록과 페이지 정보를 포함한 응답 엔티티
      */
-    @GetMapping("/managers/{userId}/messages")
+    @GetMapping("/managers/{userId}/amazon-messages")
     public ResponseEntity getAdminMessages(@PathVariable("userId") @Positive Long userId,
                                            @RequestParam(required = false) boolean isRead,
                                            @RequestParam(required = false) boolean deletedBySender,
@@ -140,7 +140,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 포함하는 객체
      * @return 조회된 쪽지 목록과 페이지 정보를 포함한 응답 엔티티
      */
-    @GetMapping("/users/{userId}/messages")
+    @GetMapping("/users/{userId}/amazon-messages")
     public ResponseEntity getUserMessages(@PathVariable("userId") @Positive Long userId,
                                           @RequestParam(required = false) boolean isRead,
                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -160,7 +160,7 @@ public class AmazonMessageController {
      * @param authentication 현재 인증된 사용자의 정보를 포함하는 객체
      * @return 조회된 쪽지의 상세 정보를 포함한 응답 엔티티
      */
-    @GetMapping("/users/message/{messageId}")
+    @GetMapping("/users/amazon-message/{messageId}")
     public ResponseEntity getMessage(@PathVariable("messageId") @Positive Long messageId,
                                      Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -177,7 +177,7 @@ public class AmazonMessageController {
      * @return 성공적으로 삭제된 경우 "삭제 되었습니다." 메시지와 함께 HTTP 상태 OK를 반환하고,
      *         삭제할 쪽지가 선택되지 않은 경우 "쪽지를 선택해주세요." 메시지와 함께 HTTP 상태 BAD REQUEST를 반환.
      */
-    @PatchMapping("/managers/messages")
+    @PatchMapping("/managers/amazon-messages")
     public ResponseEntity deleteAdminMessage(@RequestParam("messageIds") List<@Positive Long> messageIds, HttpServletRequest request,
                                              Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -196,7 +196,7 @@ public class AmazonMessageController {
      * @return 성공적으로 삭제된 경우 "삭제 되었습니다." 메시지와 함께 HTTP 상태 OK를 반환하고,
      *         삭제할 쪽지가 선택되지 않은 경우 "쪽지를 선택해주세요." 메시지와 함께 HTTP 상태 BAD REQUEST를 반환.
      */
-    @PatchMapping("/users/messages")
+    @PatchMapping("/users/amazon-messages")
     public ResponseEntity deleteMessage(@RequestParam("messageIds") List<@Positive Long> messageIds,
                                         Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();

@@ -1,8 +1,10 @@
 package GInternational.server.kplay.product.mapper;
 
 import GInternational.server.common.generic.GenericMapper;
+import GInternational.server.kplay.product.dto.ProductResponseDTO;
 import GInternational.server.kplay.product.entity.Product;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import static GInternational.server.kplay.product.dto.ProductResponseDTO.ProductData;

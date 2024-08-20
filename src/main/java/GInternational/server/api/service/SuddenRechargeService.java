@@ -10,9 +10,11 @@ import GInternational.server.common.exception.ExceptionCode;
 import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,5 +52,16 @@ public class SuddenRechargeService {
 
     public void deleteSuddenRecharge(Long id, PrincipalDetails principalDetails) {
         suddenRechargeRepository.deleteById(id);
+    }
+
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    public void disableExpiredEvents() {
+        LocalDateTime now = LocalDateTime.now();
+        List<SuddenRecharge> expiredEvents = suddenRechargeRepository.findAllByEndDateTimeBeforeAndEnabledTrue(now);
+
+        for (SuddenRecharge event : expiredEvents) {
+            event.setEnabled(false);
+            suddenRechargeRepository.save(event);
+        }
     }
 }

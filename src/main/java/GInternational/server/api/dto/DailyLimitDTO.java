@@ -12,7 +12,6 @@ import lombok.Setter;
 public class DailyLimitDTO {
 
     private Long id;
-    private Long categoryId;
     private int dailyArticleLimit;
     private int dailyCommentLimit;
     private int dailyArticlePoint;

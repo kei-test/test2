@@ -24,7 +24,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonExchangeTransactionController {
 
@@ -42,7 +42,7 @@ public class AmazonExchangeTransactionController {
      * @param authentication 사용자의 인증 정보가 담긴 객체
      * @return 회원의 트랜잭션 페이지를 담은 ResponseEntity를 반환.
      */
-    @GetMapping("/managers/{userId}/exchange/transaction")
+    @GetMapping("/managers/{userId}/amazon-exchange/transaction")
     public ResponseEntity getTransaction(@PathVariable("userId") @Positive Long userId,
                                          @RequestParam int page,
                                          @RequestParam int size,
@@ -62,7 +62,7 @@ public class AmazonExchangeTransactionController {
      * @param authentication 사용자의 인증 정보
      * @return 조건에 맞는 트랜잭션 목록을 담은 ResponseEntity를 반환.
      */
-    @GetMapping("/managers/et")
+    @GetMapping("/managers/amazon-et")
     public ResponseEntity getET(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                 @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                 @RequestParam AmazonTransactionEnum status,
@@ -85,7 +85,7 @@ public class AmazonExchangeTransactionController {
      * @param authentication 사용자의 인증 정보
      * @return 조건에 맞는 생성된 트랜잭션 목록을 담은 ResponseEntity를 반환.
      */
-    @GetMapping("/managers/et/created")
+    @GetMapping("/managers/amazon-et/created")
     public ResponseEntity getCreatedET(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                        @RequestParam AmazonTransactionEnum status,
@@ -109,7 +109,7 @@ public class AmazonExchangeTransactionController {
      * @param authentication 사용자의 인증 정보
      * @return 승인된 트랜잭션 페이지를 담은 ResponseEntity를 반환.
      */
-    @GetMapping("/managers/ex-approved")
+    @GetMapping("/managers/amazon-ex-approved")
     public ResponseEntity<Page<AmazonExchangeTransactionApprovedDTO>> getApprovedTransactions(@RequestParam Long userId,
                                                                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
@@ -135,7 +135,7 @@ public class AmazonExchangeTransactionController {
      * @param authentication 사용자의 인증 정보
      * @return 기간별 총 및 평균 충전금액을 담은 ResponseEntity를 반환.
      */
-    @GetMapping("/managers/ex-approved/summary")
+    @GetMapping("/managers/ex-approved/amazon-summary")
     public ResponseEntity<AmazonExchangeTransactionsSummaryDTO> getTransactionsSummary(@RequestParam Long userId,
                                                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,

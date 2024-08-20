@@ -24,7 +24,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonRechargeTransactionController {
 
@@ -43,7 +43,7 @@ public class AmazonRechargeTransactionController {
      * @param authentication 인증 정보
      * @return 페이징 처리된 충전 트랜잭션 목록
      */
-    @GetMapping("/managers/{userId}/recharge/transaction")
+    @GetMapping("/managers/{userId}/amazon-recharge/transaction")
     public ResponseEntity getTransaction(@PathVariable("userId") @Positive Long userId,
                                          @RequestParam int page,
                                          @RequestParam int size,
@@ -64,7 +64,7 @@ public class AmazonRechargeTransactionController {
      * @param authentication 인증 정보
      * @return 조회된 충전 트랜잭션 목록
      */
-    @GetMapping("/managers/rt")
+    @GetMapping("/managers/amazon-rt")
     public ResponseEntity getRT(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                 @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                 @RequestParam AmazonTransactionEnum status,
@@ -87,7 +87,7 @@ public class AmazonRechargeTransactionController {
      * @param authentication 인증 정보
      * @return 조회된 충전 트랜잭션 목록
      */
-    @GetMapping("/managers/rt/created")
+    @GetMapping("/managers/amazon-rt/created")
     public ResponseEntity getCreatedRT(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                        @RequestParam AmazonTransactionEnum status,
@@ -112,7 +112,7 @@ public class AmazonRechargeTransactionController {
      * @param authentication 인증 정보
      * @return 페이징 처리된 승인된 충전 트랜잭션 목록
      */
-    @GetMapping("/managers/approved")
+    @GetMapping("/managers/amazon-approved")
     public ResponseEntity<Page<AmazonRechargeTransactionApprovedDTO>> getApprovedTransactions(@RequestParam Long userId,
                                                                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                                               @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
@@ -138,7 +138,7 @@ public class AmazonRechargeTransactionController {
      * @param authentication 인증 정보
      * @return 총 충전금액과 평균 충전금액이 포함된 요약 정보
      */
-    @GetMapping("/managers/approved/summary")
+    @GetMapping("/managers/approved/amazon-summary")
     public ResponseEntity<AmazonRechargeTransactionsSummaryDTO> getTransactionsSummary(@RequestParam Long userId,
                                                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,

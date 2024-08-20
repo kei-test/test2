@@ -15,7 +15,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonRechargeController {
 
@@ -32,7 +32,7 @@ public class AmazonRechargeController {
      * @param authentication 현재 사용자의 인증 정보
      * @return 충전 신청의 성공 여부를 나타내는 ResponseEntity 객체
      */
-    @PostMapping("/users/{userId}/{walletId}/recharge")
+    @PostMapping("/users/{userId}/{walletId}/amazon-recharge")
     public ResponseEntity<?> amazonRecharge(@PathVariable("userId") @Positive Long userId,
                                             @PathVariable ("walletId") @Positive Long walletId,
                                             @RequestBody AmazonRechargeRequestDTO amazonRechargeRequestDTO,
@@ -57,7 +57,7 @@ public class AmazonRechargeController {
      * @param authentication 현재 사용자의 인증 정보
      * @return 충전 승인의 성공 여부를 나타내는 ResponseEntity 객체
      */
-    @PatchMapping("/managers/approval")
+    @PatchMapping("/managers/amazon-approval")
     public ResponseEntity approval(@RequestParam ("transactionIds") List<@Positive Long> transactionIds,
                                    @RequestBody AmazonRechargeProcessedRequestDTO amazonRechargeProcessedRequestDTO,
                                    Authentication authentication) {
@@ -74,7 +74,7 @@ public class AmazonRechargeController {
      * @param authentication 현재 사용자의 인증 정보
      * @return 충전 거절 또는 취소의 성공 여부를 나타내는 ResponseEntity 객체
      */
-    @PatchMapping("/managers/{userId}/cancel")
+    @PatchMapping("/managers/{userId}/amazon-cancel")
     public ResponseEntity cancel(@PathVariable ("userId") @Positive Long userId,
                                  @RequestParam ("transactionId") List<@Positive Long> transactionIds,
                                  Authentication authentication) {
@@ -90,7 +90,7 @@ public class AmazonRechargeController {
      * @param authentication 현재 사용자의 인증 정보
      * @return 상태 변경의 성공 여부를 나타내는 ResponseEntity 객체
      */
-    @PatchMapping("/managers/status-to-waiting")
+    @PatchMapping("/managers/amazon-status-to-waiting")
     public ResponseEntity updateStatusToWaiting(@RequestParam("transactionIds") @Positive Long transactionId,
                                                 Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();

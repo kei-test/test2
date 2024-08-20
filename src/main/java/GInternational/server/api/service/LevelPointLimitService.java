@@ -79,4 +79,10 @@ public class LevelPointLimitService {
         LevelPointLimit updatedEntity = levelPointLimitRepository.save(existingEntity);
         return levelPointLimitMapper.toDto(updatedEntity);
     }
+
+    public LevelPointLimitDTO getLevelPointLimitById(PrincipalDetails principalDetails) {
+        LevelPointLimit levelPointLimit = levelPointLimitRepository.findById(1L)
+                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "레벨 포인트 한도 설정을 찾을 수 없습니다."));
+        return levelPointLimitMapper.toDto(levelPointLimit);
+    }
 }

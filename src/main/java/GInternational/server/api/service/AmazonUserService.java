@@ -38,68 +38,6 @@ public class AmazonUserService {
     private final UserService userService;
     private final JoinPointRepository joinPointRepository;
 
-//    /**
-//     * 어드민 계정 생성.
-//     *
-//     * @param amazonUserRequestDTO 사용자 생성 요청 데이터
-//     * @return 생성된 어드민 사용자 정보
-//     */
-//    public AmazonUserResponseDTO createAdmin(AmazonUserRequestDTO amazonUserRequestDTO) {
-//        User admin = new User();
-//        Wallet wallet = new Wallet();
-//
-//        admin.setUsername(amazonUserRequestDTO.getUsername());
-//        admin.setPassword(bCryptPasswordEncoder.encode(amazonUserRequestDTO.getPassword()));
-//        admin.setPhone(amazonUserRequestDTO.getPhone());
-//        admin.setNickname(amazonUserRequestDTO.getNickname());
-//        admin.setApproveIp(amazonUserRequestDTO.getApproveIP());
-//        admin.setAmazonUserStatus(amazonUserRequestDTO.getAmazonUserStatus());
-//
-//        // 나머지 필드는 기본값으로 설정
-//        admin.setLv(10);
-//        admin.setRole("ROLE_ADMIN");
-//        admin.setBirth("기본값");
-//        admin.setEmail("기본값");
-//        admin.setReferredBy("관리자");
-//        admin.setAccount(null);
-//        admin.setExp(0);
-//        admin.setCreatedAt(LocalDateTime.now());
-//        admin.setUserGubunEnum(UserGubunEnum.정상);
-//        admin.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-//        admin.setKakaoRegistered(false);
-//        admin.setKakaoId("");
-//        admin.setTelegramRegistered(false);
-//        admin.setTelegramId("");
-//        admin.setSmsReceipt(true);
-//        admin.setAmazonVisible(false);
-//        admin.setAccountVisible(false);
-//        admin.setCanPost(true);
-//        admin.setCanComment(true);
-//        admin.setCanBonus(true);
-//        admin.setCanRecommend(true);
-//        User savedAdmin = userRepository.save(admin);
-//
-//        wallet.setUser(savedAdmin);
-//        wallet.setSportsBalance(0);
-//        wallet.setCasinoBalance(0);
-//        wallet.setPoint(0);
-//        wallet.setBankName("기본값");
-//        wallet.setBankPassword("기본값");
-//        wallet.setNumber(1111L);
-//        wallet.setOwnerName("기본값");
-//        wallet.setTodayDeposit(0);
-//        wallet.setTodayWithdraw(0);
-//        wallet.setTotalAmazonDeposit(0);
-//        wallet.setTotalAmazonWithdraw(0);
-//        wallet.setTotalAmazonSettlement(0);
-//        wallet.setAccumulatedSportsBet(0);
-//        wallet.setAccumulatedCasinoBet(0);
-//        wallet.setAccumulatedSlotBet(0);
-//        walletRepository.save(wallet);
-//
-//        return amazonUserResponseMapper.toDto(savedAdmin);
-//    }
-
     /**
      * 대본사 계정 생성.
      *
@@ -110,58 +48,32 @@ public class AmazonUserService {
     public AmazonUserResponseDTO createBigHeadOffice(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
         validateUserRole(principalDetails, "ROLE_ADMIN");
         User bigHeadOffice = new User();
-
         
         bigHeadOffice.setUsername(requestDTO.getUsername());
         bigHeadOffice.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
         bigHeadOffice.setNickname(requestDTO.getNickname());
         bigHeadOffice.setPhone(requestDTO.getPhone());
         bigHeadOffice.setAmazonCode(requestDTO.getAmazonCode());
-        bigHeadOffice.setDistributor(requestDTO.getUsername());
         bigHeadOffice.setRole("ROLE_USER"); // 역할 설정
         bigHeadOffice.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
         bigHeadOffice.setLv(1);
-        bigHeadOffice.setExp(0);
         bigHeadOffice.setCreatedAt(LocalDateTime.now());
-        bigHeadOffice.setBirth("널");
-        bigHeadOffice.setEmail("널");
-        bigHeadOffice.setReferredBy("널");
+        bigHeadOffice.setBirth("기본값");
+        bigHeadOffice.setEmail("기본값");
+        bigHeadOffice.setReferredBy(principalDetails.getUsername());
         bigHeadOffice.setPartnerType("대본사");
         bigHeadOffice.setUserGubunEnum(UserGubunEnum.정상);
         bigHeadOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        bigHeadOffice.setKakaoRegistered(false);
-        bigHeadOffice.setKakaoId("");
-        bigHeadOffice.setTelegramRegistered(false);
-        bigHeadOffice.setTelegramId("");
-        bigHeadOffice.setSmsReceipt(true);
-        bigHeadOffice.setAmazonVisible(false);
-        bigHeadOffice.setAccountVisible(false);
-        bigHeadOffice.setCanPost(true);
-        bigHeadOffice.setCanComment(true);
-        bigHeadOffice.setCanBonus(true);
-        bigHeadOffice.setCanRecommend(true);
         bigHeadOffice.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
         bigHeadOffice.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
         User savedBigHeadOffice = userRepository.save(bigHeadOffice);
 
         Wallet wallet = new Wallet();
         wallet.setUser(savedBigHeadOffice);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
         wallet.setOwnerName(requestDTO.getOwnername());
         wallet.setNumber(requestDTO.getNumber());
         wallet.setBankName(requestDTO.getBankname());
         wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
 
         JoinPoint joinPoint = joinPointRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
@@ -172,383 +84,405 @@ public class AmazonUserService {
         return amazonUserResponseMapper.toDto(savedBigHeadOffice);
     }
 
-    /**
-     * 본사 계정 생성.
-     *
-     * @param requestDTO 사용자 생성 요청 데이터
-     * @param principalDetails 인증된 사용자 정보
-     * @return 생성된 본사 사용자 정보
-     */
-    public AmazonUserResponseDTO createHeadOffice(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
-        validateUserRole(principalDetails, "ROLE_ADMIN");
-        // 본사 계정 생성
-        User headOffice = new User();
-        headOffice.setUsername(requestDTO.getUsername());
-        headOffice.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
-        headOffice.setNickname(requestDTO.getNickname());
-        headOffice.setPhone(requestDTO.getPhone());
-        headOffice.setAmazonCode(requestDTO.getAmazonCode());
-        headOffice.setDistributor(requestDTO.getUsername());
-        headOffice.setRole("ROLE_USER"); // 역할 설정
-        headOffice.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
-        headOffice.setLv(1);
-        headOffice.setExp(0);
-        headOffice.setCreatedAt(LocalDateTime.now());
-        headOffice.setBirth("널");
-        headOffice.setEmail("널");
-        headOffice.setReferredBy("널");
-        headOffice.setPartnerType("본사");
-        headOffice.setUserGubunEnum(UserGubunEnum.정상);
-        headOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        headOffice.setKakaoRegistered(false);
-        headOffice.setKakaoId("");
-        headOffice.setTelegramRegistered(false);
-        headOffice.setTelegramId("");
-        headOffice.setSmsReceipt(true);
-        headOffice.setAmazonVisible(false);
-        headOffice.setAccountVisible(false);
-        headOffice.setCanPost(true);
-        headOffice.setCanComment(true);
-        headOffice.setCanBonus(true);
-        headOffice.setCanRecommend(true);
-
-        // 롤링 값 설정
-        // 관리자(admin)가 아닐 경우 상위 롤링 값의 범위를 체크
-        if (!principalDetails.getUser().getRole().equals("ROLE_ADMIN")) {
-            // 상위 계정의 롤링 값을 가져와서 비교
-            double maxSlotRolling = principalDetails.getUser().getSlotRolling();
-            double maxCasinoRolling = principalDetails.getUser().getCasinoRolling();
-
-            // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
-            if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
-                throw new IllegalArgumentException("롤링 값이 상위 계정의 범위를 초과합니다.");
-            }
-        }
-
-        // 슬롯롤링적립과 카지노롤링적립 설정
-        headOffice.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
-        headOffice.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
-
-        // 대본사에 귀속
-        headOffice.setDaeId(principalDetails.getUser().getId());
-        headOffice.setBonId(null);
-        headOffice.setBuId(null);
-        headOffice.setChongId(null);
-
-
-        User savedHeadOffice = userRepository.save(headOffice);
-
-        Wallet wallet = new Wallet();
-        wallet.setUser(savedHeadOffice);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
-        wallet.setOwnerName(requestDTO.getOwnername());
-        wallet.setNumber(requestDTO.getNumber());
-        wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
-
-        JoinPoint joinPoint = joinPointRepository.findById(1L)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
-        int point = joinPoint.getPoint();
-        wallet.setPoint(wallet.getPoint() + point);
-        walletRepository.save(wallet);
-
-        return amazonUserResponseMapper.toDto(savedHeadOffice);
-    }
-
-    /**
-     * 부본사 계정 생성.
-     *
-     * @param requestDTO 사용자 생성 요청 데이터
-     * @param principalDetails 인증된 사용자 정보
-     * @return 생성된 부본사 사용자 정보
-     */
-
-    public AmazonUserResponseDTO createDeputyHeadOffice(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
-        validateUserRole(principalDetails, "ROLE_ADMIN");
-
-        // 부본사 계정 생성
-        User deputyHeadOffice = new User();
-        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
-        deputyHeadOffice.setUsername(requestDTO.getUsername());
-        deputyHeadOffice.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
-        deputyHeadOffice.setNickname(requestDTO.getNickname());
-        deputyHeadOffice.setPhone(requestDTO.getPhone());
-        deputyHeadOffice.setAmazonCode(requestDTO.getAmazonCode());
-        deputyHeadOffice.setDistributor(requestDTO.getUsername());
-        deputyHeadOffice.setRole("ROLE_USER");
-        deputyHeadOffice.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
-        deputyHeadOffice.setLv(1);
-        deputyHeadOffice.setExp(0);
-        deputyHeadOffice.setCreatedAt(LocalDateTime.now());
-        deputyHeadOffice.setBirth("널");
-        deputyHeadOffice.setEmail("널");
-        deputyHeadOffice.setReferredBy("널");
-        deputyHeadOffice.setPartnerType("부본사");
-        deputyHeadOffice.setUserGubunEnum(UserGubunEnum.정상);
-        deputyHeadOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        deputyHeadOffice.setKakaoRegistered(false);
-        deputyHeadOffice.setKakaoId("");
-        deputyHeadOffice.setTelegramRegistered(false);
-        deputyHeadOffice.setTelegramId("");
-        deputyHeadOffice.setSmsReceipt(true);
-        deputyHeadOffice.setAmazonVisible(false);
-        deputyHeadOffice.setAccountVisible(false);
-        deputyHeadOffice.setCanPost(true);
-        deputyHeadOffice.setCanComment(true);
-        deputyHeadOffice.setCanBonus(true);
-        deputyHeadOffice.setCanRecommend(true);
-
-        // 롤링 값 설정
-        // 관리자(admin)가 아닐 경우 상위 롤링 값의 범위를 체크
-        if (!principalDetails.getUser().getRole().equals("ROLE_ADMIN")) {
-            // 상위 계정의 롤링 값을 가져와서 비교
-            double maxSlotRolling = principalDetails.getUser().getSlotRolling();
-            double maxCasinoRolling = principalDetails.getUser().getCasinoRolling();
-
-            // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
-            if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
-                throw new IllegalArgumentException("롤링 값이 상위 계정의 범위를 초과합니다.");
-            }
-        }
-
-        // 롤링 값 설정 (소수점 2자리까지)
-        deputyHeadOffice.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
-        deputyHeadOffice.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
-
-        // 본사에 귀속 (본사 ID 사용)
-        deputyHeadOffice.setDaeId(null);
-        deputyHeadOffice.setBonId(principalDetails.getUser().getId());
-        deputyHeadOffice.setBuId(null);
-        deputyHeadOffice.setChongId(null);
-
-        User savedDeputyHeadOffice = userRepository.save(deputyHeadOffice);
-
-        Wallet wallet = new Wallet();
-        wallet.setUser(savedDeputyHeadOffice);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
-        wallet.setOwnerName(requestDTO.getOwnername());
-        wallet.setNumber(requestDTO.getNumber());
-        wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
-
-        JoinPoint joinPoint = joinPointRepository.findById(1L)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
-        int point = joinPoint.getPoint();
-        wallet.setPoint(wallet.getPoint() + point);
-        walletRepository.save(wallet);
-
-        return amazonUserResponseMapper.toDto(savedDeputyHeadOffice);
-    }
-
-    /**
-     * 총판 계정 생성.
-     *
-     * @param requestDTO 사용자 생성 요청 데이터
-     * @param principalDetails 인증된 사용자 정보
-     * @return 생성된 총판 사용자 정보
-     */
-    public AmazonUserResponseDTO createDistributor(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
-        validateUserRole(principalDetails, "ROLE_ADMIN");
-        // 총판 계정 생성
-        User distributor = new User();
-        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
-        distributor.setUsername(requestDTO.getUsername());
-        distributor.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
-        distributor.setNickname(requestDTO.getNickname());
-        distributor.setPhone(requestDTO.getPhone());
-        distributor.setAmazonCode(requestDTO.getAmazonCode());
-        distributor.setDistributor(requestDTO.getUsername());
-        distributor.setRole("ROLE_USER");
-        distributor.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
-        distributor.setLv(1);
-        distributor.setExp(0);
-        distributor.setCreatedAt(LocalDateTime.now());
-        distributor.setBirth("널");
-        distributor.setEmail("널");
-        distributor.setReferredBy("널");
-        distributor.setPartnerType("총판");
-        distributor.setUserGubunEnum(UserGubunEnum.정상);
-        distributor.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        distributor.setKakaoRegistered(false);
-        distributor.setKakaoId("");
-        distributor.setTelegramRegistered(false);
-        distributor.setTelegramId("");
-        distributor.setSmsReceipt(true);
-        distributor.setAmazonVisible(false);
-        distributor.setAccountVisible(false);
-        distributor.setCanPost(true);
-        distributor.setCanComment(true);
-        distributor.setCanBonus(true);
-        distributor.setCanRecommend(true);
-
-        // 롤링 값 설정
-        // 관리자(admin)가 아닐 경우 상위 롤링 값의 범위를 체크
-        if (!principalDetails.getUser().getRole().equals("ROLE_ADMIN")) {
-            // 상위 계정의 롤링 값을 가져와서 비교
-            double maxSlotRolling = principalDetails.getUser().getSlotRolling();
-            double maxCasinoRolling = principalDetails.getUser().getCasinoRolling();
-
-            // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
-            if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
-                throw new IllegalArgumentException("롤링 값이 상위 계정의 범위를 초과합니다.");
-            }
-        }
-
-        // 롤링 값 설정 (소수점 2자리까지)
-        distributor.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
-        distributor.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
-
-        // 부본사에 귀속 (부본사 ID 사용)
-        distributor.setDaeId(null);
-        distributor.setBonId(null);
-        distributor.setBuId(principalDetails.getUser().getId());
-        distributor.setChongId(null);
-
-        User savedDistributor = userRepository.save(distributor);
-
-        Wallet wallet = new Wallet();
-        wallet.setUser(savedDistributor);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
-        wallet.setOwnerName(requestDTO.getOwnername());
-        wallet.setNumber(requestDTO.getNumber());
-        wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
-
-        JoinPoint joinPoint = joinPointRepository.findById(1L)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
-        int point = joinPoint.getPoint();
-        wallet.setPoint(wallet.getPoint() + point);
-        walletRepository.save(wallet);
-
-        return amazonUserResponseMapper.toDto(savedDistributor);
-    }
-
-    /**
-     * 매장 계정 생성.
-     *
-     * @param requestDTO 사용자 생성 요청 데이터
-     * @param principalDetails 인증된 사용자 정보
-     * @return 생성된 매장 사용자 정보
-     */
-    public AmazonUserResponseDTO createStore(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
-        validateUserRole(principalDetails, "ROLE_ADMIN");
-        // 매장 계정 생성
-        User store = new User();
-        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
-        store.setUsername(requestDTO.getUsername());
-        store.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
-        store.setNickname(requestDTO.getNickname());
-        store.setPhone(requestDTO.getPhone());
-        store.setAmazonCode(requestDTO.getAmazonCode());
-        store.setDistributor(requestDTO.getUsername());
-        store.setRole("ROLE_USER");
-        store.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
-        store.setLv(1);
-        store.setExp(0);
-        store.setCreatedAt(LocalDateTime.now());
-        store.setBirth("널");
-        store.setEmail("널");
-        store.setReferredBy("널");
-        store.setPartnerType("매장");
-        store.setUserGubunEnum(UserGubunEnum.정상);
-        store.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        store.setKakaoRegistered(false);
-        store.setKakaoId("");
-        store.setTelegramRegistered(false);
-        store.setTelegramId("");
-        store.setSmsReceipt(true);
-        store.setAmazonVisible(false);
-        store.setAccountVisible(false);
-        store.setCanPost(true);
-        store.setCanComment(true);
-        store.setCanBonus(true);
-        store.setCanRecommend(true);
-
-        // 롤링 값 설정
-        // 관리자(admin)가 아닐 경우 상위 롤링 값의 범위를 체크
-        if (!principalDetails.getUser().getRole().equals("ROLE_ADMIN")) {
-            // 상위 계정의 롤링 값을 가져와서 비교
-            double maxSlotRolling = principalDetails.getUser().getSlotRolling();
-            double maxCasinoRolling = principalDetails.getUser().getCasinoRolling();
-
-            // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
-            if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
-                throw new IllegalArgumentException("롤링 값이 상위 계정의 범위를 초과합니다.");
-            }
-        }
-
-        // 롤링 값 설정 (소수점 2자리까지)
-        store.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
-        store.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
-
-        // 총판에 귀속 (총판 ID 사용)
-        store.setDaeId(null);
-        store.setBonId(null);
-        store.setBuId(null);
-        store.setChongId(principalDetails.getUser().getId());
-
-        User savedStore = userRepository.save(store);
-
-        Wallet wallet = new Wallet();
-        wallet.setUser(savedStore);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
-        wallet.setOwnerName(requestDTO.getOwnername());
-        wallet.setNumber(requestDTO.getNumber());
-        wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
-
-        JoinPoint joinPoint = joinPointRepository.findById(1L)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
-        int point = joinPoint.getPoint();
-        wallet.setPoint(wallet.getPoint() + point);
-        walletRepository.save(wallet);
-
-        return amazonUserResponseMapper.toDto(savedStore);
-    }
+//    /**
+//     * 본사 계정 생성.
+//     *
+//     * @param requestDTO 사용자 생성 요청 데이터
+//     * @param principalDetails 인증된 사용자 정보
+//     * @return 생성된 본사 사용자 정보
+//     */
+//    public AmazonUserResponseDTO createHeadOffice(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
+//        validatePartnerType(principalDetails, "대본사");
+//        // 본사 계정 생성
+//        User headOffice = new User();
+//        headOffice.setUsername(requestDTO.getUsername());
+//        headOffice.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
+//        headOffice.setNickname(requestDTO.getNickname());
+//        headOffice.setPhone(requestDTO.getPhone());
+//        headOffice.setAmazonCode(requestDTO.getAmazonCode());
+//        headOffice.setDistributor(requestDTO.getUsername());
+//        headOffice.setRole("ROLE_USER"); // 역할 설정
+//        headOffice.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
+//        headOffice.setLv(1);
+//        headOffice.setExp(0);
+//        headOffice.setCreatedAt(LocalDateTime.now());
+//        headOffice.setBirth("널");
+//        headOffice.setEmail("널");
+//        headOffice.setReferredBy("널");
+//        headOffice.setPartnerType("본사");
+//        headOffice.setUserGubunEnum(UserGubunEnum.정상);
+//        headOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
+//        headOffice.setKakaoRegistered(false);
+//        headOffice.setKakaoId("");
+//        headOffice.setTelegramRegistered(false);
+//        headOffice.setTelegramId("");
+//        headOffice.setSmsReceipt(true);
+//        headOffice.setAmazonVisible(false);
+//        headOffice.setAccountVisible(false);
+//        headOffice.setCanPost(true);
+//        headOffice.setCanComment(true);
+//        headOffice.setCanBonus(true);
+//        headOffice.setCanRecommend(true);
+//
+//        User upperAccount = principalDetails.getUser();
+//
+//        // 상위 계정의 롤링 값을 가져와서 비교
+//        double maxSlotRolling = upperAccount.getSlotRolling();
+//        double maxCasinoRolling = upperAccount.getCasinoRolling();
+//
+//        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
+//        if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
+//            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+//        }
+//
+//        // 슬롯롤링적립과 카지노롤링적립 설정
+//        double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
+//        double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
+//        headOffice.setSlotRolling(slotRolling);
+//        headOffice.setCasinoRolling(casinoRolling);
+//
+//        // 대본사에 귀속
+//        headOffice.setDaeId(upperAccount.getId());
+//        headOffice.setBonId(null);
+//        headOffice.setBuId(null);
+//        headOffice.setChongId(null);
+//
+//        // 저장
+//        User savedHeadOffice = userRepository.save(headOffice);
+//
+//        // 상위 계정의 롤링 값 차감
+//        upperAccount.setSlotRolling(maxSlotRolling - slotRolling);
+//        upperAccount.setCasinoRolling(maxCasinoRolling - casinoRolling);
+//        userRepository.save(upperAccount);
+//
+//        Wallet wallet = new Wallet();
+//        wallet.setUser(savedHeadOffice);
+//        wallet.setSportsBalance(0);
+//        wallet.setCasinoBalance(0);
+//        wallet.setPoint(0);
+//        wallet.setOwnerName(requestDTO.getOwnername());
+//        wallet.setNumber(requestDTO.getNumber());
+//        wallet.setBankName(requestDTO.getBankname());
+//        wallet.setBankPassword(requestDTO.getBankPassword());
+//        wallet.setTodayDeposit(0);
+//        wallet.setTodayWithdraw(0);
+//        wallet.setTotalAmazonDeposit(0);
+//        wallet.setTotalAmazonWithdraw(0);
+//        wallet.setTotalAmazonSettlement(0);
+//        wallet.setAccumulatedSportsBet(0);
+//        wallet.setAccumulatedCasinoBet(0);
+//        wallet.setAccumulatedSlotBet(0);
+//        walletRepository.save(wallet);
+//
+//        JoinPoint joinPoint = joinPointRepository.findById(1L)
+//                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
+//        int point = joinPoint.getPoint();
+//        wallet.setPoint(wallet.getPoint() + point);
+//        walletRepository.save(wallet);
+//
+//        return amazonUserResponseMapper.toDto(savedHeadOffice);
+//    }
+//
+//    /**
+//     * 부본사 계정 생성.
+//     *
+//     * @param requestDTO 사용자 생성 요청 데이터
+//     * @param principalDetails 인증된 사용자 정보
+//     * @return 생성된 부본사 사용자 정보
+//     */
+//    public AmazonUserResponseDTO createDeputyHeadOffice(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
+//        validatePartnerType(principalDetails, "본사");
+//
+//        // 부본사 계정 생성
+//        User deputyHeadOffice = new User();
+//        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
+//        deputyHeadOffice.setUsername(requestDTO.getUsername());
+//        deputyHeadOffice.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
+//        deputyHeadOffice.setNickname(requestDTO.getNickname());
+//        deputyHeadOffice.setPhone(requestDTO.getPhone());
+//        deputyHeadOffice.setAmazonCode(requestDTO.getAmazonCode());
+//        deputyHeadOffice.setDistributor(requestDTO.getUsername());
+//        deputyHeadOffice.setRole("ROLE_USER");
+//        deputyHeadOffice.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
+//        deputyHeadOffice.setLv(1);
+//        deputyHeadOffice.setExp(0);
+//        deputyHeadOffice.setCreatedAt(LocalDateTime.now());
+//        deputyHeadOffice.setBirth("널");
+//        deputyHeadOffice.setEmail("널");
+//        deputyHeadOffice.setReferredBy("널");
+//        deputyHeadOffice.setPartnerType("부본사");
+//        deputyHeadOffice.setUserGubunEnum(UserGubunEnum.정상);
+//        deputyHeadOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
+//        deputyHeadOffice.setKakaoRegistered(false);
+//        deputyHeadOffice.setKakaoId("");
+//        deputyHeadOffice.setTelegramRegistered(false);
+//        deputyHeadOffice.setTelegramId("");
+//        deputyHeadOffice.setSmsReceipt(true);
+//        deputyHeadOffice.setAmazonVisible(false);
+//        deputyHeadOffice.setAccountVisible(false);
+//        deputyHeadOffice.setCanPost(true);
+//        deputyHeadOffice.setCanComment(true);
+//        deputyHeadOffice.setCanBonus(true);
+//        deputyHeadOffice.setCanRecommend(true);
+//
+//        User upperAccount = principalDetails.getUser();
+//
+//        // 상위 계정의 롤링 값을 가져와서 비교
+//        double maxSlotRolling = upperAccount.getSlotRolling();
+//        double maxCasinoRolling = upperAccount.getCasinoRolling();
+//
+//        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
+//        if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
+//            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+//        }
+//
+//        // 슬롯롤링적립과 카지노롤링적립 설정
+//        double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
+//        double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
+//        deputyHeadOffice.setSlotRolling(slotRolling);
+//        deputyHeadOffice.setCasinoRolling(casinoRolling);
+//
+//        // 본사에 귀속 (본사 ID 사용)
+//        deputyHeadOffice.setDaeId(null);
+//        deputyHeadOffice.setBonId(upperAccount.getId());
+//        deputyHeadOffice.setBuId(null);
+//        deputyHeadOffice.setChongId(null);
+//
+//        // 저장
+//        User savedDeputyHeadOffice = userRepository.save(deputyHeadOffice);
+//
+//        // 상위 계정의 롤링 값 차감
+//        upperAccount.setSlotRolling(maxSlotRolling - slotRolling);
+//        upperAccount.setCasinoRolling(maxCasinoRolling - casinoRolling);
+//        userRepository.save(upperAccount);
+//
+//        Wallet wallet = new Wallet();
+//        wallet.setUser(savedDeputyHeadOffice);
+//        wallet.setSportsBalance(0);
+//        wallet.setCasinoBalance(0);
+//        wallet.setPoint(0);
+//        wallet.setOwnerName(requestDTO.getOwnername());
+//        wallet.setNumber(requestDTO.getNumber());
+//        wallet.setBankName(requestDTO.getBankname());
+//        wallet.setBankPassword(requestDTO.getBankPassword());
+//        wallet.setTodayDeposit(0);
+//        wallet.setTodayWithdraw(0);
+//        wallet.setTotalAmazonDeposit(0);
+//        wallet.setTotalAmazonWithdraw(0);
+//        wallet.setTotalAmazonSettlement(0);
+//        wallet.setAccumulatedSportsBet(0);
+//        wallet.setAccumulatedCasinoBet(0);
+//        wallet.setAccumulatedSlotBet(0);
+//        walletRepository.save(wallet);
+//
+//        JoinPoint joinPoint = joinPointRepository.findById(1L)
+//                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
+//        int point = joinPoint.getPoint();
+//        wallet.setPoint(wallet.getPoint() + point);
+//        walletRepository.save(wallet);
+//
+//        return amazonUserResponseMapper.toDto(savedDeputyHeadOffice);
+//    }
+//
+//    /**
+//     * 총판 계정 생성.
+//     *
+//     * @param requestDTO 사용자 생성 요청 데이터
+//     * @param principalDetails 인증된 사용자 정보
+//     * @return 생성된 총판 사용자 정보
+//     */
+//    public AmazonUserResponseDTO createDistributor(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
+//        validatePartnerType(principalDetails, "부본사");
+//
+//        // 총판 계정 생성
+//        User distributor = new User();
+//        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
+//        distributor.setUsername(requestDTO.getUsername());
+//        distributor.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
+//        distributor.setNickname(requestDTO.getNickname());
+//        distributor.setPhone(requestDTO.getPhone());
+//        distributor.setAmazonCode(requestDTO.getAmazonCode());
+//        distributor.setDistributor(requestDTO.getUsername());
+//        distributor.setRole("ROLE_USER");
+//        distributor.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
+//        distributor.setLv(1);
+//        distributor.setExp(0);
+//        distributor.setCreatedAt(LocalDateTime.now());
+//        distributor.setBirth("널");
+//        distributor.setEmail("널");
+//        distributor.setReferredBy("널");
+//        distributor.setPartnerType("총판");
+//        distributor.setUserGubunEnum(UserGubunEnum.정상);
+//        distributor.setMonitoringStatus(UserMonitoringStatusEnum.정상);
+//        distributor.setKakaoRegistered(false);
+//        distributor.setKakaoId("");
+//        distributor.setTelegramRegistered(false);
+//        distributor.setTelegramId("");
+//        distributor.setSmsReceipt(true);
+//        distributor.setAmazonVisible(false);
+//        distributor.setAccountVisible(false);
+//        distributor.setCanPost(true);
+//        distributor.setCanComment(true);
+//        distributor.setCanBonus(true);
+//        distributor.setCanRecommend(true);
+//
+//        User upperAccount = principalDetails.getUser();
+//
+//        // 상위 계정의 롤링 값을 가져와서 비교
+//        double maxSlotRolling = upperAccount.getSlotRolling();
+//        double maxCasinoRolling = upperAccount.getCasinoRolling();
+//
+//        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
+//        if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
+//            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+//        }
+//
+//        // 슬롯롤링적립과 카지노롤링적립 설정
+//        double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
+//        double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
+//        distributor.setSlotRolling(slotRolling);
+//        distributor.setCasinoRolling(casinoRolling);
+//
+//        // 부본사에 귀속 (부본사 ID 사용)
+//        distributor.setDaeId(null);
+//        distributor.setBonId(null);
+//        distributor.setBuId(upperAccount.getId());
+//        distributor.setChongId(null);
+//
+//        User savedDistributor = userRepository.save(distributor);
+//
+//        // 상위 계정의 롤링 값 차감
+//        upperAccount.setSlotRolling(maxSlotRolling - slotRolling);
+//        upperAccount.setCasinoRolling(maxCasinoRolling - casinoRolling);
+//        userRepository.save(upperAccount);
+//
+//        Wallet wallet = new Wallet();
+//        wallet.setUser(savedDistributor);
+//        wallet.setSportsBalance(0);
+//        wallet.setCasinoBalance(0);
+//        wallet.setPoint(0);
+//        wallet.setOwnerName(requestDTO.getOwnername());
+//        wallet.setNumber(requestDTO.getNumber());
+//        wallet.setBankName(requestDTO.getBankname());
+//        wallet.setBankPassword(requestDTO.getBankPassword());
+//        wallet.setTodayDeposit(0);
+//        wallet.setTodayWithdraw(0);
+//        wallet.setTotalAmazonDeposit(0);
+//        wallet.setTotalAmazonWithdraw(0);
+//        wallet.setTotalAmazonSettlement(0);
+//        wallet.setAccumulatedSportsBet(0);
+//        wallet.setAccumulatedCasinoBet(0);
+//        wallet.setAccumulatedSlotBet(0);
+//        walletRepository.save(wallet);
+//
+//        JoinPoint joinPoint = joinPointRepository.findById(1L)
+//                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
+//        int point = joinPoint.getPoint();
+//        wallet.setPoint(wallet.getPoint() + point);
+//        walletRepository.save(wallet);
+//
+//        return amazonUserResponseMapper.toDto(savedDistributor);
+//    }
+//
+//    /**
+//     * 매장 계정 생성.
+//     *
+//     * @param requestDTO 사용자 생성 요청 데이터
+//     * @param principalDetails 인증된 사용자 정보
+//     * @return 생성된 매장 사용자 정보
+//     */
+//    public AmazonUserResponseDTO createStore(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
+//        validatePartnerType(principalDetails, "총판");
+//
+//        // 매장 계정 생성
+//        User store = new User();
+//        // 필드 값 설정 (requestDTO로부터 받은 값 사용)
+//        store.setUsername(requestDTO.getUsername());
+//        store.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
+//        store.setNickname(requestDTO.getNickname());
+//        store.setPhone(requestDTO.getPhone());
+//        store.setAmazonCode(requestDTO.getAmazonCode());
+//        store.setDistributor(requestDTO.getUsername());
+//        store.setRole("ROLE_USER");
+//        store.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
+//        store.setLv(1);
+//        store.setExp(0);
+//        store.setCreatedAt(LocalDateTime.now());
+//        store.setBirth("널");
+//        store.setEmail("널");
+//        store.setReferredBy("널");
+//        store.setPartnerType("매장");
+//        store.setUserGubunEnum(UserGubunEnum.정상);
+//        store.setMonitoringStatus(UserMonitoringStatusEnum.정상);
+//        store.setKakaoRegistered(false);
+//        store.setKakaoId("");
+//        store.setTelegramRegistered(false);
+//        store.setTelegramId("");
+//        store.setSmsReceipt(true);
+//        store.setAmazonVisible(false);
+//        store.setAccountVisible(false);
+//        store.setCanPost(true);
+//        store.setCanComment(true);
+//        store.setCanBonus(true);
+//        store.setCanRecommend(true);
+//
+//        User upperAccount = principalDetails.getUser();
+//
+//        // 상위 계정의 롤링 값을 가져와서 비교
+//        double maxSlotRolling = upperAccount.getSlotRolling();
+//        double maxCasinoRolling = upperAccount.getCasinoRolling();
+//
+//        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
+//        if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
+//            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+//        }
+//
+//        // 슬롯롤링적립과 카지노롤링적립 설정
+//        double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
+//        double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
+//        store.setSlotRolling(slotRolling);
+//        store.setCasinoRolling(casinoRolling);
+//
+//        // 총판에 귀속 (총판 ID 사용)
+//        store.setDaeId(null);
+//        store.setBonId(null);
+//        store.setBuId(null);
+//        store.setChongId(upperAccount.getId());
+//
+//        User savedStore = userRepository.save(store);
+//
+//        // 상위 계정의 롤링 값 차감
+//        upperAccount.setSlotRolling(maxSlotRolling - slotRolling);
+//        upperAccount.setCasinoRolling(maxCasinoRolling - casinoRolling);
+//        userRepository.save(upperAccount);
+//
+//        Wallet wallet = new Wallet();
+//        wallet.setUser(savedStore);
+//        wallet.setSportsBalance(0);
+//        wallet.setCasinoBalance(0);
+//        wallet.setPoint(0);
+//        wallet.setOwnerName(requestDTO.getOwnername());
+//        wallet.setNumber(requestDTO.getNumber());
+//        wallet.setBankName(requestDTO.getBankname());
+//        wallet.setBankPassword(requestDTO.getBankPassword());
+//        wallet.setTodayDeposit(0);
+//        wallet.setTodayWithdraw(0);
+//        wallet.setTotalAmazonDeposit(0);
+//        wallet.setTotalAmazonWithdraw(0);
+//        wallet.setTotalAmazonSettlement(0);
+//        wallet.setAccumulatedSportsBet(0);
+//        wallet.setAccumulatedCasinoBet(0);
+//        wallet.setAccumulatedSlotBet(0);
+//        walletRepository.save(wallet);
+//
+//        JoinPoint joinPoint = joinPointRepository.findById(1L)
+//                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
+//        int point = joinPoint.getPoint();
+//        wallet.setPoint(wallet.getPoint() + point);
+//        walletRepository.save(wallet);
+//
+//        return amazonUserResponseMapper.toDto(savedStore);
+//    }
 
     /**
      * amazonCode를 통해 총판에 의해 추천된 모든 유저 조회.
@@ -863,14 +797,19 @@ public class AmazonUserService {
      * 파트너의 하위 계정 생성.
      *
      * @param requestDTO 파트너 하위 계정 생성 정보
-     * @param userId 상위 파트너의 사용자 ID
      * @return 생성된 하위 계정 정보를 담은 DTO
      * @throws RestControllerException 사용자를 찾을 수 없거나, 잘못된 파트너 타입인 경우 예외 발생
      */
-    public AmazonUserResponseDTO createSubAccountForPartner(AmazonUserRequestDTO requestDTO, Long userId, PrincipalDetails principalDetails) {
-        User parentUser = userRepository.findById(userId)
+    public AmazonUserResponseDTO createSubAccountForPartner(AmazonUserRequestDTO requestDTO, PrincipalDetails principalDetails) {
+        User parentUser = userRepository.findById(principalDetails.getUser().getId())
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
-        String parentPartnerType = parentUser.getPartnerType();
+
+        String parentPartnerType = principalDetails.getUser().getPartnerType();
+
+        // 파트너 타입이 대본사, 본사, 부본사, 총판 중 하나인지 검증
+        if (!List.of("대본사", "본사", "부본사", "총판").contains(parentPartnerType)) {
+            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "잘못된 파트너 타입입니다.");
+        }
 
         if ("매장".equals(parentPartnerType)) {
             throw new IllegalArgumentException("매장의 하부는 추가할 수 없습니다.");
@@ -881,33 +820,34 @@ public class AmazonUserService {
         subAccount.setPassword(bCryptPasswordEncoder.encode(requestDTO.getPassword()));
         subAccount.setNickname(requestDTO.getNickname());
         subAccount.setPhone(requestDTO.getPhone());
-        subAccount.setAmazonCode("널");
+        subAccount.setAmazonCode(requestDTO.getAmazonCode());
         subAccount.setDistributor(requestDTO.getUsername());
         subAccount.setRole("ROLE_USER");
         subAccount.setAmazonUserStatus(AmazonUserStatusEnum.NORMAL);
         subAccount.setLv(1);
-        subAccount.setExp(0);
         subAccount.setCreatedAt(LocalDateTime.now());
-        subAccount.setBirth("널");
-        subAccount.setEmail("널");
-        subAccount.setReferredBy("널");
+        subAccount.setBirth("기본값");
+        subAccount.setEmail("기본값");
+        subAccount.setReferredBy(principalDetails.getUsername());
         subAccount.setUserGubunEnum(UserGubunEnum.정상);
         subAccount.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-        subAccount.setKakaoRegistered(false);
-        subAccount.setKakaoId("");
-        subAccount.setTelegramRegistered(false);
-        subAccount.setTelegramId("");
-        subAccount.setSmsReceipt(true);
-        subAccount.setAmazonVisible(false);
-        subAccount.setAccountVisible(false);
-        subAccount.setCanPost(true);
-        subAccount.setCanComment(true);
-        subAccount.setCanBonus(true);
-        subAccount.setCanRecommend(true);
 
-        // 롤링 값 설정
-        subAccount.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
-        subAccount.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
+        User upperAccount = principalDetails.getUser();
+
+        // 상위 계정의 롤링 값을 가져와서 비교
+        double maxSlotRolling = upperAccount.getSlotRolling();
+        double maxCasinoRolling = upperAccount.getCasinoRolling();
+
+        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
+        if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
+            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+        }
+
+        // 슬롯롤링적립과 카지노롤링적립 설정
+        double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
+        double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
+        subAccount.setSlotRolling(slotRolling);
+        subAccount.setCasinoRolling(casinoRolling);
 
         // 계정 귀속 설정
         assignSubAccountToParent(subAccount, parentUser, parentPartnerType);
@@ -915,25 +855,18 @@ public class AmazonUserService {
         // 계정 저장
         User savedSubAccount = userRepository.save(subAccount);
 
+        // 상위 계정의 롤링 값 차감
+        upperAccount.decreaseSlotRolling(slotRolling);
+        upperAccount.decreaseCasinoRolling(casinoRolling);
+        userRepository.save(upperAccount);
+
         // Wallet 생성 및 저장
         Wallet wallet = new Wallet();
         wallet.setUser(savedSubAccount);
-        wallet.setSportsBalance(0);
-        wallet.setCasinoBalance(0);
-        wallet.setPoint(0);
         wallet.setOwnerName(requestDTO.getOwnername());
         wallet.setNumber(requestDTO.getNumber());
         wallet.setBankName(requestDTO.getBankname());
         wallet.setBankPassword(requestDTO.getBankPassword());
-        wallet.setTodayDeposit(0);
-        wallet.setTodayWithdraw(0);
-        wallet.setTotalAmazonDeposit(0);
-        wallet.setTotalAmazonWithdraw(0);
-        wallet.setTotalAmazonSettlement(0);
-        wallet.setAccumulatedSportsBet(0);
-        wallet.setAccumulatedCasinoBet(0);
-        wallet.setAccumulatedSlotBet(0);
-        walletRepository.save(wallet);
 
         JoinPoint joinPoint = joinPointRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
@@ -987,6 +920,15 @@ public class AmazonUserService {
         Set<String> expectedRolesSet = new HashSet<>(Arrays.asList(expectedRoles));
 
         if (!expectedRolesSet.contains(user.getRole())) {
+            throw new RestControllerException(ExceptionCode.UNAUTHORIZED_ACCESS, "권한이 없습니다.");
+        }
+    }
+
+    private void validatePartnerType(PrincipalDetails principalDetails, String... expectedPartnerType) {
+        User user = userService.validateUser(principalDetails.getUser().getId());
+        Set<String> expectedPartnerTypesSet = new HashSet<>(Arrays.asList(expectedPartnerType));
+
+        if (!expectedPartnerTypesSet.contains(user.getPartnerType())) {
             throw new RestControllerException(ExceptionCode.UNAUTHORIZED_ACCESS, "권한이 없습니다.");
         }
     }

@@ -28,11 +28,11 @@ public class Wallet extends BaseEntity {
     private String bankName;     // 은행명
     @Column(name = "owner_name")
     private String ownerName;    // 예금주
-    @Column(name = "sports_balance")
+    @Column(name = "sports_balance", columnDefinition = "BIGINT default 0")
     private long sportsBalance;  // 스포츠머니
-    @Column(name = "point")
+    @Column(name = "point", columnDefinition = "BIGINT default 0")
     private long point;          // 포인트
-    @Column(name = "casino_balance")
+    @Column(name = "casino_balance", columnDefinition = "BIGINT default 0")
     private long casinoBalance;  // 카지노머니
 
     @Column(name = "charged_count")
@@ -58,15 +58,15 @@ public class Wallet extends BaseEntity {
 
     @Column(name = "amazon_mileage")
     private long amazonMileage;         // 마일리지
-    @Column(name = "today_deposit")
+    @Column(name = "today_deposit", columnDefinition = "BIGINT default 0")
     private long todayDeposit;          // 금일 입금
-    @Column(name = "today_withdraw")
+    @Column(name = "today_withdraw", columnDefinition = "BIGINT default 0")
     private long todayWithdraw;         // 금일 출금
-    @Column(name = "total_amazon_deposit")
+    @Column(name = "total_amazon_deposit", columnDefinition = "BIGINT default 0")
     private long totalAmazonDeposit;    // 총판페이지 총 입금액
-    @Column(name = "total_amazon_withdraw")
+    @Column(name = "total_amazon_withdraw", columnDefinition = "BIGINT default 0")
     private long totalAmazonWithdraw;   // 총판페이지 총 출금액
-    @Column(name = "total_amazon_settlement")
+    @Column(name = "total_amazon_settlement", columnDefinition = "BIGINT default 0")
     private long totalAmazonSettlement; // 총판페이지 총손익 = 총입금 - 총출금
 
     @Column(name = "amazon_money")

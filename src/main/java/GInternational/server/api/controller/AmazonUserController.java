@@ -21,26 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RestController
 @Validated
 @RequiredArgsConstructor
 public class AmazonUserController {
 
     private final AmazonUserService amazonUserService;
-
-//    /**
-//     * 어드민 계정 생성.
-//     *
-//     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
-//     * @return 생성된 어드민 사용자 정보
-//     */
-//    @PostMapping("/admin")
-//    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createAdmin(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO) {
-//        AmazonUserResponseDTO createdAdmin = amazonUserService.createAdmin(amazonUserRequestDTO);
-//        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdAdmin);
-//        return new ResponseEntity<>(response, HttpStatus.CREATED);
-//    }
 
     /**
      * 대본사 계정 생성. 이 작업은 어드민만 수행할 수 있음.
@@ -58,69 +45,69 @@ public class AmazonUserController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 본사 계정 생성. 이 작업은 대본사만 수행할 수 있으나, 현재 클라이언트 요청으로 어드민만 생성 가능하도록 임시 변경되었음.
-     *
-     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
-     * @param authentication 인증 정보
-     * @return 생성된 본사 사용자 정보
-     */
-    @PostMapping("/headOffices")
-    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createHeadOffice(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
-                                                                                     Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO createdUser = amazonUserService.createHeadOffice(amazonUserRequestDTO, principal);
-        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdUser);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    /**
-     * 부본사 계정 생성. 이 작업은 본사만 수행할 수 있으나, 현재 클라이언트 요청으로 어드민만 생성 가능하도록 임시 변경되었음.
-     *
-     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
-     * @param authentication 인증 정보
-     * @return 생성된 부본사 사용자 정보
-     */
-    @PostMapping("/deputyHeadOffices")
-    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createDeputyHeadOffice(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
-                                                                                           Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO createdDeputyHeadOffice = amazonUserService.createDeputyHeadOffice(amazonUserRequestDTO, principal);
-        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdDeputyHeadOffice);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    /**
-     * 총판 계정 생성. 이 작업은 부본사만 수행할 수 있으나, 현재 클라이언트 요청으로 어드민만 생성 가능하도록 임시 변경되었음.
-     *
-     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
-     * @param authentication 인증 정보
-     * @return 생성된 총판 사용자 정보
-     */
-    @PostMapping("/distributors")
-    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createDistributor(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
-                                                                                      Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO createdDistributor = amazonUserService.createDistributor(amazonUserRequestDTO, principal);
-        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdDistributor);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
-
-    /**
-     * 매장 계정 생성. 이 작업은 총판만 수행할 수 있으나, 현재 클라이언트 요청으로 어드민만 생성 가능하도록 임시 변경되었음.
-     *
-     * @param userRequestDTO Amazon 사용자 생성 요청 데이터
-     * @param authentication 인증 정보
-     * @return 생성된 매장 사용자 정보
-     */
-    @PostMapping("/store")
-    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createStore(@RequestBody @Valid AmazonUserRequestDTO userRequestDTO,
-                                                                                Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO createdStore = amazonUserService.createStore(userRequestDTO, principal);
-        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdStore);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
-    }
+//    /**
+//     * 본사 계정 생성. 이 작업은 대본사만 수행할 수 있음.
+//     *
+//     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
+//     * @param authentication 인증 정보
+//     * @return 생성된 본사 사용자 정보
+//     */
+//    @PostMapping("/headOffices")
+//    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createHeadOffice(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
+//                                                                                     Authentication authentication) {
+//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+//        AmazonUserResponseDTO createdUser = amazonUserService.createHeadOffice(amazonUserRequestDTO, principal);
+//        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdUser);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+//
+//    /**
+//     * 부본사 계정 생성. 이 작업은 본사만 수행할 수 있음.
+//     *
+//     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
+//     * @param authentication 인증 정보
+//     * @return 생성된 부본사 사용자 정보
+//     */
+//    @PostMapping("/deputyHeadOffices")
+//    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createDeputyHeadOffice(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
+//                                                                                           Authentication authentication) {
+//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+//        AmazonUserResponseDTO createdDeputyHeadOffice = amazonUserService.createDeputyHeadOffice(amazonUserRequestDTO, principal);
+//        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdDeputyHeadOffice);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+//
+//    /**
+//     * 총판 계정 생성. 이 작업은 부본사만 수행할 수 있음.
+//     *
+//     * @param amazonUserRequestDTO Amazon 사용자 생성 요청 데이터
+//     * @param authentication 인증 정보
+//     * @return 생성된 총판 사용자 정보
+//     */
+//    @PostMapping("/distributors")
+//    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createDistributor(@RequestBody @Valid AmazonUserRequestDTO amazonUserRequestDTO,
+//                                                                                      Authentication authentication) {
+//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+//        AmazonUserResponseDTO createdDistributor = amazonUserService.createDistributor(amazonUserRequestDTO, principal);
+//        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdDistributor);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
+//
+//    /**
+//     * 매장 계정 생성. 이 작업은 총판만 수행할 수 있음.
+//     *
+//     * @param userRequestDTO Amazon 사용자 생성 요청 데이터
+//     * @param authentication 인증 정보
+//     * @return 생성된 매장 사용자 정보
+//     */
+//    @PostMapping("/store")
+//    public ResponseEntity<SingleResponseDto<AmazonUserResponseDTO>> createStore(@RequestBody @Valid AmazonUserRequestDTO userRequestDTO,
+//                                                                                Authentication authentication) {
+//        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+//        AmazonUserResponseDTO createdStore = amazonUserService.createStore(userRequestDTO, principal);
+//        SingleResponseDto<AmazonUserResponseDTO> response = new SingleResponseDto<>(createdStore);
+//        return new ResponseEntity<>(response, HttpStatus.CREATED);
+//    }
 
     /**
      * 특정 사용자의 상위 계층 정보 조회.
@@ -167,16 +154,14 @@ public class AmazonUserController {
      * 하부 파트너 추가.
      *
      * @param requestDTO 파트너 생성 요청 데이터
-     * @param userId 사용자 ID
      * @param authentication 인증 정보
      * @return 생성된 파트너 정보
      */
     @PostMapping("/users/sub-account")
     public ResponseEntity<AmazonUserResponseDTO> createSubAccountForPartner(@RequestBody AmazonUserRequestDTO requestDTO,
-                                                                            @RequestParam Long userId,
                                                                             Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, userId, principal);
+        AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, principal);
         return ResponseEntity.ok(responseDTO);
     }
 

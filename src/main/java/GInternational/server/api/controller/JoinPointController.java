@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Positive;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2")
@@ -26,12 +27,18 @@ public class JoinPointController {
         return ResponseEntity.ok(createdJoinPoint);
     }
 
-    @PutMapping("/managers/join-point/update/{id}")
-    public ResponseEntity<JoinPointDTO> updateDailyLimit(@PathVariable("id") @Positive Long id,
-                                                          @RequestBody JoinPointDTO joinPointDTO,
-                                                          Authentication authentication) {
+    @PutMapping("/managers/join-point/update")
+    public ResponseEntity<JoinPointDTO> updateDailyLimit(@RequestBody JoinPointDTO joinPointDTO,
+                                                         Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        JoinPointDTO updatedJoinPoint = joinPointService.updateJoinPoint(id, joinPointDTO, principal);
+        JoinPointDTO updatedJoinPoint = joinPointService.updateJoinPoint(joinPointDTO, principal);
         return ResponseEntity.ok(updatedJoinPoint);
+    }
+
+    @GetMapping("/managers/join-point")
+    public ResponseEntity<JoinPointDTO> getJoinPointById(Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        JoinPointDTO joinPointDTO = joinPointService.getJoinPointById(principal);
+        return ResponseEntity.ok(joinPointDTO);
     }
 }

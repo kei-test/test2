@@ -24,11 +24,6 @@ import java.util.List;
 @Setter
 @Builder
 @Entity(name = "users")
-// @Table(uniqueConstraints = {
-// @UniqueConstraint(columnNames = {"distributor", "username"}),
-// @UniqueConstraint(columnNames = {"distributor", "phone"}),
-// @UniqueConstraint(columnNames = {"distributor", "nickname"})
-// })
 public class User extends BaseEntity implements Serializable {
 
     // GUEST < USER < MANAGER < ADMIN
@@ -79,7 +74,7 @@ public class User extends BaseEntity implements Serializable {
     private String name; // 실명
     @Column(name = "lv")
     private int lv; // 회원 레벨 Lv.01 ~ Lv.10
-    @Column(name = "exp")
+    @Column(name = "exp", columnDefinition = "BIGINT default 0")
     private long exp; // 경험치
     @Column(name = "next_level_exp")
     private long nextLevelExp;// 다음 레벨업을 위한 필요 경험치 (다음레벨 최소경험치 - 현재 경험치)
@@ -374,20 +369,20 @@ public class User extends BaseEntity implements Serializable {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     private List<LoginInfo> loginInfos = new ArrayList<>();
 
-    // 슬롯롤링적립 감소 로직
-    public void setSlotRolling(Double newSlotRolling) {
-        if (newSlotRolling < this.slotRolling) {
-            throw new IllegalArgumentException("보유한 슬롯롤링적립 보다 부여할 슬롯롤링 적립이 더 큽니다.");
+    // 슬롯 롤링 감소 메서드
+    public void decreaseSlotRolling(Double decreaseAmount) {
+        if (decreaseAmount > this.slotRolling) {
+            throw new IllegalArgumentException("감소할 슬롯 롤링 값이 현재 보유한 슬롯 롤링 값보다 큽니다.");
         }
-        this.slotRolling = Math.round(newSlotRolling * 100.0) / 100.0;
+        this.slotRolling = Math.round((this.slotRolling - decreaseAmount) * 100.0) / 100.0;
     }
 
-    // 카지노롤링적립 감소 로직
-    public void setCasinoRolling(Double newCasinoRolling) {
-        if (newCasinoRolling < this.casinoRolling) {
-            throw new IllegalArgumentException("보유한 카지노롤링적립 보다 부여할 카지노롤링적립 적립이 더 큽니다.");
+    // 카지노 롤링 감소 메서드
+    public void decreaseCasinoRolling(Double decreaseAmount) {
+        if (decreaseAmount > this.casinoRolling) {
+            throw new IllegalArgumentException("감소할 카지노 롤링 값이 현재 보유한 카지노 롤링 값보다 큽니다.");
         }
-        this.casinoRolling = Math.round(newCasinoRolling * 100.0) / 100.0;
+        this.casinoRolling = Math.round((this.casinoRolling - decreaseAmount) * 100.0) / 100.0;
     }
 
     // 유저가 룰렛을 돌릴 때 마다 카운트를 1씩 감소시킴

@@ -10,6 +10,8 @@ import GInternational.server.common.dto.SingleResponseDto;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -34,6 +36,9 @@ public class ManagerController {
 
     private final UserService userService;
     private final ManagerService managerService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
 
     /**
      * 매니저 회원 가입. ROLE_ADMIN만 가능.
@@ -156,11 +161,15 @@ public class ManagerController {
                                      @RequestBody UserRoleUpdateDTO userRoleUpdateDTO,
                                      HttpServletRequest request,
                                      Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        UserResponseDTO response = managerService.updateUserRole(userId,userRoleUpdateDTO, principal, request);
-        return new ResponseEntity<>(new SingleResponseDto<>(response), HttpStatus.OK);
+        try {
+            PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+            UserResponseDTO response = managerService.updateUserRole(userId, userRoleUpdateDTO, principal, request);
+            return new ResponseEntity<>(new SingleResponseDto<>(response), HttpStatus.OK);
+        } catch (Exception e) {
+            logger.error("Error occurred while updating user role: {}", e.getMessage(), e);
+            throw e;
+        }
     }
-
     /**
      * 회원 레벨 업데이트.
      *

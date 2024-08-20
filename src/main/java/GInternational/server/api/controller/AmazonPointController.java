@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonPointController {
 
@@ -33,7 +33,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 포인트 지급 완료 메시지
      */
-    @PatchMapping("/managers/point/{userId}/{walletId}")
+    @PatchMapping("/managers/amazon-point/{userId}/{walletId}")
     public ResponseEntity<?> amazonPointsToUser(@PathVariable("userId") @Positive Long userId,
                                                 @PathVariable ("walletId") @Positive Long walletId,
                                                 @RequestBody AmazonPointRequestDTO requestDTO,
@@ -53,7 +53,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 포인트 차감 완료 메시지
      */
-    @PatchMapping("/managers/point/subtract/{userId}/{walletId}")
+    @PatchMapping("/managers/amazon-point/subtract/{userId}/{walletId}")
     public ResponseEntity<?> subtractAmazonPointsFromUser(@PathVariable("userId") @Positive Long userId,
                                                           @PathVariable("walletId") @Positive Long walletId,
                                                           @RequestBody AmazonPointRequestDTO requestDTO,
@@ -73,7 +73,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 포인트 전액 회수 완료 메시지
      */
-    @PatchMapping("/managers/point/reclaim/{userId}/{walletId}")
+    @PatchMapping("/managers/amazon-point/reclaim/{userId}/{walletId}")
     public ResponseEntity<?> reclaimAllAmazonPointsFromUser(@PathVariable("userId") @Positive Long userId,
                                                             @PathVariable ("walletId") @Positive Long walletId,
                                                             HttpServletRequest request,
@@ -89,7 +89,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 모든 아마존 포인트
      */
-    @GetMapping("/managers/point")
+    @GetMapping("/managers/amazon-point")
     public ResponseEntity<List<AmazonPoint>> getAllAmazonPoints(Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         List<AmazonPoint> amazonPoints = amazonPointService.findAllAmazonPoints(principal);
@@ -103,7 +103,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 해당 사용자의 아마존 포인트
      */
-    @GetMapping("/managers/point/user/{userId}")
+    @GetMapping("/managers/amazon-point/user/{userId}")
     public ResponseEntity<List<AmazonPoint>> getPointsByUserId(@PathVariable Long userId,
                                                                Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -120,7 +120,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 지정된 날짜 범위 내 해당 사용자의 아마존 포인트
      */
-    @GetMapping("/managers/point/user/{userId}/range")
+    @GetMapping("/managers/amazon-point/user/{userId}/range")
     public ResponseEntity<List<AmazonPoint>> getAmazonPointsByUserIdAndDateRange(@PathVariable Long userId,
                                                                                  @RequestParam LocalDate startDate,
                                                                                  @RequestParam LocalDate endDate,
@@ -141,7 +141,7 @@ public class AmazonPointController {
      * @param authentication 인증 정보
      * @return 지정된 날짜 범위 내 모든 아마존 포인트
      */
-    @GetMapping("/managers/point/range")
+    @GetMapping("/managers/amazon-point/range")
     public ResponseEntity<List<AmazonPoint>> getAllAmazonPointsByDateRange(@RequestParam LocalDate startDate,
                                                                            @RequestParam LocalDate endDate,
                                                                            Authentication authentication) {

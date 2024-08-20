@@ -24,6 +24,7 @@ public class ProductResponseDTO {
     public static class ProductData {
         private int prd_id;
         private String prd_name;
+        private boolean isOn;
     }
 }
 

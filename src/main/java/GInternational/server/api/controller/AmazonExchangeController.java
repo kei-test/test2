@@ -14,7 +14,7 @@ import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
-@RequestMapping("/amazon/api/v2")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class AmazonExchangeController {
 
@@ -29,7 +29,7 @@ public class AmazonExchangeController {
      * @param authentication 현재 인증된 사용자의 정보
      * @return 응답 엔티티로 환전 신청 완료 메시지와 함께 HTTP 상태 OK 반환
      */
-    @PostMapping("/users/{userId}/exchange")
+    @PostMapping("/users/{userId}/amazon-exchange")
     public ResponseEntity recharge(@PathVariable ("userId") @Positive Long userId,
                                    @RequestBody AmazonExchangeRequestDTO amazonExchangeRequestDTO,
                                    HttpServletRequest request,
@@ -52,7 +52,7 @@ public class AmazonExchangeController {
      * @param authentication 현재 인증된 사용자의 정보
      * @return 응답 엔티티로 환전 신청 승인 완료 메시지와 함께 HTTP 상태 OK 반환, 대기 상태가 아닌 신청건은 오류 메시지와 함께 BAD_REQUEST 반환
      */
-    @PatchMapping("/managers/exchange/approval")
+    @PatchMapping("/managers/amazon-exchange/approval")
     public ResponseEntity<String> approval(@RequestParam("transactionIds") List<@Positive Long> transactionIds,
                                            Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -74,7 +74,7 @@ public class AmazonExchangeController {
      * @param authentication 현재 요청을 한 사용자의 인증 정보
      * @return 응답 엔티티로 환전 신청 거절 완료 메시지와 함께 HTTP 상태 OK 반환
      */
-    @PatchMapping("/managers/{userId}/exchange/cancel")
+    @PatchMapping("/managers/{userId}/amazon-exchange/cancel")
     public ResponseEntity cancel(@PathVariable ("userId") @Positive Long userId,
                                  @RequestParam ("transactionId") List<@Positive Long> transactionIds,
                                  Authentication authentication) {
@@ -90,7 +90,7 @@ public class AmazonExchangeController {
      * @param authentication 현재 요청을 한 사용자의 인증 정보
      * @return 상태 변경 성공시 "신청건이 대기상태로 변경되었습니다." 메시지와 함께 HTTP 상태 OK 반환, 실패시 오류 메시지와 함께 BAD_REQUEST 반환
      */
-    @PatchMapping("/managers/exchange/status-to-waiting")
+    @PatchMapping("/managers/amazon-exchange/status-to-waiting")
     public ResponseEntity<String> updateStatusToWaiting(@RequestParam("transactionId") @Positive Long transactionId,
                                                         Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();

@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional(value = "clientServerTransactionManager")
 @RequiredArgsConstructor
@@ -23,6 +26,12 @@ public class DailyLimitService {
         DailyLimit dailyLimit = dailyLimitMapper.toEntity(dailyLimitDTO);
         DailyLimit savedDailyLimit = dailyLimitRepository.save(dailyLimit);
         return dailyLimitMapper.toDto(savedDailyLimit);
+    }
+
+    public List<DailyLimitDTO> getAllDailyLimits(PrincipalDetails principalDetails) {
+        return dailyLimitRepository.findAll().stream()
+                .map(dailyLimitMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public DailyLimitDTO updateDailyLimit(Long id, DailyLimitDTO dailyLimitDTO, PrincipalDetails principalDetails) {
