@@ -136,6 +136,8 @@ public class AmazonRechargeService {
 
                 wallet.setAmazonMoney(wallet.getAmazonMoney() + rechargeAmount);
                 wallet.setAmazonPoint((long) (wallet.getAmazonPoint() + dailyFirstRechargeBonus + rechargeBonus));
+                wallet.setTotalAmazonDeposit(wallet.getTotalAmazonDeposit() + rechargeAmount);
+                wallet.setTotalAmazonSettlement(wallet.getTotalAmazonDeposit() - wallet.getTotalAmazonWithdraw());
                 wallet.setChargedCount(updatedAmazonRechargeTransaction.getChargedCount());
                 wallet.setLastRechargedAt(updatedAmazonRechargeTransaction.getProcessedAt());
                 walletRepository.save(wallet);
