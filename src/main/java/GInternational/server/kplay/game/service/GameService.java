@@ -37,11 +37,16 @@ public class GameService {
      * @param gameList 게임 목록 정보
      * @return ApiResponseDTO 처리된 게임 목록 정보를 담은 API 응답 DTO
      */
-    public ApiResponseDTO addProcessGameList(List<RequestInfoList> gameList, String name) {
+    public ApiResponseDTO addProcessGameList(List<RequestInfoList> gameList) {
         Map<String, List<GameInfoDTO>> gameListMap = new HashMap<>();
 
-        // 게임 데이터를 먼저 엔티티에 저장
         for (RequestInfoList requestInfo : gameList) {
+            String key = String.valueOf(requestInfo.getPrdId());
+
+            if (!gameListMap.containsKey(key)) {
+                gameListMap.put(key, new ArrayList<>());
+            }
+
             Game game = new Game();
             game.setId(requestInfo.getId());
             game.setGameIndex(requestInfo.getGameIndex());
@@ -53,31 +58,7 @@ public class GameService {
             game.setType(requestInfo.getType());
             game.setGameCategory(requestInfo.getGameCategory());
             gameRepository.save(game);
-        }
-
-        // 저장된 데이터를 조회하여 prdId 기준으로 그룹화
-        List<Game> games = name != null && !name.isEmpty() ?
-                gameRepository.findByName(name) :
-                gameRepository.findAll();
-
-        for (Game game : games) {
-            String key = String.valueOf(game.getPrdId());
-
-            if (!gameListMap.containsKey(key)) {
-                gameListMap.put(key, new ArrayList<>());
-            }
-
             GameInfoDTO gameInfoDTO = new GameInfoDTO();
-            // gameInfoDTO에 필요한 값들 설정
-            gameInfoDTO.setId(game.getId());
-            gameInfoDTO.setGameIndex(game.getGameIndex());
-            gameInfoDTO.setName(game.getName());
-            gameInfoDTO.setIcon(game.getIcon());
-            gameInfoDTO.setPrdId(game.getPrdId());
-            gameInfoDTO.setRtp(game.getRtp());
-            gameInfoDTO.setIsEnabled(game.getIsEnabled());
-            gameInfoDTO.setType(game.getType());
-
             gameListMap.get(key).add(gameInfoDTO);
         }
 
@@ -131,10 +112,10 @@ public class GameService {
      * @param size 페이지 당 항목 수
      * @return Page<Game> 조회된 게임 목록
      */
-    public Page<Game> searchByTypeNull(int page, int size) {
-        Pageable pageable = PageRequest.of(page -1, size,Sort.by("id").descending());
-        Page<Game> typeNullGame = gameRepository.searchByNullCondition(pageable);
-        return new PageImpl<>(typeNullGame.getContent(),pageable,typeNullGame.getTotalElements());
+    public Page<Game> searchByTypeNull(int page, int size, String name) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("id").descending());
+        Page<Game> typeNullGame = gameRepository.searchByNullCondition(name, pageable);
+        return new PageImpl<>(typeNullGame.getContent(), pageable, typeNullGame.getTotalElements());
     }
 
 

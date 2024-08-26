@@ -9,5 +9,5 @@ public interface GameRepositoryCustom{
 
     Page<Game> searchByPrdGame(int prdId, Pageable pageable);
     Page<Game> searchByType(String type,String gameCategory, Pageable pageable);
-    Page<Game> searchByNullCondition(Pageable pageable);
+    Page<Game> searchByNullCondition(String name, Pageable pageable);
 }

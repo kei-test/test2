@@ -1,6 +1,7 @@
 package GInternational.server.kplay.game.repository;
 
 import GInternational.server.kplay.game.entity.Game;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,17 +57,22 @@ public class GameRepositoryImpl implements GameRepositoryCustom{
     }
 
     @Override
-    public Page<Game> searchByNullCondition(Pageable pageable) {
-        List<Game> findAll = queryFactory.selectFrom(game)
-                .where(game.isEnabled.eq(1))
+    public Page<Game> searchByNullCondition(String name, Pageable pageable) {
+        JPAQuery<Game> query = queryFactory.selectFrom(game)
+                .where(game.isEnabled.eq(1));
+
+        // name이 입력된 경우, name으로 필터링
+        if (name != null && !name.trim().isEmpty()) {
+            query.where(game.name.containsIgnoreCase(name));
+        }
+
+        List<Game> findAll = query
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long totalElements = queryFactory.selectFrom(game)
-                .where(game.isEnabled.eq(1))
-                .fetch().size();
+        long totalElements = query.fetch().size();
 
-        return new PageImpl<>(findAll, pageable,totalElements);
+        return new PageImpl<>(findAll, pageable, totalElements);
     }
 }

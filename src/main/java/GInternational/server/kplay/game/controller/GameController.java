@@ -30,9 +30,8 @@ public class GameController {
      * @return ResponseEntity API 응답 DTO
      */
     @PostMapping("/gamelist")
-    public ResponseEntity<ApiResponseDTO> gameList(@RequestBody List<RequestInfoList> gameList,
-                                                   @RequestParam(required = false) String name) {
-        ApiResponseDTO apiResponseDTO = gameService.addProcessGameList(gameList, name);
+    public ResponseEntity<ApiResponseDTO> gameList(@RequestBody List<RequestInfoList> gameList) {
+        ApiResponseDTO apiResponseDTO = gameService.addProcessGameList(gameList);
         return new ResponseEntity<>(apiResponseDTO, HttpStatus.OK);
     }
 
@@ -80,10 +79,11 @@ public class GameController {
      */
     @GetMapping("/games")
     public ResponseEntity findAll(@RequestParam int page,
-                                  @RequestParam int size) {
-        Page<Game> pages = gameService.searchByTypeNull(page ,size);
+                                  @RequestParam int size,
+                                  @RequestParam(required = false) String name) {
+        Page<Game> pages = gameService.searchByTypeNull(page, size, name);
         List<Game> list = pages.getContent();
-        return new ResponseEntity<>(new MultiResponseDto<>(list,pages),HttpStatus.OK);
+        return new ResponseEntity<>(new MultiResponseDto<>(list, pages), HttpStatus.OK);
     }
 
     /**
