@@ -124,13 +124,12 @@ public class EventsBoardService {
 
     /**
      * 이벤트 전체 조회.
-     * 게스트가 아닌 모든 사용자가 조회할 수 있음.
+     * 모든 사용자가 조회할 수 있음.
      *
-     * @param principalDetails 현재 로그인한 사용자의 보안 상세 정보
      * @return 조회된 모든 이벤트의 DTO 목록
      */
     @Transactional(value = "clientServerTransactionManager",readOnly = true)
-    public List<EventsBoardListDTO> getAllEvents(PrincipalDetails principalDetails, String startDate, String endDate, String title, String site, String writerNickname, String writerUsername) {
+    public List<EventsBoardListDTO> getAllEvents(String startDate, String endDate, String title, String site, String writerNickname, String writerUsername) {
         Specification<EventsBoard> spec = Specification.where(null);
 
         if (startDate != null && !startDate.isEmpty()) {
@@ -146,11 +145,6 @@ public class EventsBoardService {
         if (title != null && !title.isEmpty()) {
             spec = spec.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.like(root.get("title"), "%" + title + "%"));
-        }
-
-        if (principalDetails.getUser().getRole().equals("ROLE_USER") || principalDetails.getUser().getRole().equals("ROLE_TEST")) {
-            spec = spec.and((root, query, criteriaBuilder) ->
-                    criteriaBuilder.equal(root.get("viewStatus"), "노출"));
         }
 
         if (site != null && !site.isEmpty()) {

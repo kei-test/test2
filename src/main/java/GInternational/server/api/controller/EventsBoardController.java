@@ -79,10 +79,8 @@ public class EventsBoardController {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String site,
             @RequestParam(required = false) String writerNickname,
-            @RequestParam(required = false) String writerUsername,
-            Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<EventsBoardListDTO> allEvents = eventsBoardService.getAllEvents(principal, startDate, endDate, title, site, writerNickname, writerUsername);
+            @RequestParam(required = false) String writerUsername) {
+        List<EventsBoardListDTO> allEvents = eventsBoardService.getAllEvents(startDate, endDate, title, site, writerNickname, writerUsername);
         return ResponseEntity.ok(new SingleResponseDto<>(allEvents));
     }
 
