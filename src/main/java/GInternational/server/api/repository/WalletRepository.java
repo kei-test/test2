@@ -4,9 +4,11 @@ package GInternational.server.api.repository;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.entity.Wallet;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import javax.transaction.Transactional;
 import java.util.Optional;
 
 public interface WalletRepository extends JpaRepository<Wallet,Long> {
@@ -28,4 +30,9 @@ public interface WalletRepository extends JpaRepository<Wallet,Long> {
 
     @Query("SELECT COUNT(w) FROM wallet w WHERE w.todayChargedCount = 1")
     Long countByTodayChargedCount();
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE wallet w SET w.todayDeposit = 0, w.todayWithdraw = 0")
+    void resetDailyTransactionsForAllUsers();
 }

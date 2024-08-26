@@ -1,5 +1,6 @@
 package GInternational.server.api.service;
 
+import GInternational.server.api.dto.AmazonBonusDTO;
 import GInternational.server.api.entity.AmazonBonus;
 import GInternational.server.api.repository.AmazonBonusRepository;
 import GInternational.server.common.exception.ExceptionCode;
@@ -149,6 +150,25 @@ public class AmazonBonusService {
         amazonBonus.setRechargeRate(rechargeRate);
         amazonBonus.setDailyRechargeCap(dailyRechargeCap);
         amazonBonusRepository.save(amazonBonus);
+    }
+
+    /**
+     * 현재 보너스 설정 조회
+     *
+     * @return 현재 보너스 설정 정보를 담은 DTO
+     */
+    public AmazonBonusDTO getBonusSettings() {
+        AmazonBonus amazonBonus = amazonBonusRepository.findFirstByOrderByIdDesc().orElseThrow(
+                () -> new RestControllerException(ExceptionCode.SETTING_NOT_FOUND)
+        );
+
+        AmazonBonusDTO bonusSettings = new AmazonBonusDTO();
+        bonusSettings.setFirstRechargeRate(amazonBonus.getFirstRechargeRate());
+        bonusSettings.setDailyFirstRechargeRate(amazonBonus.getDailyFirstRechargeRate());
+        bonusSettings.setRechargeRate(amazonBonus.getRechargeRate());
+        bonusSettings.setDailyRechargeCap(amazonBonus.getDailyRechargeCap());
+
+        return bonusSettings;
     }
 
     /**

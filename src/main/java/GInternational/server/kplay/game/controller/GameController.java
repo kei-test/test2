@@ -30,8 +30,9 @@ public class GameController {
      * @return ResponseEntity API 응답 DTO
      */
     @PostMapping("/gamelist")
-    public ResponseEntity<ApiResponseDTO> gameList(@RequestBody List<RequestInfoList> gameList) {
-        ApiResponseDTO apiResponseDTO = gameService.addProcessGameList(gameList);
+    public ResponseEntity<ApiResponseDTO> gameList(@RequestBody List<RequestInfoList> gameList,
+                                                   @RequestParam(required = false) String name) {
+        ApiResponseDTO apiResponseDTO = gameService.addProcessGameList(gameList, name);
         return new ResponseEntity<>(apiResponseDTO, HttpStatus.OK);
     }
 

@@ -72,7 +72,7 @@ public class EventsBoardController {
      * @param authentication 사용자 인증 정보
      * @return 이벤트 목록
      */
-    @GetMapping("/users/get/events")
+    @GetMapping("/get/events")
     public ResponseEntity<SingleResponseDto<List<EventsBoardListDTO>>> getAllEvents(
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate,

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(value = "clientServerTransactionManager")
@@ -48,6 +50,18 @@ public class AmazonDedicatedAccountService {
         } catch (Exception e) {
             throw new RestControllerException(ExceptionCode.INTERNAL_ERROR, "내부 서버 오류입니다.");
         }
+    }
+
+    /**
+     * 모든 전용계좌 조회
+     *
+     * @return 모든 전용계좌 목록
+     */
+    public List<AmazonDedicatedAccountResponseDTO> findAllDedicatedAccounts() {
+        List<AmazonDedicatedAccount> accounts = amazonDedicatedAccountRepository.findAll();
+        return accounts.stream()
+                .map(amazonDedicatedAccountResponseMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     /**

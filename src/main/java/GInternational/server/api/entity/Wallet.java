@@ -57,7 +57,7 @@ public class Wallet extends BaseEntity {
     private long totalSettlement; // 총 정산액 (depositTotal - balance & withdrawTotal = totalSettlement)
 
     @Column(name = "amazon_mileage")
-    private long amazonMileage;         // 마일리지
+    private long amazonMileage;         // 총판페이지에서의 마일리지
     @Column(name = "today_deposit", columnDefinition = "BIGINT default 0")
     private long todayDeposit;          // 금일 입금
     @Column(name = "today_withdraw", columnDefinition = "BIGINT default 0")
@@ -74,7 +74,7 @@ public class Wallet extends BaseEntity {
     @Column(name = "amazon_point")
     private long amazonPoint; // 총판페이지에서의 포인트
     @Column(name = "amazon_bonus")
-    private long amazonBonus; // 레벨별 보너스
+    private long amazonBonus; // 총판페이지에서의 보너스
 
     @Column(name = "has_received_first_deposit_bonus")
     private boolean hasReceivedFirstDepositBonus; // 첫 입금 보너스 수령 여부

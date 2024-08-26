@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
@@ -120,9 +121,16 @@ public class AmazonUserController {
     public ResponseEntity<SingleResponseDto<AmazonUserHierarchyResponseDTO>> findUserHierarchy(@PathVariable Long userId,
                                                                                                Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserHierarchyResponseDTO UserHierarchy = amazonUserService.findFartnerHierarchy(userId);
+        AmazonUserHierarchyResponseDTO UserHierarchy = amazonUserService.findPartnerHierarchy(userId);
         SingleResponseDto<AmazonUserHierarchyResponseDTO> response = new SingleResponseDto<>(UserHierarchy);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/users/total-partner")
+    public ResponseEntity getTotalPartner(Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        List<?> list = amazonUserService.getTotalList(principal);
+        return new ResponseEntity(list, HttpStatus.OK);
     }
 
     /**
@@ -133,17 +141,16 @@ public class AmazonUserController {
      * @return 하위 파트너 목록
      */
     @GetMapping("/users/partners")
-    public ResponseEntity<?> getUsersByRoleAndStatus(
-            Authentication authentication, @RequestParam AmazonUserStatusEnum status) {
+    public ResponseEntity<?> getUsersByRoleAndStatus(Authentication authentication,
+                                                     @RequestParam AmazonUserStatusEnum status) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
 
-        // 관리자인 경우, 대본사별로 그룹화된 사용자 목록 반환
+        Map<String, List<AmazonUserResponseDTO>> usersHierarchy = amazonUserService.findSubPartners(principal, status);
+
         if (principal.getUser().getRole().equals("ROLE_ADMIN")) {
-            Map<String, List<AmazonUserResponseDTO>> usersHierarchy = amazonUserService.findDirectSubFartners(principal, status);
             return ResponseEntity.ok(usersHierarchy);
         } else {
-            // 다른 역할의 사용자인 경우, 해당 사용자와 연결된 하위 사용자 목록 반환
-            List<AmazonUserResponseDTO> users = amazonUserService.findDirectSubFartners(principal, status).values().stream()
+            List<AmazonUserResponseDTO> users = usersHierarchy.values().stream()
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(users);
@@ -159,9 +166,10 @@ public class AmazonUserController {
      */
     @PostMapping("/users/sub-account")
     public ResponseEntity<AmazonUserResponseDTO> createSubAccountForPartner(@RequestBody AmazonUserRequestDTO requestDTO,
+                                                                            HttpServletRequest request,
                                                                             Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, principal);
+        AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, principal, request);
         return ResponseEntity.ok(responseDTO);
     }
 

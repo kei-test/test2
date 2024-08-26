@@ -132,8 +132,9 @@ public class AmazonExchangeService {
 
                 wallet.setAmazonMoney(wallet.getAmazonMoney() - savedTransaction.getExchangeAmount());
                 wallet.setExchangedCount(savedTransaction.getExchangedCount());
-                wallet.setWithdrawTotal(wallet.getWithdrawTotal() + savedTransaction.getExchangeAmount());  //출금액 누적 합계
-                wallet.setTotalSettlement(wallet.getWithdrawTotal() - wallet.getDepositTotal());
+                wallet.setTodayWithdraw(wallet.getTodayWithdraw() + savedTransaction.getExchangeAmount()); // 금일 출금액 누적 합계
+                wallet.setWithdrawTotal(wallet.getWithdrawTotal() + savedTransaction.getExchangeAmount()); // 총 출금액 누적 합계
+                wallet.setTotalSettlement(wallet.getDepositTotal() - wallet.getWithdrawTotal());           // 총 수익 누적 합계
                 wallet.setExchangeProcessedAt(updatedTransaction.getProcessedAt());
                 walletRepository.save(wallet);
 

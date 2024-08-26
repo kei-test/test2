@@ -154,6 +154,17 @@ public class AmazonMessageController {
     }
 
     /**
+     * 관리자가 모든 쪽지를 조회.
+     *
+     * @return 조회된 모든 쪽지 목록
+     */
+    @GetMapping("/managers/amazon-messages/all")
+    public ResponseEntity<List<AmazonMessageListResponseDTO>> findAllMessages() {
+        List<AmazonMessageListResponseDTO> messages = messageService.findAllMessages();
+        return new ResponseEntity<>(messages, HttpStatus.OK);
+    }
+
+    /**
      * 사용자가 특정 쪽지의 상세 정보를 조회.
      *
      * @param messageId 조회할 쪽지의 ID

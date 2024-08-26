@@ -5,11 +5,12 @@ import GInternational.server.api.vo.AmazonTransactionEnum;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface AmazonExchangeRepository extends JpaRepository<AmazonExchangeTransaction,Long> {
+public interface AmazonExchangeRepository extends JpaRepository<AmazonExchangeTransaction,Long>, JpaSpecificationExecutor<AmazonExchangeTransaction> {
 
     // 특정 날짜에 처리된 트랜잭션 조회
     Page<AmazonExchangeTransaction> findByUserIdAndStatusAndProcessedAtBetween(

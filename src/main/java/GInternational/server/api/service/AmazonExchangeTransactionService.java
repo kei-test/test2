@@ -3,14 +3,21 @@ package GInternational.server.api.service;
 import GInternational.server.api.dto.AmazonExchangeTransactionApprovedDTO;
 import GInternational.server.api.dto.AmazonExchangeTransactionsSummaryDTO;
 import GInternational.server.api.entity.AmazonExchangeTransaction;
+import GInternational.server.api.entity.AmazonRechargeTransaction;
+import GInternational.server.api.entity.User;
+import GInternational.server.api.entity.Wallet;
 import GInternational.server.api.repository.AmazonExchangeRepository;
 import GInternational.server.api.vo.AmazonTransactionEnum;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,19 +46,41 @@ public class AmazonExchangeTransactionService {
         return new PageImpl<>(transactions.getContent(),pageable,totalElements);
     }
 
-    /**
-     * 상태와 처리된 날짜 범위에 따라 환전 트랜잭션을 조회.
-     * 환전 트랜잭션 상태(예: 승인, 대기 등)와 날짜 범위를 기준으로 필터링하여 결과를 반환.
-     *
-     * @param status 조회할 트랜잭션의 상태
-     * @param startDateTime 조회 시작 날짜 및 시간
-     * @param endDateTime 조회 종료 날짜 및 시간
-     * @param principalDetails 요청을 수행하는 사용자의 인증 정보
-     * @return 해당 조건에 맞는 환전 트랜잭션 목록
-     */
-    @Transactional(value = "clientServerTransactionManager",readOnly = true)
-    public List<AmazonExchangeTransaction> findByStatusAndProcessedAtBetween(AmazonTransactionEnum status, LocalDateTime startDateTime, LocalDateTime endDateTime, PrincipalDetails principalDetails) {
-        return amazonExchangeRepository.findByStatusAndProcessedAtBetween(status, startDateTime, endDateTime);
+    public List<AmazonExchangeTransaction> findAllByCriteria(LocalDateTime startDateTime, LocalDateTime endDateTime,
+                                                             AmazonTransactionEnum status, String username,
+                                                             String nickname, String ownerName) {
+        Specification<AmazonExchangeTransaction> spec = (root, query, criteriaBuilder) -> {
+            // 기본 필터링: 날짜 범위와 상태
+            Predicate predicate = criteriaBuilder.conjunction();
+            predicate = criteriaBuilder.and(predicate,
+                    criteriaBuilder.between(root.get("processedAt"), startDateTime, endDateTime),
+                    criteriaBuilder.equal(root.get("status"), status));
+
+            // User와 Wallet과 조인하고 필터 적용
+            if (username != null || nickname != null || ownerName != null) {
+                Join<AmazonRechargeTransaction, User> userJoin = root.join("user", JoinType.LEFT);
+                Join<AmazonRechargeTransaction, Wallet> walletJoin = root.join("wallet", JoinType.LEFT);
+
+                if (username != null) {
+                    predicate = criteriaBuilder.and(predicate,
+                            criteriaBuilder.equal(userJoin.get("username"), username));
+                }
+
+                if (nickname != null) {
+                    predicate = criteriaBuilder.and(predicate,
+                            criteriaBuilder.equal(userJoin.get("nickname"), nickname));
+                }
+
+                if (ownerName != null) {
+                    predicate = criteriaBuilder.and(predicate,
+                            criteriaBuilder.equal(walletJoin.get("ownerName"), ownerName));
+                }
+            }
+
+            return predicate;
+        };
+
+        return amazonExchangeRepository.findAll(spec);
     }
 
     /**

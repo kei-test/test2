@@ -16,6 +16,7 @@ import GInternational.server.common.exception.ExceptionCode;
 import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,8 +137,9 @@ public class AmazonRechargeService {
 
                 wallet.setAmazonMoney(wallet.getAmazonMoney() + rechargeAmount);
                 wallet.setAmazonPoint((long) (wallet.getAmazonPoint() + dailyFirstRechargeBonus + rechargeBonus));
-                wallet.setTotalAmazonDeposit(wallet.getTotalAmazonDeposit() + rechargeAmount);
-                wallet.setTotalAmazonSettlement(wallet.getTotalAmazonDeposit() - wallet.getTotalAmazonWithdraw());
+                wallet.setTodayDeposit(wallet.getTodayDeposit() + rechargeAmount); // 금일 입금액 누적합계
+                wallet.setTotalAmazonDeposit(wallet.getTotalAmazonDeposit() + rechargeAmount); // 총 입금액 누적 합계
+                wallet.setTotalAmazonSettlement(wallet.getTotalAmazonDeposit() - wallet.getTotalAmazonWithdraw()); // 총 수익 누적합계
                 wallet.setChargedCount(updatedAmazonRechargeTransaction.getChargedCount());
                 wallet.setLastRechargedAt(updatedAmazonRechargeTransaction.getProcessedAt());
                 walletRepository.save(wallet);
@@ -183,5 +185,14 @@ public class AmazonRechargeService {
                 AmazonRechargeTransaction savedAmazonRechargeTransaction = amazonRechargeTransactionRepository.save(amazonRechargeTransaction);
             }
         }
+    }
+
+    /**
+     * 매일 자정에 모든 사용자의 todayDeposit, todayWithdraw 값을 0으로 초기화.
+     */
+    @Scheduled(cron = "0 0 0 * * *") // 매일 00시 00분에 실행
+    @Transactional
+    public void resetTodayDeposit() {
+        walletRepository.resetDailyTransactionsForAllUsers();
     }
 }

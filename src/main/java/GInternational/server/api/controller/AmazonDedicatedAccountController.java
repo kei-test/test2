@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v2/managers/amazon-dedicated-account")
@@ -40,6 +41,17 @@ public class AmazonDedicatedAccountController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(e.getMessage());
         }
+    }
+
+    /**
+     * 모든 전용 계좌를 조회.
+     *
+     * @return 모든 전용 계좌 정보를 담은 ResponseEntity 객체
+     */
+    @GetMapping("/")
+    public ResponseEntity<List<AmazonDedicatedAccountResponseDTO>> getAllDedicatedAccounts() {
+        List<AmazonDedicatedAccountResponseDTO> response = amazonDedicatedAccountService.findAllDedicatedAccounts();
+        return ResponseEntity.ok(response);
     }
 
     /**

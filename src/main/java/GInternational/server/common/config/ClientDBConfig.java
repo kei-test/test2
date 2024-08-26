@@ -25,6 +25,9 @@ import java.util.Objects;
 @EnableJpaRepositories(entityManagerFactoryRef = "entityManager",
         transactionManagerRef = "clientServerTransactionManager",
         basePackages = {"GInternational.server.api.repository",
+                //통합 작업으로 인한 임시 추가되었으며
+                //디렉토리 편입 이후 삭제해주세요
+                "GInternational.server.amzn.repo",
                 "GInternational.server.kplay.balance.repository",
                 "GInternational.server.kplay.bonus.repository",
                 "GInternational.server.kplay.credit.repository",
@@ -34,8 +37,6 @@ import java.util.Objects;
                 "GInternational.server.l_sport.batch.model.repository"
         })
 public class ClientDBConfig {
-
-
     @Value("${spring.primary.datasource.jdbc-url}")
     private String url;
     @Value("${spring.primary.datasource.driver-class-name}")

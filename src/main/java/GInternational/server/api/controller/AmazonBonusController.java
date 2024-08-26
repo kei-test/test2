@@ -6,10 +6,7 @@ import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,5 +34,16 @@ public class AmazonBonusController {
                 principal
         );
         return ResponseEntity.ok("보너스 설정이 업데이트되었습니다.");
+    }
+
+    /**
+     * 현재 보너스 설정 조회
+     *
+     * @return 현재 보너스 설정 정보
+     */
+    @GetMapping("/managers/amazon/bonus/settings")
+    public ResponseEntity<AmazonBonusDTO> getBonusSettings() {
+        AmazonBonusDTO settings = amazonBonusService.getBonusSettings();
+        return ResponseEntity.ok(settings);
     }
 }

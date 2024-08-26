@@ -54,26 +54,19 @@ public class AmazonRechargeTransactionController {
         return new ResponseEntity<>(new MultiResponseDto<>(mapper.toDto(list), transactions), HttpStatus.OK);
     }
 
-    /**
-     * 충전 트랜잭션 상태 및 생성 날짜 범위 조회.
-     * 주어진 상태와 날짜 범위에 해당하는 충전 트랜잭션 목록을 조회.
-     *
-     * @param startDate 조회 시작 날짜
-     * @param endDate 조회 종료 날짜
-     * @param status 트랜잭션 상태
-     * @param authentication 인증 정보
-     * @return 조회된 충전 트랜잭션 목록
-     */
     @GetMapping("/managers/amazon-rt")
-    public ResponseEntity getRT(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                @RequestParam AmazonTransactionEnum status,
-                                Authentication authentication) {
+    public ResponseEntity<?> getRT(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+                                   @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+                                   @RequestParam AmazonTransactionEnum status,
+                                   @RequestParam(required = false) String username,
+                                   @RequestParam(required = false) String nickname,
+                                   @RequestParam(required = false) String ownerName,
+                                   Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-        List<AmazonRechargeTransaction> amazonRechargeTransactionList = amazonRechargeTransactionService.findAllByProcessedAtBetweenAndStatus(startDateTime, endDateTime, status, principal);
+        List<AmazonRechargeTransaction> amazonRechargeTransactionList = amazonRechargeTransactionService.findAllByCriteria(startDateTime, endDateTime, status, username, nickname, ownerName);
         return new ResponseEntity<>(new MultiResponseDto<>(amazonRechargeTransactionAdminResponseMapper.toDto(amazonRechargeTransactionList)), HttpStatus.OK);
     }
 

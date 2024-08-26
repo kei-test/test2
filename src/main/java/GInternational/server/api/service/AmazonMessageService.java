@@ -225,6 +225,18 @@ public class AmazonMessageService {
     }
 
     /**
+     * 관리자가 모든 쪽지를 조회.
+     *
+     * @return 조회된 모든 쪽지 목록
+     */
+    public List<AmazonMessageListResponseDTO> findAllMessages() {
+        List<AmazonMessages> messages = messageRepository.findAll();
+        return messages.stream()
+                .map(messageListMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 쪽지의 상세 정보를 조회. 이 기능은 관리자와 회원 모두에게 제공.
      *
      * @param messageId 조회할 쪽지의 ID
@@ -232,7 +244,6 @@ public class AmazonMessageService {
      * @return 조회된 쪽지의 상세 정보
      * @throws RestControllerException 쪽지를 확인할 수 없는 경우 예외를 발생.
      */
-
     public AmazonMessages detailMessage(Long messageId, PrincipalDetails principalDetails) {
         AmazonMessages message = validateMessage(messageId);
         User receiver = userService.validateUser(principalDetails.getUser().getId());
@@ -254,7 +265,6 @@ public class AmazonMessageService {
      * @param messageIds 삭제할 쪽지의 ID 목록
      * @param principalDetails 현재 인증된 사용자의 세부 정보
      */
-
     @AuditLogService.Audit("쪽지 삭제")
     public void deleteSelectedAmazonAdminMessages(HttpServletRequest request, List<Long> messageIds, PrincipalDetails principalDetails) {
         for (Long messageId : messageIds) {

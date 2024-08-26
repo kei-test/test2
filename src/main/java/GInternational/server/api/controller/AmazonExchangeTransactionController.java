@@ -66,13 +66,15 @@ public class AmazonExchangeTransactionController {
     public ResponseEntity getET(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
                                 @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
                                 @RequestParam AmazonTransactionEnum status,
+                                @RequestParam(required = false) String username,
+                                @RequestParam(required = false) String nickname,
+                                @RequestParam(required = false) String ownerName,
                                 Authentication authentication) {
-
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
 
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<AmazonExchangeTransaction> transactionList = amazonExchangeTransactionService.findByStatusAndProcessedAtBetween(status, startDateTime, endDateTime, principal);
+        List<AmazonExchangeTransaction> transactionList = amazonExchangeTransactionService.findAllByCriteria(startDateTime, endDateTime, status, username, nickname, ownerName);
         return new ResponseEntity<>(new MultiResponseDto<>(amazonExchangeTransactionAdminResponseMapper.toDto(transactionList)), HttpStatus.OK);
     }
 
