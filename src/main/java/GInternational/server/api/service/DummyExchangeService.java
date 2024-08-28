@@ -40,9 +40,7 @@ public class DummyExchangeService {
     private final DummyExchangeResMapper dummyExchangeResMapper;
     private final DummyExchangeRepository dummyExchangeRepository;
 
-//    @Scheduled(cron = "0 0 0 * * ?")  // 매일 00:00:00에 실행
-
-    @Scheduled(cron = "0 * * * * ?")  // 1분 간격으로 실행
+    @Scheduled(cron = "0 0 0 * * ?")  // 매일 00:00:00에 실행
     public void createDummyExchanges() {
         Random random = new Random();
 
@@ -55,7 +53,7 @@ public class DummyExchangeService {
             dummyExchange.setUsername("*******");
 
             // 랜덤값 생성 및 만원 단위로 변환
-            long amountInTenThousand = (random.nextLong(range) + minAmount) / 10000 * 10000;
+            long amountInTenThousand = minAmount + (random.nextInt((int) range / 10000 + 1) * 10000);
             dummyExchange.setExchangeAmount(String.valueOf(amountInTenThousand));
 
             // 00:00:00 형식으로 랜덤 시간 생성
