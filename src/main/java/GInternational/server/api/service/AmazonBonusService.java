@@ -162,6 +162,10 @@ public class AmazonBonusService {
                 () -> new RestControllerException(ExceptionCode.SETTING_NOT_FOUND)
         );
 
+        amazonBonus.getDailyFirstRechargeRate().size();
+        amazonBonus.getRechargeRate().size();
+        amazonBonus.getDailyRechargeCap().size();
+
         AmazonBonusDTO bonusSettings = new AmazonBonusDTO();
         bonusSettings.setFirstRechargeRate(amazonBonus.getFirstRechargeRate());
         bonusSettings.setDailyFirstRechargeRate(amazonBonus.getDailyFirstRechargeRate());
