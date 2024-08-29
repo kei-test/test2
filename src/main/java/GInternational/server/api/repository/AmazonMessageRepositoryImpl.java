@@ -26,10 +26,24 @@ public class AmazonMessageRepositoryImpl implements AmazonMessageRepositoryCusto
 
 
     @Override
-    public Page<AmazonMessages> getUserReceivedMessages(User receiver, boolean isRead, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        BooleanExpression condition = amazonMessages.receiver.eq(receiver)
-                .and(amazonMessages.isRead.eq(isRead)
-                        .and(amazonMessages.createdAt.between(startDate,endDate)));
+    public Page<AmazonMessages> getUserReceivedMessages(User receiver, Boolean isRead, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        BooleanExpression condition = amazonMessages.receiver.eq(receiver);
+
+        if (isRead != null) {
+            condition = condition.and(amazonMessages.isRead.eq(isRead));
+        }
+
+        if (startDate == null && endDate == null) {
+            condition = condition.and(amazonMessages.createdAt.isNotNull());
+        } else {
+            if (startDate == null) {
+                startDate = LocalDateTime.MIN;
+            }
+            if (endDate == null) {
+                endDate = LocalDateTime.MAX;
+            }
+            condition = condition.and(amazonMessages.createdAt.between(startDate, endDate));
+        }
 
         List<AmazonMessages> results = queryFactory.selectFrom(amazonMessages)
                 .where(condition)

@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public interface AmazonMessageRepositoryCustom {
 
 
-    Page<AmazonMessages> getUserReceivedMessages(User receiver, boolean isRead, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<AmazonMessages> getUserReceivedMessages(User receiver, Boolean isRead, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     Long countByUserMessages(User receiver, boolean isRead);
 

@@ -19,6 +19,7 @@ public class AmazonMessageResponseDTO {
     private String title;
     private String content;
     private boolean isRead;
+    private LocalDateTime readDate;
     private UserProfileDTO receiver;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd 'T' HH:mm:ss", timezone = "Asia/Seoul")

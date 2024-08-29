@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v2/managers/jackpot")
+@RequestMapping("/api/v2")
 @RequiredArgsConstructor
 public class DummyJackPotController {
 
@@ -26,7 +26,7 @@ public class DummyJackPotController {
     private final DummyJackPotResMapper dummyJackPotResMapper;
 
     // 수동 데이터 생성
-    @PostMapping("/create")
+    @PostMapping("/managers/jackpot/create")
     public ResponseEntity<DummyJackPotResDTO> createManualJackpotData(@RequestBody DummyJackPotReqDTO dummyJackPotReqDTO,
                                                                       Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -34,15 +34,14 @@ public class DummyJackPotController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<DummyJackPotResDTO>> getAllJackpotData(Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<DummyJackPotResDTO> jackpotData = dummyJackPotService.getAllJackpotData(principal);
+    @GetMapping("/jackpot/all")
+    public ResponseEntity<List<DummyJackPotResDTO>> getAllJackpotData() {
+        List<DummyJackPotResDTO> jackpotData = dummyJackPotService.getAllJackpotData();
         return new ResponseEntity<>(jackpotData, HttpStatus.OK);
     }
 
     // 업데이트
-    @PutMapping("/update/{id}")
+    @PutMapping("/managers/jackpot/update/{id}")
     public ResponseEntity<DummyJackPotResDTO> updateJackpotData(@PathVariable Long id,
                                                                 @RequestBody DummyJackPotReqDTO dummyJackPotReqDTO,
                                                                 Authentication authentication) {
@@ -52,7 +51,7 @@ public class DummyJackPotController {
     }
 
     // 데이터 삭제
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/managers/jackpot/delete/{id}")
     public ResponseEntity<Void> deleteJackpotData(@PathVariable Long id,
                                                   Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();

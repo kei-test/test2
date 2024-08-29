@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -149,7 +150,7 @@ public class AmazonMessageController {
                                           @RequestParam("size") int size,
                                           Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        Page<AmazonMessageListResponseDTO> pages = messageService.getUserMessages(userId, isRead,startDate,endDate, page, size, principal);
+        Page<AmazonMessageListResponseDTO> pages = messageService.getUserMessages(userId, isRead, startDate, endDate, page, size, principal);
         return new ResponseEntity<>(new MultiResponseDto<>((pages.getContent()), pages), HttpStatus.OK);
     }
 

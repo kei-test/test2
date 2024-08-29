@@ -17,6 +17,7 @@ public class AmazonMessageListResponseDTO {
     private Long id;
     private String title;
     private boolean isRead;
+    private LocalDateTime readDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd 'T' HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
@@ -25,11 +26,12 @@ public class AmazonMessageListResponseDTO {
     }
 
     @QueryProjection
-    public AmazonMessageListResponseDTO(AmazonUserManagerProfileDTO sender, Long id, String title, boolean isRead, LocalDateTime createdAt) {
+    public AmazonMessageListResponseDTO(AmazonUserManagerProfileDTO sender, Long id, String title, boolean isRead, LocalDateTime readDate, LocalDateTime createdAt) {
         this.sender = sender;
         this.id = id;
         this.title = title;
         this.isRead = isRead;
+        this.readDate = readDate;
         this.createdAt = createdAt;
     }
 

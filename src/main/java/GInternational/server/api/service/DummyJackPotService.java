@@ -35,7 +35,7 @@ public class DummyJackPotService {
         return dummyJackPotResMapper.toDto(savedJackPot);
     }
 
-    public List<DummyJackPotResDTO> getAllJackpotData(PrincipalDetails principalDetails) {
+    public List<DummyJackPotResDTO> getAllJackpotData() {
         List<DummyJackPot> allJackpots = dummyJackPotRepository.findAll();
         return allJackpots.stream()
                 .map(dummyJackPotResMapper::toDto)

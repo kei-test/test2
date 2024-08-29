@@ -13,6 +13,8 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
+
 import static javax.persistence.FetchType.LAZY;
 
 @AllArgsConstructor
@@ -30,6 +32,9 @@ public class AmazonMessages extends BaseEntity {
 
     @Column(name = "is_read")
     private boolean isRead;
+
+    @Column(name = "read_date")
+    private LocalDateTime readDate;
 
     @Column(name = "deleted_by_sender")
     private boolean deletedBySender;

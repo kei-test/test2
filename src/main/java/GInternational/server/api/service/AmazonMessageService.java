@@ -130,7 +130,7 @@ public class AmazonMessageService {
         User user = userService.validateUser(principalDetails.getUser().getId());
 
         if (receiver.getId().equals(user.getId())) {
-            Page<AmazonMessages> pages = messageRepository.getUserReceivedMessages(receiver,isRead,startDate,endTime, pageable);
+            Page<AmazonMessages> pages = messageRepository.getUserReceivedMessages(receiver, isRead, startDate, endTime, pageable);
 
             List<AmazonMessageListResponseDTO> response = pages.stream()
                     .map(messageListMapper::toDto)
@@ -252,6 +252,7 @@ public class AmazonMessageService {
 
         if (receiver.getId().equals(receiverId)) {
                 message.setRead(true);
+                message.setReadDate(LocalDateTime.now());
                 return message;
         } else {
             throw new RestControllerException(ExceptionCode.MESSAGE_NOT_FOUND);
