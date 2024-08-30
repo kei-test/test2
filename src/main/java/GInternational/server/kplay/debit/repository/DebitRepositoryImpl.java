@@ -125,7 +125,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         List<Tuple> results = queryFactory
                 .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
                         debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.aasId) // 사용자 ID를 쿼리에서 가져옴
+                        product.prd_name, credit.amount, game.name, user.aasId, user.username, user.nickname) // 사용자 ID, username, nickname을 쿼리에서 가져옴
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
@@ -152,7 +152,9 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                     String prdName = tuple.get(product.prd_name);
                     Integer creditAmountValue = tuple.get(credit.amount);
                     String gameName = tuple.get(game.name);
-                    Integer aasId = tuple.get(user.aasId); // ID 가져오기
+                    String username = tuple.get(user.username); // 사용자 이름
+                    String nickname = tuple.get(user.nickname); // 사용자 닉네임
+                    Integer aasId = tuple.get(user.aasId); // 사용자 ID
 
                     // ID를 사용해 파트너 정보 가져오기
                     User partnerUser = findPartnerUser(aasId);
@@ -168,8 +170,8 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
 
                     return new DebitAmazonResponseDTO(
                             id,
-                            partnerUsername, // 이름
-                            partnerNickname, // 닉네임
+                            username, // 이름
+                            nickname, // 닉네임
                             amount,
                             prdName,
                             prdId,
