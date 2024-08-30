@@ -65,8 +65,7 @@ public class DebitController {
     @GetMapping("/debits")
     public ResponseEntity searchMyDebit(@RequestParam String type,
                                         @RequestParam int size,
-                                        @RequestParam int page
-    ) {
+                                        @RequestParam int page) {
         Page<DebitAmazonResponseDTO> pages = debitService.searchMyDebit(size, type, page);
         return new ResponseEntity<>(new MultiResponseDto<>(pages.getContent(), pages), HttpStatus.OK);
     }

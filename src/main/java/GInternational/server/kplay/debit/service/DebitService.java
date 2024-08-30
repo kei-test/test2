@@ -21,6 +21,8 @@ import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,9 @@ public class DebitService {
     private final LoginStatisticService loginStatisticService;
     private final MoneyLogService moneyLogService;
     private final ExpRecordService expRecordService;
+
+    private static final Logger logger = LoggerFactory.getLogger(DebitService.class);
+
 
     @Value("${secret.secret-key}")
     private String secretKey;

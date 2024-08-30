@@ -64,7 +64,7 @@ public class DummyExchangeService {
         }
     }
 
-    public List<DummyExchangeResDTO> getLastFiveDummyExchanges(PrincipalDetails principalDetails) {
+    public List<DummyExchangeResDTO> getLastFiveDummyExchanges() {
         // 최근 5개의 데이터를 가져옴
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "id"));
         List<DummyExchange> lastFiveExchanges = dummyExchangeRepository.findAll(pageable).getContent();

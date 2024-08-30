@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v2/managers/dummy-exchange")
+@RequestMapping("/api/v2/dummy-exchange")
 @RequiredArgsConstructor
 public class DummyExchangeController {
 
@@ -29,9 +29,8 @@ public class DummyExchangeController {
      * @return 최근 5개의 DummyExchangeResDTO 리스트
      */
     @GetMapping("/get")
-    public ResponseEntity<List<DummyExchangeResDTO>> getLastFiveDummyExchanges(Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<DummyExchangeResDTO> recentExchanges = dummyExchangeService.getLastFiveDummyExchanges(principal);
+    public ResponseEntity<List<DummyExchangeResDTO>> getLastFiveDummyExchanges() {
+        List<DummyExchangeResDTO> recentExchanges = dummyExchangeService.getLastFiveDummyExchanges();
         return ResponseEntity.ok(recentExchanges);
     }
 }

@@ -1,15 +1,18 @@
 package GInternational.server.kplay.debit.repository;
 
+import GInternational.server.api.controller.UserController;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
+import GInternational.server.common.exception.ExceptionCode;
+import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.kplay.debit.dto.DebitAmazonResponseDTO;
 import GInternational.server.kplay.debit.entity.Debit;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,14 +20,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static GInternational.server.api.entity.QUser.user;
 import static GInternational.server.kplay.credit.entity.QCredit.credit;
 import static GInternational.server.kplay.debit.entity.QDebit.debit;
 import static GInternational.server.kplay.game.entity.QGame.game;
 import static GInternational.server.kplay.product.entity.QProduct.product;
-import static GInternational.server.api.entity.QUser.user;
 
 @Repository
 @Primary
@@ -34,6 +38,8 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
 
     private final JPAQueryFactory queryFactory;
     private final UserRepository userRepository;
+
+    private static final Logger logger = LoggerFactory.getLogger(DebitRepositoryImpl.class);
 
     @Override
     public List<Debit> findDataWithNOMatchingTxnId() {
@@ -110,16 +116,22 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
             typeCondition = debit.prd_id.between(200, 299);
         }
 
+        BooleanExpression userCondition = user.isAmazonUser.isTrue();
+        BooleanExpression finalCondition = userCondition;
+        if (typeCondition != null) {
+            finalCondition = finalCondition.and(typeCondition);
+        }
+
         List<Tuple> results = queryFactory
                 .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
                         debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.username, user.nickname, user.partnerType)
+                        product.prd_name, credit.amount, game.name, user.aasId) // 사용자 ID를 쿼리에서 가져옴
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
                 .join(product).on(product.prd_id.eq(game.prdId))
-                .leftJoin(user).on(user.aasId.eq(debit.user_id))
-                .where(typeCondition.and(user.isAmazonUser.isTrue())) // isAmazonUser가 true인 사용자만 필터링
+                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition)) // 수정된 조인 조건
+                .where(finalCondition) // 최종 조건 적용
                 .orderBy(debit.createdAt.desc())
                 .distinct()
                 .offset(pageable.getOffset())
@@ -140,21 +152,24 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                     String prdName = tuple.get(product.prd_name);
                     Integer creditAmountValue = tuple.get(credit.amount);
                     String gameName = tuple.get(game.name);
-                    String userName = tuple.get(user.username);
-                    String nickName = tuple.get(user.nickname);
-                    String partnerType = tuple.get(user.partnerType);
+                    Integer aasId = tuple.get(user.aasId); // ID 가져오기
 
-                    // 파트너 정보 가져오기
-                    User partnerUser = findPartnerUser(tuple.get(user));
-                    String partnerUsername = (partnerUser != null) ? partnerUser.getUsername() : null;
-                    String partnerNickname = (partnerUser != null) ? partnerUser.getNickname() : null;
+                    // ID를 사용해 파트너 정보 가져오기
+                    User partnerUser = findPartnerUser(aasId);
 
-                    int creditAmountIntValue = (creditAmountValue != null) ? creditAmountValue.intValue() : 0;
+                    String partnerUsername = (partnerUser != null && Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerUser.getPartnerType()))
+                            ? partnerUser.getUsername() : null;
+                    String partnerNickname = (partnerUser != null && Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerUser.getPartnerType()))
+                            ? partnerUser.getNickname() : null;
+                    String partnerTypeValue = (partnerUser != null && Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerUser.getPartnerType()))
+                            ? partnerUser.getPartnerType() : null;
+
+                    int creditAmountIntValue = (creditAmountValue != null) ? creditAmountValue : 0; // null 체크 후 기본값 설정
 
                     return new DebitAmazonResponseDTO(
                             id,
-                            userName,
-                            nickName,
+                            partnerUsername, // 이름
+                            partnerNickname, // 닉네임
                             amount,
                             prdName,
                             prdId,
@@ -168,7 +183,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                             remainAmount - amount,
                             partnerUsername,
                             partnerNickname,
-                            partnerType
+                            partnerTypeValue
                     );
                 })
                 .collect(Collectors.toList());
@@ -176,30 +191,30 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         long totalElements = queryFactory
                 .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
                         debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name)
+                        product.prd_name, credit.amount, game.name, user.aasId) // 사용자 ID를 쿼리에서 가져옴
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
                 .join(product).on(product.prd_id.eq(game.prdId))
-                .where(typeCondition.and(user.isAmazonUser.isTrue())) // isAmazonUser가 true인 사용자만 필터링
+                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition)) // 수정된 조인 조건
+                .where(finalCondition) // 최종 조건 적용
                 .distinct()
                 .fetch().size();
 
         return new PageImpl<>(list, pageable, totalElements);
     }
 
-    private User findPartnerUser(User amazonUser) {
-        // 파트너 유저를 찾기 위한 로직
-        if (amazonUser.getDaeId() != null) {
-            return userRepository.findById(amazonUser.getDaeId()).orElse(null);
-        } else if (amazonUser.getBonId() != null) {
-            return userRepository.findById(amazonUser.getBonId()).orElse(null);
-        } else if (amazonUser.getBuId() != null) {
-            return userRepository.findById(amazonUser.getBuId()).orElse(null);
-        } else if (amazonUser.getChongId() != null) {
-            return userRepository.findById(amazonUser.getChongId()).orElse(null);
-        } else if (amazonUser.getMaeId() != null) {
-            return userRepository.findById(amazonUser.getMaeId()).orElse(null);
+    private User findPartnerUser(Integer aasId) {
+        if (aasId == null) {
+            throw new IllegalArgumentException("User ID must not be null");
+        }
+        User user = userRepository.findByAasId(aasId).orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND));
+        if (user != null && user.getReferredBy() != null) {
+            User partnerUser = userRepository.findByUsername(user.getReferredBy());
+            logger.debug("Amazon user: {}", user);
+            logger.debug("Found partner user: {}", partnerUser);
+            logger.debug("Partner type: {}", partnerUser != null ? partnerUser.getPartnerType() : "null");
+            return partnerUser;
         }
         return null;
     }
