@@ -1,5 +1,6 @@
 package GInternational.server.kplay.debit.repository;
 
+import GInternational.server.kplay.debit.dto.DebitAmazonResponseDTO;
 import GInternational.server.kplay.debit.entity.Debit;
 import com.querydsl.core.Tuple;
 import org.springframework.data.domain.Page;
@@ -14,5 +15,5 @@ public interface DebitCustomRepository {
 
     Page<Tuple> findByUserIdWithCreditAmount(int userId, String type, Pageable pageable);
 
-    Page<Tuple> findByUserIdWithCreditAmount(String type, Pageable pageable);
+    Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, Pageable pageable);
 }

@@ -1,5 +1,8 @@
 package GInternational.server.kplay.debit.repository;
 
+import GInternational.server.api.entity.User;
+import GInternational.server.api.repository.UserRepository;
+import GInternational.server.kplay.debit.dto.DebitAmazonResponseDTO;
 import GInternational.server.kplay.debit.entity.Debit;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -13,7 +16,9 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static GInternational.server.kplay.credit.entity.QCredit.credit;
 import static GInternational.server.kplay.debit.entity.QDebit.debit;
@@ -28,6 +33,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
 
 
     private final JPAQueryFactory queryFactory;
+    private final UserRepository userRepository;
 
     @Override
     public List<Debit> findDataWithNOMatchingTxnId() {
@@ -93,9 +99,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
     }
 
     @Override
-    public Page<Tuple> findByUserIdWithCreditAmount(String type, Pageable pageable) {
-
-
+    public Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, Pageable pageable) {
         // type 매개변수를 기반으로 조건 정의
         BooleanExpression typeCondition = null;
         if ("casino".equals(type)) {
@@ -107,31 +111,97 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         }
 
         List<Tuple> results = queryFactory
-                .select(debit.id, debit, product.prd_name, credit.amount, game.name, user.username)
+                .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
+                        debit.credit_amount, debit.created_at, debit.remainAmount,
+                        product.prd_name, credit.amount, game.name, user.username, user.nickname, user.partnerType)
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
                 .join(product).on(product.prd_id.eq(game.prdId))
                 .leftJoin(user).on(user.aasId.eq(debit.user_id))
-                .where((typeCondition))
-//                        .and(user.referredBy.eq(referrerName)))
+                .where(typeCondition.and(user.isAmazonUser.isTrue())) // isAmazonUser가 true인 사용자만 필터링
                 .orderBy(debit.createdAt.desc())
                 .distinct()
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
+        List<DebitAmazonResponseDTO> list = results.stream()
+                .map(tuple -> {
+                    Long id = tuple.get(debit.id);
+                    int amount = tuple.get(debit.amount);
+                    int prdId = tuple.get(debit.prd_id);
+                    String txnId = tuple.get(debit.txnId);
+                    int gameId = tuple.get(debit.game_id);
+                    String tableId = tuple.get(debit.table_id);
+                    int creditAmount = tuple.get(debit.credit_amount);
+                    LocalDateTime createdAt = tuple.get(debit.created_at);
+                    Long remainAmount = tuple.get(debit.remainAmount);
+                    String prdName = tuple.get(product.prd_name);
+                    Integer creditAmountValue = tuple.get(credit.amount);
+                    String gameName = tuple.get(game.name);
+                    String userName = tuple.get(user.username);
+                    String nickName = tuple.get(user.nickname);
+                    String partnerType = tuple.get(user.partnerType);
+
+                    // 파트너 정보 가져오기
+                    User partnerUser = findPartnerUser(tuple.get(user));
+                    String partnerUsername = (partnerUser != null) ? partnerUser.getUsername() : null;
+                    String partnerNickname = (partnerUser != null) ? partnerUser.getNickname() : null;
+
+                    int creditAmountIntValue = (creditAmountValue != null) ? creditAmountValue.intValue() : 0;
+
+                    return new DebitAmazonResponseDTO(
+                            id,
+                            userName,
+                            nickName,
+                            amount,
+                            prdName,
+                            prdId,
+                            txnId,
+                            creditAmountIntValue,
+                            gameId,
+                            gameName,
+                            tableId,
+                            creditAmount,
+                            createdAt,
+                            remainAmount - amount,
+                            partnerUsername,
+                            partnerNickname,
+                            partnerType
+                    );
+                })
+                .collect(Collectors.toList());
+
         long totalElements = queryFactory
-                .select(debit.id, debit, product.prd_name, credit.amount, game.name)
+                .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
+                        debit.credit_amount, debit.created_at, debit.remainAmount,
+                        product.prd_name, credit.amount, game.name)
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
                 .join(product).on(product.prd_id.eq(game.prdId))
-                .where(typeCondition) // type 조건 적용
+                .where(typeCondition.and(user.isAmazonUser.isTrue())) // isAmazonUser가 true인 사용자만 필터링
                 .distinct()
                 .fetch().size();
 
-        return new PageImpl<>(results, pageable, totalElements);
+        return new PageImpl<>(list, pageable, totalElements);
+    }
+
+    private User findPartnerUser(User amazonUser) {
+        // 파트너 유저를 찾기 위한 로직
+        if (amazonUser.getDaeId() != null) {
+            return userRepository.findById(amazonUser.getDaeId()).orElse(null);
+        } else if (amazonUser.getBonId() != null) {
+            return userRepository.findById(amazonUser.getBonId()).orElse(null);
+        } else if (amazonUser.getBuId() != null) {
+            return userRepository.findById(amazonUser.getBuId()).orElse(null);
+        } else if (amazonUser.getChongId() != null) {
+            return userRepository.findById(amazonUser.getChongId()).orElse(null);
+        } else if (amazonUser.getMaeId() != null) {
+            return userRepository.findById(amazonUser.getMaeId()).orElse(null);
+        }
+        return null;
     }
 }
 

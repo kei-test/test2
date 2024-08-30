@@ -125,7 +125,7 @@ public class AmazonMessageController {
                                            @RequestParam("size") int size,
                                            Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        Page<AmazonMessageListResponseDTO> pages = messageService.getAdminMessages(userId, isRead,deletedBySender,startDate,endDate, page, size, principal);
+        Page<AmazonMessageListResponseDTO> pages = messageService.getAdminMessages(userId, isRead, deletedBySender, startDate, endDate, page, size, principal);
         return new ResponseEntity<>(new MultiResponseDto<>((pages.getContent()), pages), HttpStatus.OK);
     }
 

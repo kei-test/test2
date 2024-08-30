@@ -14,9 +14,7 @@ public interface AmazonMessageRepositoryCustom {
 
     Long countByUserMessages(User receiver, boolean isRead);
 
-    Page<AmazonMessages> getAdminSenderMessages(User sender, boolean deletedBySender,LocalDateTime startDate, LocalDateTime endDate, boolean isRead, Pageable pageable);
-
-
+    Page<AmazonMessages> getAdminSenderMessages(User sender, Boolean deletedBySender, LocalDateTime startDate, LocalDateTime endDate, Boolean isRead, Pageable pageable);
 
     //모든 쪽지 조회
     Page<AmazonMessages> findByReceiverMessages(User receiver, boolean deletedByReceiver, Pageable pageable);
@@ -27,10 +25,8 @@ public interface AmazonMessageRepositoryCustom {
 
     Long countByReceiverMessagesAndType(User receiver, String type, boolean deletedByReceiver);
 
-
     Page<AmazonMessages> findBySenderMessages(User sender, LocalDateTime startDate, LocalDateTime endDate, boolean deletedBySender, Pageable pageable);
+
     Long countBySenderMessages(User sender,boolean deletedBySender);
-
-
 }
 

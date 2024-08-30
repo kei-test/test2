@@ -26,4 +26,8 @@ public class DebitAmazonResponseDTO {
     private int credit_amount;
     private LocalDateTime created_at;
     private Long balance;
+
+    private String partnerUsername; // 파트너 유저네임
+    private String partnerNickname; // 파트너 닉네임
+    private String partnerType; // 파트너 타입
 }

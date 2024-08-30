@@ -65,11 +65,31 @@ public class AmazonMessageRepositoryImpl implements AmazonMessageRepositoryCusto
 
     //[Fix] 발신자 쪽지 조회
     @Override
-    public Page<AmazonMessages> getAdminSenderMessages(User sender, boolean isRead,LocalDateTime startDate, LocalDateTime endDate, boolean deletedBySender, Pageable pageable) {
-        BooleanExpression condition = amazonMessages.sender.eq(sender)
-                .and(amazonMessages.deletedBySender.eq(deletedBySender))
-                .and(amazonMessages.isRead.eq(isRead)
-                        .and(amazonMessages.createdAt.between(startDate,endDate)));
+    public Page<AmazonMessages> getAdminSenderMessages(User sender, Boolean deletedBySender, LocalDateTime startDate, LocalDateTime endDate, Boolean isRead, Pageable pageable) {
+        BooleanExpression condition = amazonMessages.sender.eq(sender);
+
+        // deletedBySender 조건 추가
+        if (deletedBySender != null) {
+            condition = condition.and(amazonMessages.deletedBySender.eq(deletedBySender));
+        }
+
+        // isRead 조건 추가
+        if (isRead != null) {
+            condition = condition.and(amazonMessages.isRead.eq(isRead));
+        }
+
+        // 날짜 범위 조건 추가
+        if (startDate == null && endDate == null) {
+            condition = condition.and(amazonMessages.createdAt.isNotNull());
+        } else {
+            if (startDate == null) {
+                startDate = LocalDateTime.MIN;
+            }
+            if (endDate == null) {
+                endDate = LocalDateTime.MAX;
+            }
+            condition = condition.and(amazonMessages.createdAt.between(startDate, endDate));
+        }
 
         List<AmazonMessages> results = queryFactory.selectFrom(amazonMessages)
                 .where(condition)
@@ -79,9 +99,7 @@ public class AmazonMessageRepositoryImpl implements AmazonMessageRepositoryCusto
                 .fetch();
 
         long totalElements = queryFactory.selectFrom(amazonMessages)
-                .where(amazonMessages.sender.eq(sender)
-                        .and(amazonMessages.deletedBySender.eq(deletedBySender))
-                        .and(amazonMessages.isRead.eq(isRead)))
+                .where(condition)
                 .fetch().size();
 
         return new PageImpl<>(results, pageable, totalElements);

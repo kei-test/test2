@@ -94,7 +94,7 @@ public class AmazonMessageService {
         Pageable pageable = PageRequest.of(page - 1, size);
         User sender = userRepository.findById(senderId).orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
-        Page<AmazonMessages> pages = messageRepository.getAdminSenderMessages(sender, deletedBySender,startDate,endTime, isRead, pageable);
+        Page<AmazonMessages> pages = messageRepository.getAdminSenderMessages(sender, deletedBySender, startDate, endTime, isRead, pageable);
 
         List<AmazonMessageListResponseDTO> response = pages.stream()
                 .map(messageListMapper::toDto)

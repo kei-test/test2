@@ -231,45 +231,9 @@ public class DebitService {
     public Page<DebitAmazonResponseDTO> searchMyDebit(int size, String type, int page) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("debit.id").descending());
 
-//        Page<Debit> pages = debitRepository.findByUserId(userId, pageable);
-//
-//        List<DebitUserResponseDTO> list = pages.getContent().stream()
-//                .map(debitResponseMapper::toDto)
-//                .collect(Collectors.toList());
+        Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, pageable);
 
-        Page<Tuple> results = debitRepository.findByUserIdWithCreditAmount(type, pageable);
-
-        List<DebitAmazonResponseDTO> list = results.getContent().stream()
-                .map(tuple -> {
-                    Debit debit = tuple.get(1, Debit.class);
-                    Long id = tuple.get(0, Long.class);
-                    String prdName = tuple.get(product.prd_name);
-                    Integer creditAmount = tuple.get(credit.amount);
-                    String gameName = tuple.get(game.name);
-                    String userName = tuple.get(user.username);
-                    String nickName = tuple.get(user.nickname);
-
-                    int creditAmountValue = (creditAmount != null) ? creditAmount.intValue() : 0;
-
-                    return new DebitAmazonResponseDTO(
-                            id,
-                            userName,
-                            nickName,
-                            debit.getAmount(),
-                            prdName,
-                            debit.getPrd_id(),
-                            debit.getTxnId(),
-                            creditAmountValue,
-                            debit.getGame_id(),
-                            gameName,
-                            debit.getTable_id(),
-                            debit.getCredit_amount(),
-                            debit.getCreated_at(),
-                            debit.getRemainAmount() - debit.getAmount());
-                })
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(list, pageable, results.getTotalElements());
+        return results;
     }
 
 
