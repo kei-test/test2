@@ -33,7 +33,7 @@ public class User extends BaseEntity implements Serializable {
     private Long id;
 
     @Column(name = "aas_id")
-    private Integer aasId; // aas 값이 들어있음
+    private Integer aasId; // aasId 값이 들어있음
 
     @JsonIgnore
     @ElementCollection(fetch = FetchType.LAZY)

@@ -169,4 +169,5 @@ public class AdminController {
         AdminListResDTO updatedAdmin = adminService.updateAdminDetails(userId, adminListUpdateDTO, principal);
         return ResponseEntity.ok(updatedAdmin);
     }
+
 }

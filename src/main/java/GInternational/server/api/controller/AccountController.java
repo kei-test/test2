@@ -57,7 +57,6 @@ public class AccountController {
         }
     }
 
-
     /**
      * 관리자가 사용자의 계좌 승인 상태를 업데이트.
      *
