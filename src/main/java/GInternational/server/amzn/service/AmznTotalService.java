@@ -1,26 +1,29 @@
 package GInternational.server.amzn.service;
 
 
-import GInternational.server.amzn.dto.*;
-import GInternational.server.amzn.dto.total.*;
 
-import GInternational.server.amzn.repo.AmznRepositoryCustom;
+
+
+import GInternational.server.amzn.dto.index.*;
+import GInternational.server.amzn.dto.total.*;
+import GInternational.server.amzn.repo.AmznRepositoryImpl;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(value = "clientServerTransactionManager")
 public class AmznTotalService {
 
-    private final AmznRepositoryCustom amznRepositoryCustom;
+    private final AmznRepositoryImpl amznRepositoryImpl;
     private final UserRepository userRepository;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -34,7 +37,7 @@ public class AmznTotalService {
     //  ㄴ 토큰을 통해 파트너 타입을 확인 v
 
     public List<?> getTotalList(PrincipalDetails principalDetails) {
-        List<AmznTotalPartnerReqDTO> list = amznRepositoryCustom.searchByTotalPartner();
+        List<AmznTotalPartnerReqDTO> list = amznRepositoryImpl.searchByTotalPartner();
 
         User user = userRepository.findByUsername(principalDetails.getUsername());
         Long userId = user.getId();
@@ -44,7 +47,6 @@ public class AmznTotalService {
         List<AmznBuPartnerResDTO> buList = new ArrayList<>();
         List<AmznChongPartnerResDTO> chongList = new ArrayList<>();
         List<AmznMaePartnerResDTO> maeList = new ArrayList<>();
-
 
         for (AmznTotalPartnerReqDTO obj : list) {
             String partnerType = obj.getPartnerType();
@@ -156,7 +158,7 @@ public class AmznTotalService {
                             .findFirst()
                             .ifPresent(bu -> bu.getBu().getChongList().add(chong));
                 }
-            }else if (chongId != null) {
+            } else if (chongId != null) {
                 AmznMaePartnerResDTO existingMae = maeList.stream()
                         .filter(m -> m.getMae().getId().equals(obj.getId()))
                         .findFirst()
@@ -185,7 +187,6 @@ public class AmznTotalService {
                 }
             } else return null;
         }
-
         if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType().equals("대본사")) {
             return daeList;
         } else if (user.getPartnerType().equals("본사")) {
@@ -204,23 +205,15 @@ public class AmznTotalService {
     }
 
 
-    //isAmazonUser 검색 쿼리
-    public List<IsAmazonUserListDTO> getAmazonUserList(String referredBy,PrincipalDetails principalDetails) {
+
+
+
+    public List<AmznPartnerTreeDTO> getPartnerTree(Long userId, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        if (user.getPartnerType() != null) {
-            return amznRepositoryCustom.searchByIsAmazonUsers(referredBy);
-        } return null;
-    }
+        User getUser = userRepository.findById(userId).orElse(null);
+        String userPartnerType = getUser.getPartnerType();
 
-
-
-
-    public List<AmznPartnerTreeDTO> getPartnerTree(PrincipalDetails principalDetails) {
-        User user = userRepository.findByUsername(principalDetails.getUsername());
-        String userPartnerType = user.getPartnerType();
-        Long id = user.getId();
-
-        AmznPartnerObjectDTO partnerObj = amznRepositoryCustom.searchByPO(id);
+        AmznPartnerObjectDTO partnerObj = amznRepositoryImpl.searchByPO(getUser.getId());
         List<AmznPartnerTreeDTO> tree = new ArrayList<>();
 
         if (userPartnerType.equals("대본사")) {
@@ -229,7 +222,7 @@ public class AmznTotalService {
             newRes.setPartnerType(partnerObj.getPartnerType());
             tree.add(newRes); //인풋 회원정보로 대본사 조회
         }else if (userPartnerType.equals("본사")) {
-            AmznPartnerObjectDTO daeObj = amznRepositoryCustom.searchByPO(partnerObj.getDaeId());
+            AmznPartnerObjectDTO daeObj = amznRepositoryImpl.searchByPO(partnerObj.getDaeId());
             AmznPartnerTreeDTO dae = new AmznPartnerTreeDTO();
             dae.setUsername(daeObj.getUsername());
             dae.setPartnerType(daeObj.getPartnerType());
@@ -240,12 +233,12 @@ public class AmznTotalService {
             bon.setPartnerType(partnerObj.getPartnerType());
             tree.add(bon); //인풋 회원정보로 본사 조회
         }else if (userPartnerType.equals("부본사")) {
-            AmznPartnerObjectDTO bonObj = amznRepositoryCustom.searchByPO(partnerObj.getBonId());
+            AmznPartnerObjectDTO bonObj = amznRepositoryImpl.searchByPO(partnerObj.getBonId());
             AmznPartnerTreeDTO bon = new AmznPartnerTreeDTO();
             bon.setUsername(bonObj.getUsername());
             bon.setPartnerType(bonObj.getPartnerType());
 
-            AmznPartnerObjectDTO daeObj = amznRepositoryCustom.searchByPO(bonObj.getDaeId());
+            AmznPartnerObjectDTO daeObj = amznRepositoryImpl.searchByPO(bonObj.getDaeId());
             AmznPartnerTreeDTO dae = new AmznPartnerTreeDTO();
             dae.setUsername(daeObj.getUsername());
             dae.setPartnerType(daeObj.getPartnerType());
@@ -258,17 +251,17 @@ public class AmznTotalService {
             tree.add(bon); //본사
             tree.add(bu); //인풋 회원정보로 부본사 조회
         }else if (user.getPartnerType().equals("총판")) {
-            AmznPartnerObjectDTO buObj = amznRepositoryCustom.searchByPO(partnerObj.getBuId());
+            AmznPartnerObjectDTO buObj = amznRepositoryImpl.searchByPO(partnerObj.getBuId());
             AmznPartnerTreeDTO bu = new AmznPartnerTreeDTO();
             bu.setUsername(buObj.getUsername());
             bu.setPartnerType(buObj.getPartnerType());
 
-            AmznPartnerObjectDTO bonObj = amznRepositoryCustom.searchByPO(buObj.getBonId());
+            AmznPartnerObjectDTO bonObj = amznRepositoryImpl.searchByPO(buObj.getBonId());
             AmznPartnerTreeDTO bon = new AmznPartnerTreeDTO();
             bon.setUsername(bonObj.getUsername());
             bon.setPartnerType(bonObj.getPartnerType());
 
-            AmznPartnerObjectDTO daeObj = amznRepositoryCustom.searchByPO(bonObj.getDaeId());
+            AmznPartnerObjectDTO daeObj = amznRepositoryImpl.searchByPO(bonObj.getDaeId());
             AmznPartnerTreeDTO dae = new AmznPartnerTreeDTO();
             dae.setUsername(daeObj.getUsername());
             dae.setPartnerType(daeObj.getPartnerType());
@@ -282,22 +275,22 @@ public class AmznTotalService {
             tree.add(bu); //총판의 정보로 부본사 조회
             tree.add(chong); //인풋 회원정보로 총판 조회
         } else if (user.getPartnerType().equals("매장")) {
-            AmznPartnerObjectDTO chongObj = amznRepositoryCustom.searchByPO(partnerObj.getChongId());
+            AmznPartnerObjectDTO chongObj = amznRepositoryImpl.searchByPO(partnerObj.getChongId());
             AmznPartnerTreeDTO chong = new AmznPartnerTreeDTO();
             chong.setUsername(chongObj.getUsername());
             chong.setPartnerType(chongObj.getPartnerType());
 
-            AmznPartnerObjectDTO buObj = amznRepositoryCustom.searchByPO(chongObj.getBuId());
+            AmznPartnerObjectDTO buObj = amznRepositoryImpl.searchByPO(chongObj.getBuId());
             AmznPartnerTreeDTO bu = new AmznPartnerTreeDTO();
             bu.setUsername(buObj.getUsername());
             bu.setPartnerType(buObj.getPartnerType());
 
-            AmznPartnerObjectDTO bonObj = amznRepositoryCustom.searchByPO(buObj.getBonId());
+            AmznPartnerObjectDTO bonObj = amznRepositoryImpl.searchByPO(buObj.getBonId());
             AmznPartnerTreeDTO bon = new AmznPartnerTreeDTO();
             bon.setUsername(bonObj.getUsername());
             bon.setPartnerType(bonObj.getPartnerType());
 
-            AmznPartnerObjectDTO daeObj = amznRepositoryCustom.searchByPO(bonObj.getDaeId());
+            AmznPartnerObjectDTO daeObj = amznRepositoryImpl.searchByPO(bonObj.getDaeId());
             AmznPartnerTreeDTO dae = new AmznPartnerTreeDTO();
             dae.setUsername(daeObj.getUsername());
             dae.setPartnerType(daeObj.getPartnerType());
@@ -316,28 +309,35 @@ public class AmznTotalService {
     }
 
 
-
-    //아마존 회원 상세 조회
-    public AmznUserDetailDTO getAmznUserDetail(PrincipalDetails principalDetails) {
+    //일반 회원 상세 조회
+    public AmznUserDetailDTO getAmznUserDetail(Long userId, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        Long id = user.getId();
-        if (user != null && user.getPartnerType() != null) {
-            return amznRepositoryCustom.searchByAmznUserDetail(id);
+        if (user.getRole().equals("ROLE_ADMIN")|| user.getPartnerType() != null) {
+            return amznRepositoryImpl.searchByAmznUserDetail(userId);
         } return null;
     }
-
 
 
     //아마존 등급별 상세조회
-    public AmznDetailsByTypeDTO getAmznDetailsByType(PrincipalDetails principalDetails) {
+    public AmznDetailsByTypeDTO getAmznDetailsByType(Long userId, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        Long id = user.getId();
-        if (user != null && user.getPartnerType() != null) {
-            return amznRepositoryCustom.searchByUserTypeDetail(id);
+        User getUser = userRepository.findById(userId).orElse(null);
+        if (user.getRole().equals("ROLE_ADMIN")||
+                user != null && user.getPartnerType() != null && getUser.getPartnerType() != null) {
+            return amznRepositoryImpl.searchByUserTypeDetail(getUser.getId());
         } return null;
     }
 
 
+    //isAmazonUser 카운트 클릭 시 조회되는 일반회원 리스트 조회
+    public List<IsAmazonUserListDTO> getAmazonUserList(String referredBy, PrincipalDetails principalDetails) {
+        User user = userRepository.findByUsername(principalDetails.getUsername());
+        User getUser = userRepository.findByUsername(referredBy);
+        if (user.getRole().equals("ROLE_ADMIN")||
+                getUser != null && user.getPartnerType() != null && getUser.getPartnerType() == null) {
+            return amznRepositoryImpl.searchByIsAmazonUsers(referredBy);
+        } return null;
+    }
 
 
 
@@ -348,6 +348,6 @@ public class AmznTotalService {
         User user = userRepository.findByUsername(principalDetails.getUsername());
         Long id = user.getId();
         String partnerType = user.getPartnerType();
-        return amznRepositoryCustom.searchByPartner(username,nickname,id,partnerType);
+        return amznRepositoryImpl.searchByPartner(username,nickname,id,partnerType);
     }
 }

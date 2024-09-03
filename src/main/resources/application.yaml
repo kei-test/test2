@@ -24,13 +24,6 @@ sentry:
 
 
 
-logging:
-  level:
-    org.springframework.data: DEBUG
-    GInternational.server.kplay: DEBUG
-
-
-
 
 
 

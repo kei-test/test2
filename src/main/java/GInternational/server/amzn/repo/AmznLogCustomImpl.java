@@ -21,13 +21,12 @@ import static GInternational.server.api.entity.QAmazonLoginHistory.amazonLoginHi
 
 @Repository
 @RequiredArgsConstructor
-public class AmznLogCustomImpl implements AmznLogCustom{
+public class AmznLogCustomImpl {
 
     private final JPAQueryFactory queryFactory;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
-    @Override
     public Page<AmznLogDTO> searchByAmazonLoginHistory(String username, String nickname, LocalDate startDate, LocalDate endDate, Pageable pageable) {
 
         BooleanExpression predicate = amazonLoginHistory.attemptDate.between(endDate.atStartOfDay(), startDate.atStartOfDay());

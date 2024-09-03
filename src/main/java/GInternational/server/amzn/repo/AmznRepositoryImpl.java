@@ -1,13 +1,12 @@
 package GInternational.server.amzn.repo;
 
 
-import GInternational.server.amzn.dto.AmznDetailsByTypeDTO;
-import GInternational.server.amzn.dto.AmznPartnerObjectDTO;
-import GInternational.server.amzn.dto.AmznUserDetailDTO;
-import GInternational.server.amzn.dto.IsAmazonUserListDTO;
+import GInternational.server.amzn.dto.index.AmznDetailsByTypeDTO;
+import GInternational.server.amzn.dto.index.AmznPartnerObjectDTO;
+import GInternational.server.amzn.dto.index.AmznUserDetailDTO;
+import GInternational.server.amzn.dto.index.IsAmazonUserListDTO;
 import GInternational.server.amzn.dto.total.AmznPartnerResDTO;
 import GInternational.server.amzn.dto.total.AmznTotalPartnerReqDTO;
-import GInternational.server.amzn.dto.total.AmznTotalPartnerReqDTO2;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -23,12 +22,11 @@ import static GInternational.server.api.entity.QWallet.*;
 
 @Repository
 @RequiredArgsConstructor
-public class AmznRepositoryImpl implements AmznRepositoryCustom{
+public class AmznRepositoryImpl {
 
 
     private final JPAQueryFactory queryFactory;
 
-    @Override
     public List<AmznTotalPartnerReqDTO> searchByTotalPartner() {
         List<AmznTotalPartnerReqDTO> results = queryFactory.select(Projections.constructor(AmznTotalPartnerReqDTO.class,
                 user.id,
@@ -54,38 +52,6 @@ public class AmznRepositoryImpl implements AmznRepositoryCustom{
         return results;
     }
 
-    @Override
-    public List<AmznTotalPartnerReqDTO2> searchByTotalPartner2() {
-        List<AmznTotalPartnerReqDTO2> results = queryFactory.select(Projections.constructor(AmznTotalPartnerReqDTO2.class,
-                        user.id,
-                        user.username,
-                        user.nickname,
-                        wallet.amazonMoney,
-                        wallet.amazonPoint,
-                        wallet.todayDeposit,
-                        wallet.todayWithdraw,
-                        wallet.totalAmazonDeposit,
-                        wallet.totalAmazonWithdraw,
-                        wallet.totalAmazonSettlement,
-                        user.recommendedCount,
-                        user.partnerType,
-                        user.daeId,
-                        user.bonId,
-                        user.buId,
-                        user.chongId,
-                        user.createdAt))
-                .from(user)
-                .join(wallet).on(wallet.user.id.eq(user.id))
-                .where(user.daeId.isNotNull()
-                        .or(user.bonId.isNotNull())
-                        .or(user.buId.isNotNull())
-                        .or(user.chongId.isNotNull())
-                        .or(user.partnerType.eq("대본사")))
-                .fetch();
-        return results;
-    }
-
-    @Override
     public AmznPartnerResDTO searchByPartner(String username, String nickname,Long id,String partnerType) {
         return queryFactory.select(Projections.constructor(AmznPartnerResDTO.class,
                 user.id,
@@ -109,7 +75,6 @@ public class AmznRepositoryImpl implements AmznRepositoryCustom{
 
 
 
-    @Override
     public List<IsAmazonUserListDTO> searchByIsAmazonUsers(String referredBy) {
         List<IsAmazonUserListDTO> results = queryFactory.select(Projections.constructor(IsAmazonUserListDTO.class,
                 user.id,
@@ -134,7 +99,6 @@ public class AmznRepositoryImpl implements AmznRepositoryCustom{
 
 
     //회원 상세정보 조회 시 제공되는 상위파트너 트리구조
-    @Override
     public AmznPartnerObjectDTO searchByPO(Long id) {
         return queryFactory.select(Projections.constructor(AmznPartnerObjectDTO.class,
                 user.id,
@@ -150,26 +114,22 @@ public class AmznRepositoryImpl implements AmznRepositoryCustom{
                 .fetchOne();
     }
 
-    @Override
     public AmznUserDetailDTO searchByAmznUserDetail(Long id) {
         return queryFactory.select(Projections.constructor(AmznUserDetailDTO.class,
-                user.amazonUserStatus,
+                user.userGubunEnum,
                 user.lv,
                 user.password,
                 user.phone,
                 wallet.ownerName,
                 wallet.bankName,
                 wallet.number,
-                user.amazonCode,
-                user.casinoRolling,
-                user.slotRolling))
+                user.referredBy))
                 .from(user)
                 .join(wallet).on(wallet.user.id.eq(id))
                 .where(user.id.eq(id))
                 .fetchOne();
     }
 
-    @Override
     public AmznDetailsByTypeDTO searchByUserTypeDetail(Long id) {
         return queryFactory.select(Projections.constructor(AmznDetailsByTypeDTO.class,
                 user.partnerType,

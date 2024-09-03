@@ -53,25 +53,20 @@ public class AmazonRechargeTransactionService {
                     criteriaBuilder.between(root.get("processedAt"), startDateTime, endDateTime),
                     criteriaBuilder.equal(root.get("status"), status));
 
-            // User와 Wallet과 조인하고 필터 적용
-            if (username != null || nickname != null || ownerName != null) {
-                Join<AmazonRechargeTransaction, User> userJoin = root.join("user", JoinType.LEFT);
-                Join<AmazonRechargeTransaction, Wallet> walletJoin = root.join("wallet", JoinType.LEFT);
+            // 필터 적용
+            if (username != null) {
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.equal(root.get("username"), username));
+            }
 
-                if (username != null) {
-                    predicate = criteriaBuilder.and(predicate,
-                            criteriaBuilder.equal(userJoin.get("username"), username));
-                }
+            if (nickname != null) {
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.equal(root.get("nickname"), nickname));
+            }
 
-                if (nickname != null) {
-                    predicate = criteriaBuilder.and(predicate,
-                            criteriaBuilder.equal(userJoin.get("nickname"), nickname));
-                }
-
-                if (ownerName != null) {
-                    predicate = criteriaBuilder.and(predicate,
-                            criteriaBuilder.equal(walletJoin.get("ownerName"), ownerName));
-                }
+            if (ownerName != null) {
+                predicate = criteriaBuilder.and(predicate,
+                        criteriaBuilder.equal(root.get("ownerName"), ownerName));
             }
 
             return predicate;

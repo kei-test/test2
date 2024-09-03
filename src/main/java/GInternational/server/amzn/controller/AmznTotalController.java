@@ -1,20 +1,16 @@
 package GInternational.server.amzn.controller;
 
 
-import GInternational.server.amzn.dto.AmznDetailsByTypeDTO;
-import GInternational.server.amzn.dto.AmznPartnerTreeDTO;
-import GInternational.server.amzn.dto.AmznUserDetailDTO;
-import GInternational.server.amzn.dto.IsAmazonUserListDTO;
-import GInternational.server.amzn.dto.total.AmznBonPartnerResDTO;
-import GInternational.server.amzn.dto.total.AmznDaePartnerResDTO;
+import GInternational.server.amzn.dto.index.AmznDetailsByTypeDTO;
+import GInternational.server.amzn.dto.index.AmznPartnerTreeDTO;
+import GInternational.server.amzn.dto.index.AmznUserDetailDTO;
+
+import GInternational.server.amzn.dto.index.IsAmazonUserListDTO;
 import GInternational.server.amzn.dto.total.AmznPartnerResDTO;
 import GInternational.server.amzn.service.AmznTotalService;
-import GInternational.server.common.dto.MultiResponseDto;
 import GInternational.server.common.dto.SingleResponseDto;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,7 +38,7 @@ public class AmznTotalController {
     }
 
     //유저 숫자 클릭 시 추천인으로인해 가입된 회원리스트
-    @GetMapping("/is-amazon-user")
+    @GetMapping("/total-is-amazon-user")
     public ResponseEntity getIsAmazonUsers(@RequestParam String referredBy,
                                            Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
@@ -51,26 +47,26 @@ public class AmznTotalController {
     }
 
     //회원상세조회 회원의 상위 반환
-    @GetMapping("/tree-partner")
-    public ResponseEntity getTreePartner(Authentication authentication) {
+    @GetMapping("/total-tree-partner")
+    public ResponseEntity getTreePartner(@RequestParam Long userId,Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<AmznPartnerTreeDTO> response = amznTotalService.getPartnerTree(principal);
+        List<AmznPartnerTreeDTO> response = amznTotalService.getPartnerTree(userId,principal);
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
     //아마존 회원 상세조회
-    @GetMapping("/amzn-user-detail")
-    public ResponseEntity getAmznUserDetail(Authentication authentication) {
+    @GetMapping("/total-amzn-user-detail")
+    public ResponseEntity getAmznUserDetail(@RequestParam Long userId,Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmznUserDetailDTO response = amznTotalService.getAmznUserDetail(principal);
+        AmznUserDetailDTO response = amznTotalService.getAmznUserDetail(userId,principal);
         return new ResponseEntity(response,HttpStatus.OK);
     }
 
     //아마존 등급별 상세조회
-    @GetMapping("/get-usertype-detail")
-    public ResponseEntity getAmznDetailByType(Authentication authentication) {
+    @GetMapping("/total-usertype-detail")
+    public ResponseEntity getAmznDetailByType(@RequestParam Long userId,Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmznDetailsByTypeDTO response = amznTotalService.getAmznDetailsByType(principal);
+        AmznDetailsByTypeDTO response = amznTotalService.getAmznDetailsByType(userId,principal);
         return new ResponseEntity(response,HttpStatus.OK);
     }
 

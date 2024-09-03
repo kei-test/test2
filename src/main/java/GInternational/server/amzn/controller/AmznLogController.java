@@ -23,6 +23,7 @@ public class AmznLogController {
 
     private final AmznLogService amznLogService;
 
+
     @GetMapping("/system")
     public ResponseEntity getAmazonSystemLog(@RequestParam int page,
                                              @RequestParam int size,

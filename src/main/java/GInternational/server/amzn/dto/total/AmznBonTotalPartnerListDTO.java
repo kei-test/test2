@@ -1,7 +1,7 @@
 package GInternational.server.amzn.dto.total;
 
-//import GInternational.server.amzn.dto.total.partner_tree.AmznChongPartnerResDTO2;
-//import GInternational.server.amzn.dto.total.partner_tree.AmznMaePartnerResDTO2;
+//import GInternational.server.amzn.dto.total.partner_tree.AmznChongPartnerResDTO;
+//import GInternational.server.amzn.dto.total.partner_tree.AmznMaePartnerResDTO;
 
 import lombok.*;
 

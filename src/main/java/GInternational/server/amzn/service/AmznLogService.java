@@ -1,7 +1,8 @@
 package GInternational.server.amzn.service;
 
 import GInternational.server.amzn.dto.log.AmznLogDTO;
-import GInternational.server.amzn.repo.AmznLogCustom;
+
+import GInternational.server.amzn.repo.AmznLogCustomImpl;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,25 +21,20 @@ import java.util.List;
 @Transactional(value = "clientServerTransactionManager")
 public class AmznLogService {
 
-    private final AmznLogCustom amazonSystemLogCustom;
+    private final AmznLogCustomImpl amznLogCustomImpl;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Page<AmznLogDTO> amazonSystemLog(String username, String nickname, LocalDate startDate, LocalDate endDate, int page, int size) {
-
-        // 기본 7일간의 데이터
+        // LocalDate method 오늘을 기준으로 + - 범위를 정하고 그 안에 속한 날짜의 데이터만 가져옴
+        //null 일 경우 당일의 데이터만 가져옴
         if (startDate == null) {
             startDate = LocalDate.now().plusDays(1);
-        } else if (startDate != null){
-            startDate = startDate.plusDays(1);
         }
-
         if (endDate == null) {
-            endDate = LocalDate.now().minusDays(7);
+            endDate = LocalDate.now().minusDays(1);
         }
-
         Pageable pageable = PageRequest.of(page -1, size);
-
-        Page<AmznLogDTO> content = amazonSystemLogCustom.searchByAmazonLoginHistory(username,nickname,startDate,endDate,pageable);
+        Page<AmznLogDTO> content = amznLogCustomImpl.searchByAmazonLoginHistory(username,nickname,startDate,endDate,pageable);
         List<AmznLogDTO> list = content.getContent();
         return new PageImpl<>(list,pageable,content.getTotalElements());
     }
