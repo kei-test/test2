@@ -1,6 +1,5 @@
 package GInternational.server.amzn.dto.index;
 
-import GInternational.server.api.vo.AmazonUserStatusEnum;
 import GInternational.server.api.vo.UserGubunEnum;
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;

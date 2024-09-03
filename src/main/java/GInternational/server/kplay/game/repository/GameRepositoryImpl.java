@@ -41,7 +41,7 @@ public class GameRepositoryImpl implements GameRepositoryCustom{
     public Page<Game> searchByType(String gameType,String gameCategory, Pageable pageable) {
         List<Game> typeGame = queryFactory.selectFrom(game)
                 .where(game.type.eq(gameType)
-                        .or(game.gameCategory.eq(gameCategory))
+                        .and(game.gameCategory.eq(gameCategory))
                         .and(game.isEnabled.eq(1)))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -49,7 +49,7 @@ public class GameRepositoryImpl implements GameRepositoryCustom{
 
         long totalElements = queryFactory.selectFrom(game)
                 .where(game.type.eq(gameType)
-                        .or(game.gameCategory.eq(gameCategory))
+                        .and(game.gameCategory.eq(gameCategory))
                         .and(game.isEnabled.eq(1)))
                 .fetch().size();
 

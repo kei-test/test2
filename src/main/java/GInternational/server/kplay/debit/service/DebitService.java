@@ -1,5 +1,7 @@
 package GInternational.server.kplay.debit.service;
 
+import GInternational.server.amzn.repo.AmazonRollingTransactionRepository;
+import GInternational.server.amzn.service.AmznRollingTransactionService;
 import GInternational.server.api.service.ExpRecordService;
 import GInternational.server.api.vo.ExpRecordEnum;
 import GInternational.server.common.exception.ExceptionCode;
@@ -48,6 +50,8 @@ public class DebitService {
     private final LoginStatisticService loginStatisticService;
     private final MoneyLogService moneyLogService;
     private final ExpRecordService expRecordService;
+    private final AmazonRollingTransactionRepository amazonRollingTransactionRepository;
+    private final AmznRollingTransactionService amznRollingTransactionService;
 
     private static final Logger logger = LoggerFactory.getLogger(DebitService.class);
 
@@ -106,6 +110,100 @@ public class DebitService {
                     .remainAmount(newWalletCasinoBalance)
                     .build();
             debitRepository.save(savedDebit);
+
+
+            //1.베팅을 한 유저가 daeId,bonId,buId,chongId,maeId 가 있는지,추천코드를 통해 가입한 유저가 맞는지 검증
+            //2.추천받은 상위 유저의 설정된 롤링 퍼센트를 구해서 연산 후 해당 상위 유저에게 지급
+            //3.지급받은 내역 저장
+            Long daeId = null;
+            Long bonId = null;
+            Long buId = null;
+            Long chongId = null;
+            Long maeId = null;
+            String partnerType = null;
+            User partnerUser = null;
+            double rollingAmount = 0;
+            int betAmount = debitRequestDTO.getAmount();
+
+
+            if (user.getPartnerType() != null) {
+                //파트너일 경우 상위 찾기
+                daeId = user.getDaeId();
+                bonId = user.getBonId();
+                buId = user.getBuId();
+                chongId = user.getChongId();
+                maeId = user.getMaeId();
+                partnerType = user.getPartnerType();
+
+                if (daeId != null && partnerType.equals("본사")) {
+                    partnerUser = userRepository.findById(daeId).orElse(null);
+
+                    if (bettingCategory.equals("카지노")) {
+                        double cRolling = partnerUser.getCasinoRolling();
+                        rollingAmount = betAmount * (cRolling / 100);
+                    } else if (bettingCategory.equals("슬롯")) {
+                        double sRolling = partnerUser.getSlotRolling();
+                        rollingAmount = betAmount * (sRolling / 100);
+                    }
+                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                    long cvtAmount = (long) Math.ceil(rollingAmount);  //Math.ceil 소수점 올림처리
+                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                    walletRepository.save(pWallet);
+
+                    //롤링 지금 로그 저장
+                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                } else if (bonId != null && partnerType.equals("부본사")) {
+                    partnerUser = userRepository.findById(bonId).orElse(null);
+
+                    if (bettingCategory.equals("카지노")) {
+                        double cRolling = partnerUser.getCasinoRolling();
+                        rollingAmount = betAmount * (cRolling / 100);
+                    } else if (bettingCategory.equals("슬롯")) {
+                        double sRolling = partnerUser.getSlotRolling();
+                        rollingAmount = betAmount * (sRolling / 100);
+                    }
+
+                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                    long cvtAmount = (long) Math.ceil(rollingAmount);
+                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                    walletRepository.save(pWallet);
+
+                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                } else if (buId != null && partnerType.equals("총판")) {
+                    partnerUser = userRepository.findById(buId).orElse(null);
+
+                    if (bettingCategory.equals("카지노")) {
+                        double cRolling = partnerUser.getCasinoRolling();
+                        rollingAmount = betAmount * (cRolling / 100);
+                    } else if (bettingCategory.equals("슬롯")) {
+                        double sRolling = partnerUser.getSlotRolling();
+                        rollingAmount = betAmount * (sRolling / 100);
+                    }
+
+                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                    long cvtAmount = (long) Math.ceil(rollingAmount);
+                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                    walletRepository.save(pWallet);
+
+                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                } else if (chongId != null && partnerType.equals("매장")) {
+                    partnerUser = userRepository.findById(chongId).orElse(null);
+
+                    if (bettingCategory.equals("카지노")) {
+                        double cRolling = partnerUser.getCasinoRolling();
+                        rollingAmount = betAmount * (cRolling / 100);
+                    } else if (bettingCategory.equals("슬롯")) {
+                        double sRolling = partnerUser.getSlotRolling();
+                        rollingAmount = betAmount * (sRolling / 100);
+                    }
+
+                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                    long cvtAmount = (long) Math.ceil(rollingAmount);
+                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                    walletRepository.save(pWallet);
+                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                }
+            }
 
             user.getWallet().setCasinoBalance(newWalletCasinoBalance);
             long currentAccumulatedCasinoBet = user.getWallet().getAccumulatedCasinoBet();

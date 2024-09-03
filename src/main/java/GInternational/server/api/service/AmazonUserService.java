@@ -2,7 +2,7 @@ package GInternational.server.api.service;
 
 import GInternational.server.amzn.dto.version2.*;
 import GInternational.server.amzn.dto.total.AmznTotalPartnerReqDTO2;
-import GInternational.server.amzn.repo.AmznRepositoryCustom;
+import GInternational.server.amzn.repo.AmznRepositoryImpl;
 import GInternational.server.api.dto.*;
 import GInternational.server.api.entity.JoinPoint;
 import GInternational.server.api.repository.JoinPointRepository;
@@ -40,7 +40,7 @@ public class AmazonUserService {
     private final UserService userService;
     private final JoinPointRepository joinPointRepository;
     private final ExpRecordService expRecordService;
-    private final AmznRepositoryCustom amznRepositoryCustom;
+    private final AmznRepositoryImpl amznRepositoryImpl;
 
     /**
      * 대본사 계정 생성.
@@ -221,7 +221,7 @@ public class AmazonUserService {
     }
 
     public List<?> getTotalList(PrincipalDetails principalDetails) {
-        List<AmznTotalPartnerReqDTO2> list = amznRepositoryCustom.searchByTotalPartner2();
+        List<AmznTotalPartnerReqDTO2> list = amznRepositoryImpl.searchByTotalPartner2();
 
         User user = userRepository.findByUsername(principalDetails.getUsername());
         Long userId = user.getId();

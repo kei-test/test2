@@ -242,6 +242,10 @@ public class User extends BaseEntity implements Serializable {
     private Account account;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
+    private List<AmazonRollingTransaction> amazonRollingTransactions = new ArrayList<>();
+
+    @JsonIgnore
     @OneToMany(mappedBy = "writer", cascade = CascadeType.REMOVE)
     private List<Articles> articles = new ArrayList<>();
 

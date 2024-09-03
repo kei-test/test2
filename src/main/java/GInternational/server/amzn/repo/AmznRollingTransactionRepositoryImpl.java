@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import static GInternational.server.api.entity.QAmazonRollingTransaction.*;
-import static GInternational.server.api.entity.QUser.*;
+import static GInternational.server.api.entity.QUser.user;
 
 @Repository
 @RequiredArgsConstructor

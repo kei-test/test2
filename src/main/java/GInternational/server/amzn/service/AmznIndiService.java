@@ -120,45 +120,45 @@ public class AmznIndiService {
     public AmznIndiTotalCalculateDTO getCalculate(LocalDate startDate, LocalDate endDate,PrincipalDetails principalDetails) {
         List<AmznIndiPartnerResDTO> objLists = getIndiResults(startDate,endDate,principalDetails);
         AmznIndiTotalCalculateDTO response = new AmznIndiTotalCalculateDTO();
-         long totalRolling = 0L;
+        long totalRolling = 0L;
 
         //유저
-         long totalUserSportsBalance = 0L;
-         long totalUserPoint = 0L;
-         long totalUserRecharge = 0L;
-         long totalUserExchange = 0L;
-         long totalUserSettlement = 0L;
+        long totalUserSportsBalance = 0L;
+        long totalUserPoint = 0L;
+        long totalUserRecharge = 0L;
+        long totalUserExchange = 0L;
+        long totalUserSettlement = 0L;
 
         //파트너
-         long totalPartnerAmazonMoney = 0L;
-         long totalPartnerAmazonMileage = 0L;
-         long totalPartnerAmazonRecharge = 0L;
-         long totalPartnerAmazonExchange = 0L;
-         long totalPartnerSettlement = 0L;
+        long totalPartnerAmazonMoney = 0L;
+        long totalPartnerAmazonMileage = 0L;
+        long totalPartnerAmazonRecharge = 0L;
+        long totalPartnerAmazonExchange = 0L;
+        long totalPartnerSettlement = 0L;
 
-         //슬롯
-         long totalSlotBetAmount = 0L;
-         long totalSlotWinningAmount = 0L;
-         long totalSlotSettlement = 0L;
-         long totalSlotRollingAmount = 0L;
+        //슬롯
+        long totalSlotBetAmount = 0L;
+        long totalSlotWinningAmount = 0L;
+        long totalSlotSettlement = 0L;
+        long totalSlotRollingAmount = 0L;
 
         //카지노
-         long totalCasinoBetAmount = 0L;
-         long totalCasinoWinningAmount = 0L;
-         long totalCasinoSettlement = 0L;
-         long totalCasinoRollingAmount = 0L;
+        long totalCasinoBetAmount = 0L;
+        long totalCasinoWinningAmount = 0L;
+        long totalCasinoSettlement = 0L;
+        long totalCasinoRollingAmount = 0L;
 
         //스포츠
-         long totalSportBetAmount = 0L;
-         long totalSportWinningAmount = 0L;
-         long totalSportSettlement = 0L;
-         long totalSportRollingAmount = 0L;
+        long totalSportBetAmount = 0L;
+        long totalSportWinningAmount = 0L;
+        long totalSportSettlement = 0L;
+        long totalSportRollingAmount = 0L;
 
         //아케이드
-         long totalArcadeBetAmount = 0L;
-         long totalArcadeWinningAmount = 0L;
-         long totalArcadeSettlement = 0L;
-         long totalArcadeRollingAmount = 0L;
+        long totalArcadeBetAmount = 0L;
+        long totalArcadeWinningAmount = 0L;
+        long totalArcadeSettlement = 0L;
+        long totalArcadeRollingAmount = 0L;
 
 
         for (AmznIndiPartnerResDTO r : objLists) {

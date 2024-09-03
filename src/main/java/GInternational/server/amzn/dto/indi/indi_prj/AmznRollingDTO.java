@@ -1,11 +1,9 @@
 package GInternational.server.amzn.dto.indi.indi_prj;
 
 import com.querydsl.core.annotations.QueryProjection;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.A;
 
 
 @NoArgsConstructor

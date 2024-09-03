@@ -1,5 +1,6 @@
 package GInternational.server.api.service;
 
+import GInternational.server.amzn.service.AmznRollingTransactionService;
 import GInternational.server.api.dto.*;
 import GInternational.server.api.entity.BetHistory;
 import GInternational.server.api.entity.MoneyLog;
@@ -47,6 +48,7 @@ public class BetHistoryService {
     private final MoneyLogService moneyLogService;
     private final MatchMetaRepository matchMetaRepository;
     private final MoneyLogRepository moneyLogRepository;
+    private final AmznRollingTransactionService amznRollingTransactionService;
 
     @Autowired
     @Qualifier("entityManager")
@@ -146,6 +148,11 @@ public class BetHistoryService {
         moneyLogService.recordMoneyUsage(user.getId(), totalBetAmount, user.getWallet().getSportsBalance(), MoneyLogCategoryEnum.베팅차감, betGroupId + "(SPORTS)");
 
         matchMetaRepository.saveAll(metaMatches);  //경기 카운트,금액 누적
+
+        //스포츠 베팅 시 롤링지급 비즈니스 로직
+//        amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+
+
         return betHistoryRepository.saveAll(betHistories);
     }
 

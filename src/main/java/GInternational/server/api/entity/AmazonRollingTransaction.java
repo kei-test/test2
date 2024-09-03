@@ -1,12 +1,10 @@
 package GInternational.server.api.entity;
 
-import GInternational.server.common.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.C;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

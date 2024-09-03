@@ -4,7 +4,6 @@ package GInternational.server.amzn.controller;
 import GInternational.server.amzn.dto.index.AmznDetailsByTypeDTO;
 import GInternational.server.amzn.dto.index.AmznPartnerTreeDTO;
 import GInternational.server.amzn.dto.index.AmznUserDetailDTO;
-
 import GInternational.server.amzn.dto.index.IsAmazonUserListDTO;
 import GInternational.server.amzn.dto.total.AmznPartnerResDTO;
 import GInternational.server.amzn.service.AmznTotalService;

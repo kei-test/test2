@@ -5,15 +5,8 @@ import GInternational.server.amzn.dto.indi.business.AmznPartnerWalletDTO;
 import GInternational.server.amzn.dto.indi.indi_prj.*;
 import GInternational.server.amzn.dto.indi.indi_response.AmznIndiPartnerResDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznKplayResDTO;
-
 import GInternational.server.amzn.dto.indi.indi_response.AmznSportResDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznUserResDTO;
-import GInternational.server.api.entity.BetHistory;
-import GInternational.server.api.entity.QBetHistory;
-import GInternational.server.api.vo.ExpRecordEnum;
-import GInternational.server.kplay.credit.entity.QCredit;
-import GInternational.server.kplay.debit.dto.DebitResponseDTO;
-import GInternational.server.kplay.debit.entity.QDebit;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -21,24 +14,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-
-import static GInternational.server.api.entity.QAmazonExchangeTransaction.*;
-import static GInternational.server.api.entity.QAmazonRechargeTransaction.*;
+import static GInternational.server.api.entity.QAmazonExchangeTransaction.amazonExchangeTransaction;
+import static GInternational.server.api.entity.QAmazonRechargeTransaction.amazonRechargeTransaction;
 import static GInternational.server.api.entity.QAmazonRollingTransaction.*;
-import static GInternational.server.api.entity.QBetHistory.*;
-import static GInternational.server.api.entity.QExchangeTransaction.*;
-import static GInternational.server.api.entity.QRechargeTransaction.*;
-import static GInternational.server.api.entity.QUser.*;
-import static GInternational.server.api.entity.QWallet.*;
-import static GInternational.server.kplay.credit.entity.QCredit.*;
-import static GInternational.server.kplay.debit.entity.QDebit.*;
+import static GInternational.server.api.entity.QBetHistory.betHistory;
+import static GInternational.server.api.entity.QExchangeTransaction.exchangeTransaction;
+import static GInternational.server.api.entity.QRechargeTransaction.rechargeTransaction;
+import static GInternational.server.api.entity.QUser.user;
+import static GInternational.server.api.entity.QWallet.wallet;
+import static GInternational.server.kplay.credit.entity.QCredit.credit;
+import static GInternational.server.kplay.debit.entity.QDebit.debit;
 
 
 @Repository
