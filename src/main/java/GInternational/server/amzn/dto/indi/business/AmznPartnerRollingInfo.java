@@ -10,8 +10,8 @@ import lombok.Setter;
 @Getter
 public class AmznPartnerRollingInfo {
 
-    private long casinoRolling;
-    private long slotRolling;
+    private double casinoRolling;
+    private double slotRolling;
 
     @QueryProjection
     public AmznPartnerRollingInfo(long casinoRolling, long slotRolling) {
