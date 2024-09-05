@@ -14,7 +14,7 @@ public class AmznPartnerRollingInfo {
     private double slotRolling;
 
     @QueryProjection
-    public AmznPartnerRollingInfo(long casinoRolling, long slotRolling) {
+    public AmznPartnerRollingInfo(double casinoRolling, double slotRolling) {
         this.casinoRolling = casinoRolling;
         this.slotRolling = slotRolling;
     }
