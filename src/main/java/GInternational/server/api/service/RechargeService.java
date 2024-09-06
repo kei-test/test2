@@ -94,18 +94,18 @@ public class RechargeService {
             // 요청 바디에 bonus 필드가 있는 경우 해당 값 사용
             int calculatedBonus;
             if (rechargeRequestDTO.getBonus() != null) {
-                // 요청 바디의 bonus가 있는 경우 그 값을 사용
+                // 요청 바디의 bonus가 있는 경우 그 값을 사용 (돌발충전 무시)
                 calculatedBonus = rechargeRequestDTO.getBonus();
             } else {
                 // SuddenRecharge 조건에 따라 보너스 포인트 적용 (enabled가 true일 때만 적용)
                 List<SuddenRecharge> suddenRecharges = suddenRechargeRepository.findAll();
                 int maxBonus = getMaxBonus(rechargeRequestDTO, suddenRecharges);
 
-                // SuddenRecharge의 최대 보너스가 있는 경우
+                // SuddenRecharge 보너스가 있는 경우 첫충/매충 보너스 + 돌발충전 보너스를 합산하여 적용
                 if (maxBonus > 0) {
-                    calculatedBonus = maxBonus;
+                    calculatedBonus = defaultBonus + maxBonus; // 첫충/매충 보너스와 돌발충전 보너스를 합산
                 } else {
-                    // SuddenRecharge의 보너스가 없으면 기본 보너스 비율 사용
+                    // SuddenRecharge 보너스가 없으면 기본 보너스 비율 사용
                     calculatedBonus = defaultBonus;
                 }
             }

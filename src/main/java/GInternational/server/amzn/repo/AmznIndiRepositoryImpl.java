@@ -2,18 +2,25 @@ package GInternational.server.amzn.repo;
 
 
 import GInternational.server.amzn.dto.indi.business.AmznPartnerWalletDTO;
+import GInternational.server.amzn.dto.indi.calculate.UserBetweenCalculateDTO;
+import GInternational.server.amzn.dto.indi.calculate.UserCasinoMoneyDTO;
 import GInternational.server.amzn.dto.indi.indi_prj.*;
 import GInternational.server.amzn.dto.indi.indi_response.AmznIndiPartnerResDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznKplayResDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznSportResDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznUserResDTO;
+import GInternational.server.amzn.service.AmznIndiService;
+import GInternational.server.api.vo.TransactionEnum;
+import GInternational.server.kplay.debit.entity.QDebit;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,6 +39,7 @@ import static GInternational.server.api.entity.QRechargeTransaction.rechargeTran
 import static GInternational.server.api.entity.QUser.user;
 import static GInternational.server.api.entity.QWallet.wallet;
 import static GInternational.server.kplay.credit.entity.QCredit.credit;
+import static GInternational.server.kplay.debit.entity.QDebit.*;
 import static GInternational.server.kplay.debit.entity.QDebit.debit;
 
 
@@ -41,28 +49,96 @@ public class AmznIndiRepositoryImpl {
 
 
     private final JPAQueryFactory queryFactory;
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+
+
+
+    public UserBetweenCalculateDTO getUserCalculate(Long userId, LocalDate startDate, LocalDate endDate) {
+
+        LocalDateTime startOfDay = startDate.atStartOfDay();
+        LocalDateTime endOfDay = endDate.atTime(LocalTime.MAX);
+
+        UserCasinoMoneyDTO casinoMoneyAndUserInfo = queryFactory.select(Projections.constructor(UserCasinoMoneyDTO.class,
+                        user.id,
+                        user.aasId,
+                        wallet.casinoBalance))
+                .from(user)
+                .leftJoin(wallet).on(wallet.user.id.eq(user.id))
+                .where(user.id.eq(userId))
+                .fetchOne();
+
+        int aas = casinoMoneyAndUserInfo.getAas();
+
+        AmznRechargeDTO recharges = queryFactory.select(Projections.constructor(AmznRechargeDTO.class,
+                        user.id,
+                        rechargeTransaction.rechargeAmount.sum()))
+                .from(user)
+                .leftJoin(rechargeTransaction).on(rechargeTransaction.user.id.eq(user.id))
+                .where(rechargeTransaction.user.id.eq(userId)
+                        .and(rechargeTransaction.processedAt.between(startOfDay,endOfDay))
+                        .and(rechargeTransaction.status.eq(TransactionEnum.valueOf("APPROVAL"))))
+                .fetchOne();
+
+        AmznExchangeDTO exchange = queryFactory.select(Projections.constructor(AmznExchangeDTO.class,
+                        user.id,
+                        exchangeTransaction.exchangeAmount.sum()))
+                .from(user)
+                .leftJoin(exchangeTransaction).on(exchangeTransaction.user.id.eq(user.id))
+                .where(exchangeTransaction.user.id.eq(userId)
+                        .and(exchangeTransaction.processedAt.between(startOfDay,endOfDay))
+                        .and(exchangeTransaction.status.eq(TransactionEnum.valueOf("APPROVAL"))))
+                .fetchOne();
+
+
+        AmznDebit debitTransaction = queryFactory.select(Projections.constructor(AmznDebit.class,
+                        debit.amount.sum()))
+                .from(user)
+                .leftJoin(debit).on(debit.user_id.eq(aas))
+                .where(debit.createdAt.between(startOfDay,endOfDay)
+                        .and(debit.prd_id.between(200,299)
+                                .or(debit.prd_id.between(1,99))))
+                .fetchOne();
+
+        AmznCredit creditTransaction = queryFactory.select(Projections.constructor(AmznCredit.class,
+                        credit.amount.sum()))
+                .from(user)
+                .leftJoin(credit).on(credit.user_id.eq(aas))
+                .where(credit.is_cancel.notIn(1)
+                        .and(credit.amount.notIn(0))
+                        .and(credit.createdAt.between(startOfDay,endOfDay))
+                        .and(credit.prd_id.between(200,299)
+                                .or(credit.prd_id.between(1,99))))
+                .fetchOne();
+
+        UserBetweenCalculateDTO responseDTO = new UserBetweenCalculateDTO();
+        responseDTO.setUserId(userId);
+        responseDTO.setTotalBetAmount((long) debitTransaction.getAmount());
+        responseDTO.setTotalWinningAmount((long) creditTransaction.getAmount());
+        responseDTO.setTotalBetSettlement((long) debitTransaction.getAmount() - (long) creditTransaction.getAmount());
+        responseDTO.setCasinoMoney(casinoMoneyAndUserInfo.getCasinoMoney());
+        responseDTO.setTotalRechargeAmount(recharges.getRechargeAmount());
+        responseDTO.setTotalExchangeAmount(exchange.getExchangeAmount());
+        responseDTO.setTotalWalletSettlement(recharges.getRechargeAmount() - exchange.getExchangeAmount());
+
+        return responseDTO;
+    }
 
 
 
 
     public AmznPartnerWalletDTO getPartnerWallet(Long id) {
         return queryFactory.select(Projections.constructor(AmznPartnerWalletDTO.class,
-                user.id,
-                user.username,
-                wallet.amazonMoney,
-                wallet.amazonMileage))
+                        user.id,
+                        user.username,
+                        wallet.amazonMoney,
+                        wallet.amazonMileage))
                 .from(user)
                 .leftJoin(wallet).on(wallet.user.id.eq(user.id))
                 .where(wallet.user.id.eq(id))
                 .fetchOne();
     }
-
-
-
-
-
 
 
 
@@ -105,13 +181,13 @@ public class AmznIndiRepositoryImpl {
 
 
         List<AmznIndiUserInfoDTO> usersInfo = queryFactory.select(Projections.constructor(AmznIndiUserInfoDTO.class,
-                user.id,
-                user.username,
-                user.nickname,
-                user.aasId,
-                user.referredBy,
-                user.partnerType,
-                user.isAmazonUser))
+                        user.id,
+                        user.username,
+                        user.nickname,
+                        user.aasId,
+                        user.referredBy,
+                        user.partnerType,
+                        user.isAmazonUser))
                 .from(user)
                 .where(user.referredBy.in(usernames))
                 .fetch();
@@ -129,10 +205,10 @@ public class AmznIndiRepositoryImpl {
 
         //특정 파트너의 롤링이 지급된 금액 추출 쿼리 // 총 롤링
         List<AmznRollingDTO> rollingAmounts = queryFactory.select(Projections.constructor(AmznRollingDTO.class,
-                user.id, //파트너 uid
-                amazonRollingTransaction.username,  //베팅한 유저네임
-                amazonRollingTransaction.category,
-                amazonRollingTransaction.rollingAmount))
+                        user.id, //파트너 uid
+                        amazonRollingTransaction.username,  //베팅한 유저네임
+                        amazonRollingTransaction.category,
+                        amazonRollingTransaction.rollingAmount))
                 .from(user)
                 .leftJoin(amazonRollingTransaction).on(amazonRollingTransaction.user.id.eq(user.id))
                 .where(amazonRollingTransaction.user.id.in(partnerIds)
@@ -143,8 +219,8 @@ public class AmznIndiRepositoryImpl {
 
         //파트너의 충전액 추출 쿼리
         List<AmznRechargeDTO> rechargeAmounts = queryFactory.select(Projections.constructor(AmznRechargeDTO.class,
-                user.id,
-                amazonRechargeTransaction.rechargeAmount))
+                        user.id,
+                        amazonRechargeTransaction.rechargeAmount))
                 .from(user)
                 .leftJoin(amazonRechargeTransaction).on(amazonRechargeTransaction.user.id.eq(user.id))
                 .where(amazonRechargeTransaction.user.id.in(partnerIds)
@@ -210,9 +286,9 @@ public class AmznIndiRepositoryImpl {
 
         //현재 파트너에 의해 가입된 유저의 지갑 금액정보
         List<AmznUserResDTO> userWallets = queryFactory.select(Projections.constructor(AmznUserResDTO.class,
-                user.referredBy,
-                wallet.sportsBalance,
-                wallet.point))
+                        user.referredBy,
+                        wallet.sportsBalance,
+                        wallet.point))
                 .from(user)
                 .leftJoin(wallet).on(wallet.user.id.eq(user.id))
                 .where(wallet.user.id.in(referredUser))
@@ -222,9 +298,9 @@ public class AmznIndiRepositoryImpl {
         //상위 파트너를 추천인으로 가입한 유저들의 입금내역
         //입금테이블 셀렉트
         List<AmznUserRechargeDTO> userRecharges = queryFactory.select(Projections.constructor(AmznUserRechargeDTO.class,
-                user.id,
-                user.referredBy,
-                rechargeTransaction.rechargeAmount))
+                        user.id,
+                        user.referredBy,
+                        rechargeTransaction.rechargeAmount))
                 .from(user)
                 .leftJoin(rechargeTransaction).on(rechargeTransaction.user.id.eq(user.id))
                 .where(rechargeTransaction.user.id.in(referredUser)
@@ -233,9 +309,9 @@ public class AmznIndiRepositoryImpl {
 
 
         List<AmznUserExchangeDTO> userExchanges = queryFactory.select(Projections.constructor(AmznUserExchangeDTO.class,
-                user.id,
-                user.referredBy,
-                exchangeTransaction.exchangeAmount))
+                        user.id,
+                        user.referredBy,
+                        exchangeTransaction.exchangeAmount))
                 .from(user)
                 .leftJoin(exchangeTransaction).on(exchangeTransaction.user.id.eq(user.id))
                 .where(exchangeTransaction.user.id.in(referredUser)
@@ -273,19 +349,19 @@ public class AmznIndiRepositoryImpl {
 
 
 
-            userWallets.forEach(userTap -> {
-                String referredBy = userTap.getReferredBy();
-                long totalSportsBalance = userWalletAmountMap.getOrDefault(referredBy, 0L);
-                long totalPoint = userPointAmountMap.getOrDefault(referredBy, 0L);
-                long totalRecharge = userRechargeAmountMap.getOrDefault(referredBy, 0L);
-                long totalExchange = userExchangeAmountMap.getOrDefault(referredBy, 0L);
-                long totalSettlement = totalRecharge - totalExchange;
-                userTap.setSportsBalance(totalSportsBalance);
-                userTap.setPoint(totalPoint);
-                userTap.setRechargeAmount(totalRecharge);
-                userTap.setExchangeAmount(totalExchange);
-                userTap.setTotalSettlement(totalSettlement);
-            });
+        userWallets.forEach(userTap -> {
+            String referredBy = userTap.getReferredBy();
+            long totalSportsBalance = userWalletAmountMap.getOrDefault(referredBy, 0L);
+            long totalPoint = userPointAmountMap.getOrDefault(referredBy, 0L);
+            long totalRecharge = userRechargeAmountMap.getOrDefault(referredBy, 0L);
+            long totalExchange = userExchangeAmountMap.getOrDefault(referredBy, 0L);
+            long totalSettlement = totalRecharge - totalExchange;
+            userTap.setSportsBalance(totalSportsBalance);
+            userTap.setPoint(totalPoint);
+            userTap.setRechargeAmount(totalRecharge);
+            userTap.setExchangeAmount(totalExchange);
+            userTap.setTotalSettlement(totalSettlement);
+        });
 
         partnerInfo.forEach(partner -> {
             String username = partner.getUsername();
@@ -303,26 +379,24 @@ public class AmznIndiRepositoryImpl {
         //외래키에 대한 조건만 갖고 해당 테이블 셀렉트
         //이후 스트림으로 필터링하여 처리한다
         List<AmznKplayResDTO> debits = queryFactory.select(Projections.constructor(AmznKplayResDTO.class,
-                user.referredBy,
-                debit.prd_id,
-                debit.amount))
+                        user.referredBy,
+                        debit.prd_id,
+                        debit.amount))
                 .from(user)
-                .leftJoin(debit).on(debit.user_id.eq(user.id.intValue()))
-                .where(debit.createdAt.between(startOfDay,endOfDay)
-                        .and(debit.user_id.in(kplayUserAasId)))
+                .leftJoin(debit).on(debit.user_id.in(kplayUserAasId))
+                .where(debit.createdAt.between(startOfDay,endOfDay))
                 .fetch();
 
 
 
         List<AmznCredit> credits = queryFactory.select(Projections.constructor(AmznCredit.class,
-                user.referredBy,
-                credit.prd_id,
-                credit.amount,
-                credit.is_cancel))
+                        user.referredBy,
+                        credit.prd_id,
+                        credit.amount,
+                        credit.is_cancel))
                 .from(user)
-                .leftJoin(credit).on(credit.user_id.eq(user.id.intValue()))
+                .leftJoin(credit).on(credit.user_id.in(kplayUserAasId))
                 .where(credit.createdAt.between(startOfDay,endOfDay)
-                        .and(credit.user_id.in(kplayUserAasId))
                         .and(credit.amount.notIn(0))
                         .and(credit.is_cancel.notIn(1)))
                 .fetch();
@@ -468,7 +542,7 @@ public class AmznIndiRepositoryImpl {
 
         //중복되는 그룹아이디 제거
         List<Long> distinctBetGroupIds = queryFactory.select(Projections.constructor(Long.class,
-                betHistory.betGroupId))
+                        betHistory.betGroupId))
                 .from(betHistory)
                 .where(betHistory.betStartTime.between(startOfDay,endOfDay)
                         .and(betHistory.user.id.in(referredUser)))
@@ -477,9 +551,9 @@ public class AmznIndiRepositoryImpl {
 
         //스포츠 베팅
         List<AmznSportResDTO> betLists = queryFactory.select(Projections.constructor(AmznSportResDTO.class,
-                user.referredBy,
-                betHistory.bet,
-                betHistory.betReward))
+                        user.referredBy,
+                        betHistory.bet,
+                        betHistory.betReward))
                 .from(user)
                 .leftJoin(betHistory).on(betHistory.user.id.eq(user.id))
                 .where(betHistory.betGroupId.in(distinctBetGroupIds))
@@ -510,7 +584,7 @@ public class AmznIndiRepositoryImpl {
                         Collectors.summingLong(AmznSportResDTO::getCvtBetReward)
                 ));
 
-        
+
         Map<Long, Long> sportsRollingAmountMap = rollingAmounts.stream()
                 .filter(rollingAmount -> rollingAmount.getCategory().equals("스포츠"))
                 .collect(Collectors.groupingBy(

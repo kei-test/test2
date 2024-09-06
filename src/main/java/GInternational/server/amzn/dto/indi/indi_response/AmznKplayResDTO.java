@@ -27,4 +27,6 @@ public class AmznKplayResDTO {
         this.prdId = prdId;
         this.debitAmount = debitAmount;
     }
+
+
 }

@@ -4,6 +4,7 @@ import GInternational.server.amzn.dto.indi.business.AmznPartnerRollingInfo;
 import GInternational.server.amzn.dto.indi.business.AmznPartnerWalletDTO;
 import GInternational.server.amzn.dto.indi.business.AmznRollingTransactionResDTO;
 import GInternational.server.amzn.dto.indi.calculate.AmznIndiTotalCalculateDTO;
+import GInternational.server.amzn.dto.indi.calculate.UserBetweenCalculateDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznIndiPartnerResDTO;
 import GInternational.server.amzn.service.AmznIndiService;
 import GInternational.server.amzn.service.AmznRollingTransactionService;
@@ -85,6 +86,18 @@ public class AmznIndiController {
                                                 Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         AmznPartnerRollingInfo response = amznRollingTransactionService.getPartnerRollingInfo(userId,principal);
+        return new ResponseEntity(response,HttpStatus.OK);
+    }
+
+
+
+    @GetMapping("/indi-detail-wallet")
+    public ResponseEntity getDetailWallet(@RequestParam Long userId,
+                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                          Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        UserBetweenCalculateDTO response = amznIndiService.getUserCalculate(userId,startDate,endDate,principal);
         return new ResponseEntity(response,HttpStatus.OK);
     }
 }

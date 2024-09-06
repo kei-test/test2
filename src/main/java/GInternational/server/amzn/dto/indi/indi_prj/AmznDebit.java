@@ -8,25 +8,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
-public class AmznCredit {
+public class AmznDebit {
 
-
-    private String referredBy;
     private int prdId;
     private int amount;
     private int isCancel;
 
     @QueryProjection
-    public AmznCredit(String referredBy, int prdId, int amount, int isCancel) {
-        this.referredBy = referredBy;
+    public AmznDebit(int prdId, int amount, int isCancel) {
         this.prdId = prdId;
         this.amount = amount;
         this.isCancel = isCancel;
     }
 
-
     @QueryProjection
-    public AmznCredit(int amount) {
+    public AmznDebit(int amount) {
         this.amount = amount;
     }
 }

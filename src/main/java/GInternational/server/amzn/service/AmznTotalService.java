@@ -250,7 +250,7 @@ public class AmznTotalService {
             tree.add(dae); // 본사를 참조하여 대본사 조회
             tree.add(bon); //본사
             tree.add(bu); //인풋 회원정보로 부본사 조회
-        }else if (userPartnerType.equals("총판")) {
+        }else if (user.getPartnerType().equals("총판")) {
             AmznPartnerObjectDTO buObj = amznRepositoryImpl.searchByPO(partnerObj.getBuId());
             AmznPartnerTreeDTO bu = new AmznPartnerTreeDTO();
             bu.setUsername(buObj.getUsername());
@@ -274,7 +274,7 @@ public class AmznTotalService {
             tree.add(bon); //부본사 정보로 본사 조회
             tree.add(bu); //총판의 정보로 부본사 조회
             tree.add(chong); //인풋 회원정보로 총판 조회
-        } else if (userPartnerType.equals("매장")) {
+        } else if (user.getPartnerType().equals("매장")) {
             AmznPartnerObjectDTO chongObj = amznRepositoryImpl.searchByPO(partnerObj.getChongId());
             AmznPartnerTreeDTO chong = new AmznPartnerTreeDTO();
             chong.setUsername(chongObj.getUsername());
@@ -321,10 +321,8 @@ public class AmznTotalService {
     //아마존 등급별 상세조회
     public AmznDetailsByTypeDTO getAmznDetailsByType(Long userId, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        User getUser = userRepository.findById(userId).orElse(null);
-        if (user.getRole().equals("ROLE_ADMIN")||
-                user != null && user.getPartnerType() != null && getUser.getPartnerType() != null) {
-            return amznRepositoryImpl.searchByUserTypeDetail(getUser.getId());
+        if (user.getRole().equals("ROLE_ADMIN")|| user.getPartnerType() != null) {
+            return amznRepositoryImpl.searchByUserTypeDetail(userId);
         } return null;
     }
 
@@ -332,9 +330,7 @@ public class AmznTotalService {
     //isAmazonUser 카운트 클릭 시 조회되는 일반회원 리스트 조회
     public List<IsAmazonUserListDTO> getAmazonUserList(String referredBy, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        User getUser = userRepository.findByUsername(referredBy);
-        if (user.getRole().equals("ROLE_ADMIN")||
-                getUser != null && user.getPartnerType() != null && getUser.getPartnerType() == null) {
+        if (user.getRole().equals("ROLE_ADMIN")|| user.getPartnerType() != null) {
             return amznRepositoryImpl.searchByIsAmazonUsers(referredBy);
         } return null;
     }

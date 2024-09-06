@@ -6,13 +6,13 @@ package GInternational.server.amzn.service;
 
 import GInternational.server.amzn.dto.indi.business.AmznPartnerWalletDTO;
 import GInternational.server.amzn.dto.indi.calculate.AmznIndiTotalCalculateDTO;
+import GInternational.server.amzn.dto.indi.calculate.UserBetweenCalculateDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznIndiPartnerResDTO;
 import GInternational.server.amzn.repo.AmznIndiRepositoryImpl;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,8 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -232,6 +230,21 @@ public class AmznIndiService {
         return response;
 
 
+    }
+
+
+
+    public UserBetweenCalculateDTO getUserCalculate(Long userId,LocalDate startDate, LocalDate endDate,PrincipalDetails principalDetails) {
+        User user = userRepository.findByUsername(principalDetails.getUsername());
+        if (startDate == null) {
+            startDate = LocalDate.now();
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+        if (user.getRole().equals("ROLE_ADMIN")|| user.getPartnerType() != null) {
+            return amznIndiRepositoryImpl.getUserCalculate(userId,startDate,endDate);
+        } return null;
     }
 }
 
