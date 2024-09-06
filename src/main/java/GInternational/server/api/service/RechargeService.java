@@ -154,22 +154,24 @@ public class RechargeService {
         int maxBonus = 0;
 
         for (SuddenRecharge suddenRecharge : suddenRecharges) {
-            if (suddenRecharge.isEnabled()) {
-                int bonus = 0;
-                if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition3()) {
-                    bonus = Math.toIntExact(suddenRecharge.getPoint3());
-                } else if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition2()) {
-                    bonus = Math.toIntExact(suddenRecharge.getPoint2());
-                } else if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition1()) {
-                    bonus = Math.toIntExact(suddenRecharge.getPoint1());
-                }
+            if (!suddenRecharge.isEnabled()) {
+                continue;
+            }
 
-                // 최대 보너스 포인트로 업데이트
-                if (bonus > maxBonus) {
-                    maxBonus = bonus;
-                }
+            int bonus = 0;
+            if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition3()) {
+                bonus = Math.toIntExact(suddenRecharge.getPoint3());
+            } else if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition2()) {
+                bonus = Math.toIntExact(suddenRecharge.getPoint2());
+            } else if (rechargeRequestDTO.getRechargeAmount() > suddenRecharge.getCondition1()) {
+                bonus = Math.toIntExact(suddenRecharge.getPoint1());
+            }
+
+            if (bonus > maxBonus) {
+                maxBonus = bonus;
             }
         }
+
         return maxBonus;
     }
 

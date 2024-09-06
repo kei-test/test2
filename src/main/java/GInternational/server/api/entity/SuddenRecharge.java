@@ -41,7 +41,7 @@ public class SuddenRecharge {
 
     @Column(name = "start_date_time")
     private LocalDateTime startDateTime; // 이벤트 시작시간
-    @Column(name = "end")
+    @Column(name = "end_date_time")
     private LocalDateTime endDateTime;   // 이벤트 종료시간
 
     @Column(nullable = false)
