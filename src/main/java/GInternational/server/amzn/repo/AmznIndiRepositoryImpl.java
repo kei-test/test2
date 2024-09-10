@@ -49,7 +49,6 @@ public class AmznIndiRepositoryImpl {
 
 
     private final JPAQueryFactory queryFactory;
-
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 

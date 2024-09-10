@@ -228,10 +228,7 @@ public class AmznIndiService {
         response.setTotalArcadeSettlement(totalArcadeSettlement);
         response.setTotalArcadeRollingAmount(totalArcadeRollingAmount);
         return response;
-
-
     }
-
 
 
     public UserBetweenCalculateDTO getUserCalculate(Long userId,LocalDate startDate, LocalDate endDate,PrincipalDetails principalDetails) {

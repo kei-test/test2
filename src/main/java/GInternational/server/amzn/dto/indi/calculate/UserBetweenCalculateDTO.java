@@ -21,7 +21,7 @@ public class UserBetweenCalculateDTO {
 
 
     @QueryProjection
-    public UserBetweenCalculateDTO(Long userId, long totalRechargeAmount, long totalExchangeAmount) {
+    public UserBetweenCalculateDTO(Long userId,long totalRechargeAmount, long totalExchangeAmount) {
         this.userId = userId;
         this.totalRechargeAmount = totalRechargeAmount;
         this.totalExchangeAmount = totalExchangeAmount;

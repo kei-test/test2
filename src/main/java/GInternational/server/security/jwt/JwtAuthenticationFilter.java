@@ -91,6 +91,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             IPResponse ipResponse = ipInfoService.getIpInfo(ip);
             countryCode = ipResponse.getCountryCode();
 
+
             if (whiteIpOptional.isEmpty() || user.getRole().equals("ROLE_USER") || user.getRole().equals("ROLE_TEST")) {
                 if (user != null) {
                     loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode);
@@ -136,16 +137,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                             amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
                         }
                     }
-
-
                     try {
                         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", "구분");
-                        }
                         Authentication authentication = authenticationManager.authenticate(authenticationToken);
                         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+
+                        //principal 생성 시 성공 로그 반환
+                        if (principalDetails.getUser().getPartnerType() != null) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", "구분");
+                        }
                         return authentication;
+
                     } catch (BadCredentialsException e) {
                         recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
                         if (user.getPartnerType() != null) {
@@ -156,12 +158,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 } else {
                     handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
                 }
-            } else if (user != null && ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole()))) {
+            }
+            else if (user != null && ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole()))) {
                 adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
                 if (user.getPartnerType() != null) {
                     amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
                 }
-            } else {
+            }
+            else {
                 handleAuthenticationFailure(response, "유저를 찾을 수 없거나 유효하지 않은 유저 상태입니다.");
             }
         } else {
@@ -240,6 +244,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         user.setLastAccessedDevice(deviceType);
         user.setLastAccessedCountry(countryCode);
         userRepository.save(user);
+
+
 
         if (whiteIpOptional.isEmpty()) {
             if ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {

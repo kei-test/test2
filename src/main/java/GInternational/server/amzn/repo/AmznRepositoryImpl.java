@@ -121,7 +121,8 @@ public class AmznRepositoryImpl {
                         user.lastVisit))
                 .from(user)
                 .join(wallet).on(wallet.user.id.eq(user.id))
-                .where(user.referredBy.eq(referredBy))
+                .where(user.referredBy.eq(referredBy)
+                        .and(user.partnerType.isNull()))
                 .orderBy(user.createdAt.desc())
                 .fetch();
         return results;

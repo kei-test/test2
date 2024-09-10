@@ -20,4 +20,9 @@ public class AmznExchangeDTO {
         this.id = id;
         this.exchangeAmount = exchangeAmount;
     }
+
+    @QueryProjection
+    public AmznExchangeDTO(long exchangeAmount) {
+        this.exchangeAmount = exchangeAmount;
+    }
 }

@@ -27,4 +27,11 @@ public class AmznRollingDTO {
         this.category = category;
         this.rollingAmount = rollingAmount;
     }
+
+
+    @QueryProjection
+    public AmznRollingDTO(String username,long rollingAmount) {
+        this.username = username;
+        this.rollingAmount = rollingAmount;
+    }
 }

@@ -213,7 +213,7 @@ public class AmznTotalService {
         User getUser = userRepository.findById(userId).orElse(null);
         String userPartnerType = getUser.getPartnerType();
 
-        AmznPartnerObjectDTO partnerObj = amznRepositoryImpl.searchByPO(getUser.getId());
+        AmznPartnerObjectDTO partnerObj = amznRepositoryImpl.searchByPO(userId);
         List<AmznPartnerTreeDTO> tree = new ArrayList<>();
 
         if (userPartnerType.equals("대본사")) {
@@ -250,7 +250,7 @@ public class AmznTotalService {
             tree.add(dae); // 본사를 참조하여 대본사 조회
             tree.add(bon); //본사
             tree.add(bu); //인풋 회원정보로 부본사 조회
-        }else if (user.getPartnerType().equals("총판")) {
+        }else if (userPartnerType.equals("총판")) {
             AmznPartnerObjectDTO buObj = amznRepositoryImpl.searchByPO(partnerObj.getBuId());
             AmznPartnerTreeDTO bu = new AmznPartnerTreeDTO();
             bu.setUsername(buObj.getUsername());
@@ -274,7 +274,7 @@ public class AmznTotalService {
             tree.add(bon); //부본사 정보로 본사 조회
             tree.add(bu); //총판의 정보로 부본사 조회
             tree.add(chong); //인풋 회원정보로 총판 조회
-        } else if (user.getPartnerType().equals("매장")) {
+        } else if (userPartnerType.equals("매장")) {
             AmznPartnerObjectDTO chongObj = amznRepositoryImpl.searchByPO(partnerObj.getChongId());
             AmznPartnerTreeDTO chong = new AmznPartnerTreeDTO();
             chong.setUsername(chongObj.getUsername());

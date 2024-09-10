@@ -19,4 +19,9 @@ public class AmznRechargeDTO {
         this.id = id;
         this.rechargeAmount = rechargeAmount;
     }
+
+    @QueryProjection
+    public AmznRechargeDTO(long rechargeAmount) {
+        this.rechargeAmount = rechargeAmount;
+    }
 }

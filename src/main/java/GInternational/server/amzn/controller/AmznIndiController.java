@@ -59,12 +59,12 @@ public class AmznIndiController {
     //상위 추천인에게 지급된 롤링마일리지 지급 내역 조회
     @GetMapping("/indi-rolling-transaction")
     public ResponseEntity getIndiRollingTransaction(@RequestParam Long userId,
-                                                    @RequestParam(required = false) String categoty,
+                                                    @RequestParam(required = false) String category,
                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                                     Authentication authentication) {
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        List<AmznRollingTransactionResDTO> response = amznRollingTransactionService.getIndiRollingTransaction(userId,categoty,startDate,endDate,principal);
+        List<AmznRollingTransactionResDTO> response = amznRollingTransactionService.getIndiRollingTransaction(userId,category,startDate,endDate,principal);
         return new ResponseEntity(response, HttpStatus.OK);
     }
 
