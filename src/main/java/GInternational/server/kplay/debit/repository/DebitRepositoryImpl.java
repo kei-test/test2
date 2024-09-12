@@ -105,7 +105,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
     }
 
     @Override
-    public Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, Pageable pageable) {
+    public Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
         // type 매개변수를 기반으로 조건 정의
         BooleanExpression typeCondition = null;
         if ("casino".equals(type)) {
@@ -117,7 +117,8 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         }
 
         BooleanExpression userCondition = user.isAmazonUser.isTrue();
-        BooleanExpression finalCondition = userCondition;
+        BooleanExpression dateCondition = debit.created_at.between(startDate, endDate); // 날짜 조건 추가
+        BooleanExpression finalCondition = userCondition.and(dateCondition); // 날짜 조건과 사용자 조건 결합
         if (typeCondition != null) {
             finalCondition = finalCondition.and(typeCondition);
         }
@@ -125,12 +126,12 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         List<Tuple> results = queryFactory
                 .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
                         debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.aasId, user.username, user.nickname) // 사용자 ID, username, nickname을 쿼리에서 가져옴
+                        product.prd_name, credit.amount, game.name, user.aasId, user.username, user.nickname)
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
-                .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
+                .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId)))
                 .join(product).on(product.prd_id.eq(game.prdId))
-                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition)) // 수정된 조인 조건
+                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
                 .where(finalCondition) // 최종 조건 적용
                 .orderBy(debit.createdAt.desc())
                 .distinct()
@@ -152,11 +153,10 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                     String prdName = tuple.get(product.prd_name);
                     Integer creditAmountValue = tuple.get(credit.amount);
                     String gameName = tuple.get(game.name);
-                    String username = tuple.get(user.username); // 사용자 이름
-                    String nickname = tuple.get(user.nickname); // 사용자 닉네임
-                    Integer aasId = tuple.get(user.aasId); // 사용자 ID
+                    String username = tuple.get(user.username);
+                    String nickname = tuple.get(user.nickname);
+                    Integer aasId = tuple.get(user.aasId);
 
-                    // ID를 사용해 파트너 정보 가져오기
                     User partnerUser = findPartnerUser(aasId);
 
                     String partnerUsername = (partnerUser != null && Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerUser.getPartnerType()))
@@ -166,12 +166,12 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                     String partnerTypeValue = (partnerUser != null && Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerUser.getPartnerType()))
                             ? partnerUser.getPartnerType() : null;
 
-                    int creditAmountIntValue = (creditAmountValue != null) ? creditAmountValue : 0; // null 체크 후 기본값 설정
+                    int creditAmountIntValue = (creditAmountValue != null) ? creditAmountValue : 0;
 
                     return new DebitAmazonResponseDTO(
                             id,
-                            username, // 이름
-                            nickname, // 닉네임
+                            username,
+                            nickname,
                             amount,
                             prdName,
                             prdId,
@@ -193,13 +193,13 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         long totalElements = queryFactory
                 .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
                         debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.aasId) // 사용자 ID를 쿼리에서 가져옴
+                        product.prd_name, credit.amount, game.name, user.aasId)
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
-                .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId))) // Game 테이블 조인
+                .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId)))
                 .join(product).on(product.prd_id.eq(game.prdId))
-                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition)) // 수정된 조인 조건
-                .where(finalCondition) // 최종 조건 적용
+                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
+                .where(finalCondition)
                 .distinct()
                 .fetch().size();
 

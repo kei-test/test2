@@ -8,11 +8,15 @@ import GInternational.server.kplay.debit.dto.DebitUserResponseDTO;
 import GInternational.server.kplay.debit.service.DebitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 
 @RestController
@@ -65,8 +69,14 @@ public class DebitController {
     @GetMapping("/debits")
     public ResponseEntity searchMyDebit(@RequestParam String type,
                                         @RequestParam int size,
-                                        @RequestParam int page) {
-        Page<DebitAmazonResponseDTO> pages = debitService.searchMyDebit(size, type, page);
+                                        @RequestParam int page,
+                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        // startDate와 endDate에 시간 정보를 추가해 LocalDateTime으로 변환
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+        Page<DebitAmazonResponseDTO> pages = debitService.searchMyDebit(size, type, page, startDateTime, endDateTime);
         return new ResponseEntity<>(new MultiResponseDto<>(pages.getContent(), pages), HttpStatus.OK);
     }
 }

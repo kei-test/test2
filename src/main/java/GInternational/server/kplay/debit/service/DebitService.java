@@ -31,6 +31,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -331,10 +333,11 @@ public class DebitService {
      * @param page 요청한 페이지 번호
      * @return Page<DebitAmazonResponseDTO> 아마존 서비스를 통한 사용자 베팅 내역 페이지
      */
-    public Page<DebitAmazonResponseDTO> searchMyDebit(int size, String type, int page) {
+    public Page<DebitAmazonResponseDTO> searchMyDebit(int size, String type, int page, LocalDateTime startDate, LocalDateTime endDate) {
+
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("debit.id").descending());
 
-        Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, pageable);
+        Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, startDate, endDate, pageable);
 
         return results;
     }
