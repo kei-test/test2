@@ -87,6 +87,12 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         if (loginRequestDto != null) {
             user = userRepository.findByUsername(loginRequestDto.getUsername());
+            String loginType = null;
+            if (user.getPartnerType() != null) {
+                loginType = "파트너";
+            } else if ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
+                loginType = "관리자";
+            }
 
             IPResponse ipResponse = ipInfoService.getIpInfo(ip);
             countryCode = ipResponse.getCountryCode();
@@ -96,7 +102,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 if (user != null) {
                     loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode);
                 } else if (user.getPartnerType() != null) {
-                    amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
+                    amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType);
                 } else {
                     loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
                 }
@@ -111,7 +117,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
                         handleAuthenticationFailure(response, "정지 또는 삭제된 유저입니다.");
                         if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
                         }
                     }
                     if ("ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
@@ -119,22 +125,22 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                             adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
                             handleAuthenticationFailure(response, "계정이 사용 불가 상태입니다.");
                             if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
+                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
                             }
                         }
                         if (user.getApproveIp() == null || !user.getApproveIp().equals(ip)) {
                             adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-                            if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
-                            }
                             handleAuthenticationFailure(response, "승인되지 않은 IP입니다.");
+                            if (user.getPartnerType() != null) {
+                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 승인되지 않은 IP");
+                            }
                         }
                     }
                     if (validateCheckIp != null) {
                         loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
                         handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
                         if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
                         }
                     }
                     try {
@@ -142,18 +148,17 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         Authentication authentication = authenticationManager.authenticate(authenticationToken);
                         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 
-                        //principal 생성 시 성공 로그 반환
-                        if (principalDetails.getUser().getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", "구분");
+                        if (principalDetails.getUser().getPartnerType() != null || "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole())) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
                         }
                         return authentication;
-
                     } catch (BadCredentialsException e) {
                         recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
-                        }
                         handleAuthenticationFailure(response, "아이디 또는 비밀번호가 일치하지 않습니다.");
+
+                        if (user.getPartnerType() != null || "ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 아이디 또는 비밀번호 불일치");
+                        }
                     }
                 } else {
                     handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");

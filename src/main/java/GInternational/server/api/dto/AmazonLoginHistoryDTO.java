@@ -18,6 +18,8 @@ public class AmazonLoginHistoryDTO {
     private String attemptNickname;
     private String attemptPassword;
     private String attemptIP;
+    private String gubun;
+    private String result;
 
     private LocalDateTime attemptDate;
 }

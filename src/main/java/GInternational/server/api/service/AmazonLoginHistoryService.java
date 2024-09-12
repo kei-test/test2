@@ -10,11 +10,13 @@ import GInternational.server.security.auth.PrincipalDetails;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,7 @@ public class AmazonLoginHistoryService {
      * @param attemptIP 시도한 IP 주소
      * @param attemptNickname 시도한 사용자의 닉네임
      */
-    public void saveAmazonLoginHistory(LoginRequestDto loginRequestDto, String attemptIP, String attemptNickname,String result,String gubun) {
+    public void saveAmazonLoginHistory(LoginRequestDto loginRequestDto, String attemptIP, String attemptNickname, String result, String gubun) {
         AmazonLoginHistory amazonLoginHistory = new AmazonLoginHistory();
         amazonLoginHistory.setAttemptUsername(loginRequestDto.getUsername());
 
@@ -50,62 +52,29 @@ public class AmazonLoginHistoryService {
         amazonLoginHistoryRepository.save(amazonLoginHistory);
     }
 
-    /**
-     * 모든 로그인 이력을 조회.
-     *
-     * @param principalDetails 현재 인증된 사용자의 상세 정보
-     * @return 로그인 이력 목록
-     */
-    public List<AmazonLoginHistoryDTO> getAllAmazonLoginHistory(PrincipalDetails principalDetails) {
+    public List<AmazonLoginHistoryDTO> getAllAmazonLoginHistory(PrincipalDetails principalDetails, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, String nickname) {
+        Specification<AmazonLoginHistory> spec = Specification.where(null);
+
+        if (username != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("attemptUsername"), username));
+        }
+
+        if (nickname != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.equal(root.get("attemptNickname"), nickname));
+        }
+
+        if (startDateTime != null && endDateTime != null) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.between(root.get("attemptDate"), startDateTime, endDateTime));
+        }
+
         Sort sort = Sort.by(Sort.Direction.DESC, "attemptDate");
-        return amazonLoginHistoryRepository.findAll(sort)
-                .stream()
-                .map(amazonLoginHistoryMapper::toDto)
-                .collect(Collectors.toList());
-    }
 
-    /**
-     * 사용자명을 기준으로 로그인 이력을 조회.
-     *
-     * @param username 사용자명
-     * @param principalDetails 현재 인증된 사용자의 상세 정보
-     * @return 로그인 이력 목록
-     */
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByUsername(String username, PrincipalDetails principalDetails) {
-        return amazonLoginHistoryRepository.findByAttemptUsername(username)
-                .stream()
-                .map(amazonLoginHistoryMapper::toDto)
-                .collect(Collectors.toList());
-    }
+        List<AmazonLoginHistory> results = amazonLoginHistoryRepository.findAll(spec, sort);
 
-    /**
-     * 닉네임을 기준으로 로그인 이력을 조회.
-     *
-     * @param nickname 닉네임
-     * @param principalDetails 현재 인증된 사용자의 상세 정보
-     * @return 로그인 이력 목록
-     */
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByNickname(String nickname, PrincipalDetails principalDetails) {
-        return amazonLoginHistoryRepository.findByAttemptNickname(nickname)
-                .stream()
-                .map(amazonLoginHistoryMapper::toDto)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * 특정 날짜 범위 내의 로그인 이력을 조회.
-     *
-     * @param startDate 시작 날짜
-     * @param endDate 종료 날짜
-     * @param principalDetails 현재 인증된 사용자의 상세 정보
-     * @return 로그인 이력 목록
-     */
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByDateRange(LocalDate startDate, LocalDate endDate, PrincipalDetails principalDetails) {
-        LocalDateTime startDateTime = startDate.atStartOfDay();
-        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
-
-        return amazonLoginHistoryRepository.findByAttemptDateBetween(startDateTime, endDateTime)
-                .stream()
+        return results.stream()
                 .map(amazonLoginHistoryMapper::toDto)
                 .collect(Collectors.toList());
     }

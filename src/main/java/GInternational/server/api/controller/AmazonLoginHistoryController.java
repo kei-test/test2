@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -26,52 +28,23 @@ public class AmazonLoginHistoryController {
      * 모든 로그인 이력 조회.
      *
      * @param authentication 현재 인증된 사용자 정보
+     * @param startDate 시작일
+     * @param endDate 종료일
+     * @param username (선택적) 사용자명
+     * @param nickname (선택적) 닉네임
      * @return 로그인 이력 목록
      */
     @GetMapping("/all")
-    public List<AmazonLoginHistoryDTO> getAllAmazonLoginHistory(Authentication authentication) {
+    public List<AmazonLoginHistoryDTO> getAllAmazonLoginHistory(
+            Authentication authentication,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String nickname) {
+
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        return amazonLoginHistoryService.getAllAmazonLoginHistory(principal);
-    }
-
-    /**
-     * username을 기준으로 로그인 이력 조회.
-     *
-     * @param username 사용자명
-     * @param principalDetails 현재 인증된 사용자 정보
-     * @return 로그인 이력 목록
-     */
-    @GetMapping("/username")
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByUsername(@RequestParam String username,
-                                                                       @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return amazonLoginHistoryService.getAmazonLoginHistoryByUsername(username, principalDetails);
-    }
-
-    /**
-     * nickname을 기준으로 로그인 이력 조회.
-     *
-     * @param nickname 닉네임
-     * @param principalDetails 현재 인증된 사용자 정보
-     * @return 로그인 이력 목록
-     */
-    @GetMapping("/nickname")
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByNickname(@RequestParam String nickname,
-                                                                       @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return amazonLoginHistoryService.getAmazonLoginHistoryByNickname(nickname, principalDetails);
-    }
-
-    /**
-     * 특정 날짜 범위의 로그인 이력 조회.
-     *
-     * @param startDate 시작 날짜
-     * @param endDate 종료 날짜
-     * @param principalDetails 현재 인증된 사용자 정보
-     * @return 로그인 이력 목록
-     */
-    @GetMapping("/range")
-    public List<AmazonLoginHistoryDTO> getAmazonLoginHistoryByDateRange(@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
-                                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
-                                                                        @AuthenticationPrincipal PrincipalDetails principalDetails) {
-        return amazonLoginHistoryService.getAmazonLoginHistoryByDateRange(startDate, endDate, principalDetails);
+        return amazonLoginHistoryService.getAllAmazonLoginHistory(principal, startDateTime, endDateTime, username, nickname);
     }
 }
