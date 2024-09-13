@@ -205,8 +205,7 @@ public class DebitService {
                     walletRepository.save(pWallet);
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
                 }
-
-                if (user.isAmazonUser()) {
+            } else if (user.isAmazonUser()) {
                     String referredBy = user.getReferredBy();
                     partnerUser = userRepository.findByUsername(referredBy);
 
@@ -223,8 +222,8 @@ public class DebitService {
                     pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
                     walletRepository.save(pWallet);
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                }
             }
+
 
             user.getWallet().setCasinoBalance(newWalletCasinoBalance);
             long currentAccumulatedCasinoBet = user.getWallet().getAccumulatedCasinoBet();
