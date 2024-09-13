@@ -17,6 +17,7 @@ public class AmznRollingTransactionResDTO {
 
     private Long id;
     private String category;
+    private Long betUserId;
     private String username;
     private String nickname;
     private int betAmount;

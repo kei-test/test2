@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -49,8 +50,8 @@ public class AmznRollingTransactionService {
         trs.setRollingAmount(cvtAmount);  //형변환하여 소수점 제거
         trs.setRemainingAmazonMoney(partnerWallet.getAmazonMoney());
         trs.setRemainingAmazonMileage(partnerWallet.getAmazonMileage());
-        trs.setBetTime(savedDebit.getCreated_at());
-        trs.setProcessedAt(partnerWallet.getCreatedAt());
+        trs.setBetTime(LocalDateTime.now());
+        trs.setProcessedAt(LocalDateTime.now());
         trs.setUser(user); //추천인
         trs.setWallet(user.getWallet()); //아마존 총판 지갑정보
         return amazonRollingTransactionRepository.save(trs);
@@ -60,12 +61,14 @@ public class AmznRollingTransactionService {
     //특정 파트너의 롤링 지급내역 조회
     public List<AmznRollingTransactionResDTO> getIndiRollingTransaction(Long userId, String category, LocalDate startDate, LocalDate endDate, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
+        User betUser = userRepository.findById(userId).orElse(null); // v 추가된 부분
 
         long tatalBetAmount = 0;
         long totalRollingAmount = 0;
 
         if (startDate == null) {startDate = LocalDate.now().plusDays(1);}
         if (endDate == null) {endDate = LocalDate.now().minusDays(1);}
+
         if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType() != null) {
             List<AmznRollingTransactionResDTO> response =  amznRollingTransactionRepositoryImpl.searchByRollingTransactions(userId, category, startDate, endDate);
             for (AmznRollingTransactionResDTO obj : response) {
@@ -73,6 +76,7 @@ public class AmznRollingTransactionService {
                 totalRollingAmount += obj.getRollingAmount();
                 obj.setTotalBetAmount(totalRollingAmount); //총 베팅금
                 obj.setTotalRollingAmount(totalRollingAmount); //총 롤링 지급금
+                obj.setBetUserId(betUser.getId()); // v 추가된 부분
             }
             return response;
         }
