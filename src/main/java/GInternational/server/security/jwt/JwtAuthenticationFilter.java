@@ -108,7 +108,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 }
             }
 
-            if (user != null && loginRequestDto.getUrlGubun().equals("user")) {
+            if (user != null && loginRequestDto.getUrlGubun().equals("user") || loginRequestDto.getUrlGubun().equals("amazon")) {
                 String role = user.getRole();
                 Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
 
@@ -128,13 +128,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                                 amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
                             }
                         }
-//                        if (user.getApproveIp() == null || !user.getApproveIp().equals(ip)) {
-//                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-//                            handleAuthenticationFailure(response, "승인되지 않은 IP입니다.");
-//                            if (user.getPartnerType() != null) {
-//                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 승인되지 않은 IP");
-//                            }
-//                        }
                     }
                     if (validateCheckIp != null) {
                         loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
@@ -218,7 +211,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 } else {
                     handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
                 }
-
             } else if (user != null && ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole()))) {
                 adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
                 if (user.getPartnerType() != null) {
