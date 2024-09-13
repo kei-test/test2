@@ -182,7 +182,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                             tableId,
                             creditAmount,
                             createdAt,
-                            remainAmount - amount,
+                            remainAmount - amount + creditAmount,
                             partnerUsername,
                             partnerNickname,
                             partnerTypeValue
