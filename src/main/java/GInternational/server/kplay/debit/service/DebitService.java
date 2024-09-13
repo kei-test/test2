@@ -204,7 +204,9 @@ public class DebitService {
                     pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
                     walletRepository.save(pWallet);
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                }  else if (user.isAmazonUser()) {
+                }
+
+                if (user.isAmazonUser()) {
                     String referredBy = user.getReferredBy();
                     partnerUser = userRepository.findByUsername(referredBy);
 
