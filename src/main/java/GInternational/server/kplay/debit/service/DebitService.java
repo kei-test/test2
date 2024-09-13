@@ -204,8 +204,9 @@ public class DebitService {
                     pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
                     walletRepository.save(pWallet);
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                }  else if (maeId != null) {
-                    partnerUser = userRepository.findById(maeId).orElse(null);
+                }  else if (user.isAmazonUser()) {
+                    String referredBy = user.getReferredBy();
+                    partnerUser = userRepository.findByUsername(referredBy);
 
                     if (bettingCategory.equals("카지노")) {
                         double cRolling = partnerUser.getCasinoRolling();
