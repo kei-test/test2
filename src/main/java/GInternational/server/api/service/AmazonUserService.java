@@ -19,10 +19,12 @@ import GInternational.server.api.vo.AmazonUserStatusEnum;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -77,7 +79,7 @@ public class AmazonUserService {
         wallet.setOwnerName(requestDTO.getOwnername());
         wallet.setNumber(requestDTO.getNumber());
         wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
+        wallet.setBankPassword("1111");
 
         JoinPoint joinPoint = joinPointRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
@@ -100,9 +102,13 @@ public class AmazonUserService {
         User parentUser = userRepository.findById(principalDetails.getUser().getId())
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
 
+        List<String> recommendedUsers = parentUser.getRecommendedUsers();
+        if (recommendedUsers == null) {
+            recommendedUsers = new ArrayList<>();
+        }
+
         String parentPartnerType = principalDetails.getUser().getPartnerType();
 
-        // 파트너 타입이 대본사, 본사, 부본사, 총판 중 하나인지 검증
         if (!List.of("대본사", "본사", "부본사", "총판").contains(parentPartnerType)) {
             throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "잘못된 파트너 타입입니다.");
         }
@@ -135,28 +141,19 @@ public class AmazonUserService {
         double maxSlotRolling = upperAccount.getSlotRolling();
         double maxCasinoRolling = upperAccount.getCasinoRolling();
 
-        // 요청받은 롤링 값이 상위 계정의 롤링 값 범위를 넘어가면 예외 처리
         if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
             throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
         }
 
-        // 슬롯롤링적립과 카지노롤링적립 설정
         double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
         double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
         subAccount.setSlotRolling(slotRolling);
         subAccount.setCasinoRolling(casinoRolling);
 
-        // 계정 귀속 설정
         assignSubAccountToParent(subAccount, parentUser, parentPartnerType);
 
-        // 계정 저장
         User savedSubAccount = userRepository.save(subAccount);
 
-        // 상위 계정의 추천인 및 롤링 값 차감
-        List<String> recommendedUsers = upperAccount.getRecommendedUsers();
-        if (recommendedUsers == null) {
-            recommendedUsers = new ArrayList<>();
-        }
         recommendedUsers.add(subAccount.getUsername());
         upperAccount.setRecommendedUsers(recommendedUsers);
         upperAccount.setRecommendedCount(upperAccount.getRecommendedCount() + 1);
@@ -165,13 +162,12 @@ public class AmazonUserService {
         expRecordService.recordDailyExp(upperAccount.getId(), upperAccount.getUsername(), upperAccount.getNickname(), 30, ip, ExpRecordEnum.신규회원추천경험치);
         userRepository.save(upperAccount);
 
-        // Wallet 생성 및 저장
         Wallet wallet = new Wallet();
         wallet.setUser(savedSubAccount);
         wallet.setOwnerName(requestDTO.getOwnername());
         wallet.setNumber(requestDTO.getNumber());
         wallet.setBankName(requestDTO.getBankname());
-        wallet.setBankPassword(requestDTO.getBankPassword());
+        wallet.setBankPassword("1111");
 
         JoinPoint joinPoint = joinPointRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));

@@ -137,7 +137,7 @@ public class DebitService {
                 maeId = user.getMaeId();
                 partnerType = user.getPartnerType();
 
-                if (daeId != null && partnerType.equals("본사")) {
+                if (daeId != null || partnerType.equals("본사")) {
                     partnerUser = userRepository.findById(daeId).orElse(null);
 
                     if (bettingCategory.equals("카지노")) {
@@ -154,7 +154,7 @@ public class DebitService {
 
                     //롤링 지금 로그 저장
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                } else if (bonId != null && partnerType.equals("부본사")) {
+                } else if (bonId != null || partnerType.equals("부본사")) {
                     partnerUser = userRepository.findById(bonId).orElse(null);
 
                     if (bettingCategory.equals("카지노")) {
@@ -171,7 +171,7 @@ public class DebitService {
                     walletRepository.save(pWallet);
 
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                } else if (buId != null && partnerType.equals("총판")) {
+                } else if (buId != null || partnerType.equals("총판")) {
                     partnerUser = userRepository.findById(buId).orElse(null);
 
                     if (bettingCategory.equals("카지노")) {
@@ -188,8 +188,24 @@ public class DebitService {
                     walletRepository.save(pWallet);
 
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
-                } else if (chongId != null && partnerType.equals("매장")) {
+                } else if (chongId != null || partnerType.equals("매장")) {
                     partnerUser = userRepository.findById(chongId).orElse(null);
+
+                    if (bettingCategory.equals("카지노")) {
+                        double cRolling = partnerUser.getCasinoRolling();
+                        rollingAmount = betAmount * (cRolling / 100);
+                    } else if (bettingCategory.equals("슬롯")) {
+                        double sRolling = partnerUser.getSlotRolling();
+                        rollingAmount = betAmount * (sRolling / 100);
+                    }
+
+                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                    long cvtAmount = (long) Math.ceil(rollingAmount);
+                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                    walletRepository.save(pWallet);
+                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                }  else if (maeId != null) {
+                    partnerUser = userRepository.findById(maeId).orElse(null);
 
                     if (bettingCategory.equals("카지노")) {
                         double cRolling = partnerUser.getCasinoRolling();
