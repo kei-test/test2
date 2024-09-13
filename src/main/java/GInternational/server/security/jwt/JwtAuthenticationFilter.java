@@ -108,7 +108,55 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 }
             }
 
-            if (user != null && loginRequestDto.getUrlGubun().equals("user") || loginRequestDto.getUrlGubun().equals("amazon")) {
+            if (user != null && loginRequestDto.getUrlGubun().equals("user")) {
+                String role = user.getRole();
+                Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
+
+                if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
+                    if (blockedStatuses.contains(user.getUserGubunEnum())) {
+                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                        handleAuthenticationFailure(response, "정지 또는 삭제된 유저입니다.");
+                        if (user.getPartnerType() != null) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
+                        }
+                    }
+                    if ("ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
+                        if (user.getAdminEnum() == AdminEnum.사용불가) {
+                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
+                            handleAuthenticationFailure(response, "계정이 사용 불가 상태입니다.");
+                            if (user.getPartnerType() != null) {
+                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
+                            }
+                        }
+                    }
+                    if (validateCheckIp != null) {
+                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
+                        handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
+                        if (user.getPartnerType() != null) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
+                        }
+                    }
+                    try {
+                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
+                        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+                        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+
+                        if (principalDetails.getUser().getPartnerType() != null || "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole())) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
+                        }
+                        return authentication;
+                    } catch (BadCredentialsException e) {
+                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                        handleAuthenticationFailure(response, "아이디 또는 비밀번호가 일치하지 않습니다.");
+
+                        if (user.getPartnerType() != null || "ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
+                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 아이디 또는 비밀번호 불일치");
+                        }
+                    }
+                } else {
+                    handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
+                }
+            } else if (user != null && loginRequestDto.getUrlGubun().equals("amazon")) {
                 String role = user.getRole();
                 Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
 
