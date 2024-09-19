@@ -7,6 +7,7 @@ import GInternational.server.common.exception.ExceptionCode;
 import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.kplay.debit.dto.DebitAmazonResponseDTO;
 import GInternational.server.kplay.debit.entity.Debit;
+import GInternational.server.security.auth.PrincipalDetails;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -17,6 +18,8 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -105,39 +108,75 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
     }
 
     @Override
-    public Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        // type 매개변수를 기반으로 조건 정의
+    public Page<DebitAmazonResponseDTO> findByUserIdWithCreditAmount(String type, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable, PrincipalDetails principalDetails) {
         BooleanExpression typeCondition = null;
-        if ("casino".equals(type)) {
+        User currentUser = principalDetails.getUser();
+        String partnerType = currentUser.getPartnerType();
+        String role = currentUser.getRole();
+
+        if (role == null || (!role.equals("ROLE_ADMIN") && (partnerType == null || !Arrays.asList("대본사", "본사", "부본사", "총판", "매장").contains(partnerType)))) {
+            throw new RestControllerException(ExceptionCode.PERMISSION_DENIED, "권한이 없습니다.");
+        }
+
+        if ("casino".equalsIgnoreCase(type)) {
             typeCondition = debit.prd_id.between(1, 99);
-        } else if ("sports".equals(type)) {
+        } else if ("sports".equalsIgnoreCase(type)) {
             typeCondition = debit.prd_id.between(100, 199);
-        } else if ("slot".equals(type)) {
+        } else if ("slot".equalsIgnoreCase(type)) {
             typeCondition = debit.prd_id.between(200, 299);
         }
 
         BooleanExpression userCondition = user.isAmazonUser.isTrue();
-        BooleanExpression dateCondition = debit.created_at.between(startDate, endDate); // 날짜 조건 추가
-        BooleanExpression finalCondition = userCondition.and(dateCondition); // 날짜 조건과 사용자 조건 결합
+        BooleanExpression dateCondition = debit.created_at.between(startDate, endDate);
+        BooleanExpression finalCondition = userCondition.and(dateCondition);
         if (typeCondition != null) {
             finalCondition = finalCondition.and(typeCondition);
         }
 
-        List<Tuple> results = queryFactory
-                .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
-                        debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.aasId, user.username, user.nickname)
-                .from(debit)
-                .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
-                .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId)))
-                .join(product).on(product.prd_id.eq(game.prdId))
-                .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
-                .where(finalCondition) // 최종 조건 적용
-                .orderBy(debit.createdAt.desc())
-                .distinct()
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
+        if (role.equals("ROLE_USER")) {
+            finalCondition = finalCondition.and(debit.user_id.in(
+                    queryFactory
+                            .select(user.aasId)
+                            .from(user)
+                            .where(user.isAmazonUser.isTrue()
+                                    .and(user.referredBy.eq(currentUser.getUsername())))
+            ));
+        }
+
+        List<Tuple> results;
+
+        if ("casino".equalsIgnoreCase(type)) {
+            results = queryFactory
+                    .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
+                            debit.credit_amount, debit.created_at, debit.remainAmount,
+                            product.prd_name, credit.amount, user.aasId, user.username, user.nickname)
+                    .from(debit)
+                    .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
+                    .join(product).on(product.prd_id.eq(debit.prd_id))
+                    .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
+                    .where(finalCondition)
+                    .orderBy(debit.createdAt.desc())
+                    .distinct()
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+        } else {
+            results = queryFactory
+                    .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
+                            debit.credit_amount, debit.created_at, debit.remainAmount,
+                            product.prd_name, credit.amount, game.name, user.aasId, user.username, user.nickname)
+                    .from(debit)
+                    .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
+                    .join(product).on(product.prd_id.eq(debit.prd_id))
+                    .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId)))
+                    .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
+                    .where(finalCondition)
+                    .orderBy(debit.createdAt.desc())
+                    .distinct()
+                    .offset(pageable.getOffset())
+                    .limit(pageable.getPageSize())
+                    .fetch();
+        }
 
         List<DebitAmazonResponseDTO> list = results.stream()
                 .map(tuple -> {
@@ -152,7 +191,7 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                     Long remainAmount = tuple.get(debit.remainAmount);
                     String prdName = tuple.get(product.prd_name);
                     Integer creditAmountValue = tuple.get(credit.amount);
-                    String gameName = tuple.get(game.name);
+                    String gameName = ("casino".equalsIgnoreCase(type)) ? tuple.get(product.prd_name) : tuple.get(game.name);
                     String username = tuple.get(user.username);
                     String nickname = tuple.get(user.nickname);
                     Integer aasId = tuple.get(user.aasId);
@@ -191,13 +230,11 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
                 .collect(Collectors.toList());
 
         long totalElements = queryFactory
-                .select(debit.id, debit.amount, debit.prd_id, debit.txnId, debit.game_id, debit.table_id,
-                        debit.credit_amount, debit.created_at, debit.remainAmount,
-                        product.prd_name, credit.amount, game.name, user.aasId)
+                .select(debit.id)
                 .from(debit)
                 .leftJoin(credit).on(debit.user_id.eq(credit.user_id).and(debit.txnId.eq(credit.txnId)))
+                .join(product).on(product.prd_id.eq(debit.prd_id))
                 .leftJoin(game).on(debit.game_id.eq(game.gameIndex).and(debit.prd_id.eq(game.prdId)))
-                .join(product).on(product.prd_id.eq(game.prdId))
                 .leftJoin(user).on(user.aasId.eq(debit.user_id).and(userCondition))
                 .where(finalCondition)
                 .distinct()
@@ -213,9 +250,6 @@ public class DebitRepositoryImpl implements DebitCustomRepository {
         User user = userRepository.findByAasId(aasId).orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND));
         if (user != null && user.getReferredBy() != null) {
             User partnerUser = userRepository.findByUsername(user.getReferredBy());
-            logger.debug("Amazon user: {}", user);
-            logger.debug("Found partner user: {}", partnerUser);
-            logger.debug("Partner type: {}", partnerUser != null ? partnerUser.getPartnerType() : "null");
             return partnerUser;
         }
         return null;

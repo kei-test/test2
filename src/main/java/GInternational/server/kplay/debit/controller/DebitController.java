@@ -1,16 +1,20 @@
 package GInternational.server.kplay.debit.controller;
 
 import GInternational.server.common.dto.MultiResponseDto;
+import GInternational.server.common.exception.ExceptionCode;
+import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.kplay.debit.dto.DebitAmazonResponseDTO;
 import GInternational.server.kplay.debit.dto.DebitRequestDTO;
 import GInternational.server.kplay.debit.dto.DebitResponseDTO;
 import GInternational.server.kplay.debit.dto.DebitUserResponseDTO;
 import GInternational.server.kplay.debit.service.DebitService;
+import GInternational.server.security.auth.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,11 +75,22 @@ public class DebitController {
                                         @RequestParam int size,
                                         @RequestParam int page,
                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+                                        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                        Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
 
-        Page<DebitAmazonResponseDTO> pages = debitService.searchMyDebit(size, type, page, startDateTime, endDateTime);
-        return new ResponseEntity<>(new MultiResponseDto<>(pages.getContent(), pages), HttpStatus.OK);
+        try {
+            Page<DebitAmazonResponseDTO> pages = debitService.searchMyDebits(size, type, page, startDateTime, endDateTime, principal);
+            return ResponseEntity.ok(new MultiResponseDto<>(pages.getContent(), pages));
+        } catch (RestControllerException e) {
+            if (e.getExceptionCode() == ExceptionCode.PERMISSION_DENIED) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            } else if (e.getExceptionCode() == ExceptionCode.USER_NOT_FOUND) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("서버 에러 발생");
+        }
     }
 }

@@ -3,6 +3,7 @@ package GInternational.server.kplay.debit.service;
 import GInternational.server.amzn.repo.AmazonRollingTransactionRepository;
 import GInternational.server.amzn.service.AmznRollingTransactionService;
 import GInternational.server.api.service.ExpRecordService;
+import GInternational.server.api.service.UserService;
 import GInternational.server.api.vo.ExpRecordEnum;
 import GInternational.server.common.exception.ExceptionCode;
 import GInternational.server.common.exception.RestControllerException;
@@ -22,21 +23,28 @@ import GInternational.server.security.auth.PrincipalDetails;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static GInternational.server.kplay.credit.entity.QCredit.credit;
+import static GInternational.server.kplay.debit.entity.QDebit.debit;
 import static GInternational.server.kplay.game.entity.QGame.game;
 import static GInternational.server.kplay.product.entity.QProduct.product;
 import static GInternational.server.api.entity.QUser.user;
@@ -54,6 +62,7 @@ public class DebitService {
     private final ExpRecordService expRecordService;
     private final AmazonRollingTransactionRepository amazonRollingTransactionRepository;
     private final AmznRollingTransactionService amznRollingTransactionService;
+    private final UserService userService;
 
     private static final Logger logger = LoggerFactory.getLogger(DebitService.class);
 
@@ -351,15 +360,14 @@ public class DebitService {
      * @param page 요청한 페이지 번호
      * @return Page<DebitAmazonResponseDTO> 아마존 서비스를 통한 사용자 베팅 내역 페이지
      */
-    public Page<DebitAmazonResponseDTO> searchMyDebit(int size, String type, int page, LocalDateTime startDate, LocalDateTime endDate) {
+    public Page<DebitAmazonResponseDTO> searchMyDebits(int size, String type, int page, LocalDateTime startDate, LocalDateTime endDate, PrincipalDetails principalDetails) {
 
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("debit.id").descending());
 
-        Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, startDate, endDate, pageable);
+        Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, startDate, endDate, pageable, principalDetails);
 
         return results;
     }
-
 
     /**
      * prd_id에 따라 게임 카테고리를 결정합니다.

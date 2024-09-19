@@ -25,17 +25,18 @@ public class AmznLogService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Page<AmznLogDTO> amazonSystemLog(String username, String nickname, LocalDate startDate, LocalDate endDate, int page, int size) {
-        // LocalDate method 오늘을 기준으로 + - 범위를 정하고 그 안에 속한 날짜의 데이터만 가져옴
-        //null 일 경우 당일의 데이터만 가져옴
         if (startDate == null) {
-            startDate = LocalDate.now().plusDays(1);
+            startDate = LocalDate.now();
         }
         if (endDate == null) {
-            endDate = LocalDate.now().minusDays(1);
+            endDate = LocalDate.now();
         }
         Pageable pageable = PageRequest.of(page -1, size);
         Page<AmznLogDTO> content = amznLogCustomImpl.searchByAmazonLoginHistory(username,nickname,startDate,endDate,pageable);
         List<AmznLogDTO> list = content.getContent();
         return new PageImpl<>(list,pageable,content.getTotalElements());
     }
+
+
+
 }

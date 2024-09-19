@@ -3,13 +3,19 @@ package GInternational.server.amzn.controller;
 import GInternational.server.amzn.dto.indi.business.AmznPartnerRollingInfo;
 import GInternational.server.amzn.dto.indi.business.AmznPartnerWalletDTO;
 import GInternational.server.amzn.dto.indi.business.AmznRollingTransactionResDTO;
+import GInternational.server.amzn.dto.indi.business.AmznTotalRollingAmountDTO;
 import GInternational.server.amzn.dto.indi.calculate.AmznIndiTotalCalculateDTO;
 import GInternational.server.amzn.dto.indi.calculate.UserBetweenCalculateDTO;
 import GInternational.server.amzn.dto.indi.indi_response.AmznIndiPartnerResDTO;
 import GInternational.server.amzn.service.AmznIndiService;
 import GInternational.server.amzn.service.AmznRollingTransactionService;
 import GInternational.server.security.auth.PrincipalDetails;
+import io.swagger.v3.oas.annotations.headers.Header;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,6 +73,19 @@ public class AmznIndiController {
         List<AmznRollingTransactionResDTO> response = amznRollingTransactionService.getIndiRollingTransaction(userId,category,startDate,endDate,principal);
         return new ResponseEntity(response, HttpStatus.OK);
     }
+
+    //특정 파트너에게 지급된 롤링지급액,하위 유저들의 베팅액 집계
+    @GetMapping("/indi-total-rolling-transaction")
+    public ResponseEntity getIndiTotalRollingAmount(@RequestParam Long userId,
+                                                    @RequestParam(required = false) String category,
+                                                    Authentication authentication) {
+        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+        AmznTotalRollingAmountDTO response = amznRollingTransactionService.getTotalRollingTransaction(userId,category,principal);
+        return new ResponseEntity(response, HttpStatus.OK);
+    }
+
+
+
 
 
     //특정 파트너의 현재 지갑 금액정보

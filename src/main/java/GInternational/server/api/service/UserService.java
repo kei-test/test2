@@ -8,6 +8,7 @@ import GInternational.server.api.mapper.UserResponseMapper;
 import GInternational.server.api.mapper.WalletRequestMapper;
 import GInternational.server.api.repository.*;
 import GInternational.server.api.vo.ExpRecordEnum;
+import GInternational.server.api.vo.PointLogCategoryEnum;
 import GInternational.server.api.vo.UserGubunEnum;
 import GInternational.server.api.vo.UserMonitoringStatusEnum;
 import GInternational.server.common.exception.ExceptionCode;
@@ -41,6 +42,7 @@ public class UserService {
     private final LoginStatisticService loginStatisticService;
     private final ExpRecordService expRecordService;
     private final JoinPointRepository joinPointRepository;
+    private final PointLogService pointLogService;
 
 
 
@@ -112,6 +114,15 @@ public class UserService {
                     user.setStore(referrer.getDistributor());
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 }
+                user.setReferredBy(referrer.getUsername());
+
+                List<String> recommendedUsers = referrer.getRecommendedUsers();
+                if (recommendedUsers == null) {
+                    recommendedUsers = new ArrayList<>();
+                }
+                recommendedUsers.add(user.getUsername());
+                referrer.setRecommendedUsers(recommendedUsers);
+                referrer.setRecommendedCount(referrer.getRecommendedCount() + 1);
             }
         }
 
@@ -160,7 +171,14 @@ public class UserService {
         wallet.setTotalAmazonDeposit(0);
         wallet.setTotalAmazonWithdraw(0);
         wallet.setTotalAmazonSettlement(0);
+
+        JoinPoint joinPoint = joinPointRepository.findById(1L)
+                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
+        int point = joinPoint.getPoint();
+        wallet.setPoint(wallet.getPoint() + point);
         walletRepository.save(wallet);
+
+        pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, ip, "");
 
         return userResponseMapper.toDto(savedUser);
     }
@@ -346,13 +364,14 @@ public class UserService {
         wallet.setTotalAmazonDeposit(0);
         wallet.setTotalAmazonWithdraw(0);
         wallet.setTotalAmazonSettlement(0);
-        walletRepository.save(wallet);
 
         JoinPoint joinPoint = joinPointRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
         int point = joinPoint.getPoint();
         wallet.setPoint(wallet.getPoint() + point);
         walletRepository.save(wallet);
+
+        pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, ip, "");
 
         return userResponseMapper.toDto(savedUser);
     }
@@ -528,6 +547,10 @@ public class UserService {
 
         user.setLastVisit(LocalDateTime.now());
         userRepository.save(user);
+    }
+
+    public User findPartnerUserByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }
 

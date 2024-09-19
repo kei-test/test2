@@ -70,13 +70,16 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
                 // 문자열을 다시 LocalDateTime으로 파싱
                 LocalDateTime parsedIssuedAt = LocalDateTime.parse(issuedAtFormatted, formatter);
 
+
                 // 사용자의 마지막 로그인 시간과 비교
-                long secondsDifference = ChronoUnit.SECONDS.between(parsedIssuedAt, user.getLastVisit());
-                if (Math.abs(secondsDifference) > 5) { // 2초 이상 차이가 나면 오류로 처리
-                    response.setContentType("application/json");
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("{\"error\": \"다시 로그인하세요.\"}");
-                    return;
+                if (!user.getRole().equals("ROLE_ADMIN")) {
+                    long secondsDifference = ChronoUnit.SECONDS.between(parsedIssuedAt, user.getLastVisit());
+                    if (Math.abs(secondsDifference) > 5) { // 2초 이상 차이가 나면 오류로 처리
+                        response.setContentType("application/json");
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"error\": \"다시 로그인하세요.\"}");
+                        return;
+                    }
                 }
 
                 //인증은 토큰 검증시 끝. 인증을 하기 위함이 아닌 스프링 시큐리티가 수행해주는 권한 처리를 위해
@@ -89,6 +92,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
                 //스프링 시큐리티의 세션에 강제 접근
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+
             }
         } catch (TokenExpiredException e) {
             // 토큰 만료 시 처리

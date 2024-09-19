@@ -2,6 +2,7 @@ package GInternational.server.amzn.service;
 
 import GInternational.server.amzn.dto.indi.business.AmznPartnerRollingInfo;
 import GInternational.server.amzn.dto.indi.business.AmznRollingTransactionResDTO;
+import GInternational.server.amzn.dto.indi.business.AmznTotalRollingAmountDTO;
 import GInternational.server.amzn.repo.AmazonRollingTransactionRepository;
 import GInternational.server.amzn.repo.AmznRollingTransactionRepositoryImpl;
 import GInternational.server.api.entity.AmazonRollingTransaction;
@@ -61,13 +62,14 @@ public class AmznRollingTransactionService {
     //특정 파트너의 롤링 지급내역 조회
     public List<AmznRollingTransactionResDTO> getIndiRollingTransaction(Long userId, String category, LocalDate startDate, LocalDate endDate, PrincipalDetails principalDetails) {
         User user = userRepository.findByUsername(principalDetails.getUsername());
-        User betUser = userRepository.findById(userId).orElse(null); // v 추가된 부분
+        User betUser = userRepository.findById(userId).orElse(null);
 
         long tatalBetAmount = 0;
         long totalRollingAmount = 0;
 
-        if (startDate == null) {startDate = LocalDate.now().plusDays(1);}
-        if (endDate == null) {endDate = LocalDate.now().minusDays(1);}
+        if (startDate == null) {startDate = LocalDate.now();}
+        if (endDate == null) {endDate = LocalDate.now();}
+
 
         if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType() != null) {
             List<AmznRollingTransactionResDTO> response =  amznRollingTransactionRepositoryImpl.searchByRollingTransactions(userId, category, startDate, endDate);
@@ -82,6 +84,23 @@ public class AmznRollingTransactionService {
         }
         return null;
     }
+
+
+    public AmznTotalRollingAmountDTO getTotalRollingTransaction(Long userId,String category,PrincipalDetails principalDetails) {
+        User user = userRepository.findByUsername(principalDetails.getUsername());
+        if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType() != null) {
+            AmznTotalRollingAmountDTO response = amznRollingTransactionRepositoryImpl.getTotalRollingTransaction(userId,category);
+            response.setTotalBetAmount((long) response.getRawBetAmount());
+            return response;
+        }
+        return null;
+    }
+
+
+
+
+
+
 
     //특정 파트너의 롤링 지급내역 조회화면의 왼상단 파트너 요율 조회
     public AmznPartnerRollingInfo getPartnerRollingInfo(Long id, PrincipalDetails principalDetails) {
