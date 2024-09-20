@@ -50,6 +50,11 @@ public class ExchangeService {
     public void exchangeSportsBalance(Long userId, HttpServletRequest request, ExchangeRequestDTO exchangeRequestDTO, PrincipalDetails principalDetails) {
         User user = userRepository.findById(userId).orElseThrow
                 (()-> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저 정보 없음"));
+
+        if (user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) {
+            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "어드민계정은 환전 신청을 할 수 없습니다");
+        }
+
         Wallet wallet = walletRepository.findById(user.getWallet().getId()).orElseThrow
                 (()-> new RestControllerException(ExceptionCode.WALLET_INFO_NOT_FOUND, "금액 정보 없음"));
 

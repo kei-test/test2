@@ -10,7 +10,7 @@ import javax.persistence.Column;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ExpSettingReqDTO {
-
+    private Long id;
     private long minExp;
     private long maxExp;
     private int lv;

@@ -9,9 +9,7 @@ import GInternational.server.api.mapper.UserResponseMapper;
 import GInternational.server.api.repository.*;
 import GInternational.server.api.utilities.AuditContext;
 import GInternational.server.api.utilities.AuditContextHolder;
-import GInternational.server.api.vo.TransactionEnum;
-import GInternational.server.api.vo.UserGubunEnum;
-import GInternational.server.api.vo.UserMonitoringStatusEnum;
+import GInternational.server.api.vo.*;
 import GInternational.server.common.exception.ExceptionCode;
 import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.common.ipinfo.service.IpInfoService;
@@ -53,6 +51,7 @@ public class ManagerService {
     private final ArticleRepository articleRepository;
     private final BetHistoryRepository betHistoryRepository;
     private final JoinPointRepository joinPointRepository;
+    private final PointLogService pointLogService;
 
 
     /**
@@ -160,6 +159,8 @@ public class ManagerService {
             Wallet userWallet = user.getWallet();
             userWallet.setPoint(userWallet.getPoint() + point);
             walletRepository.save(userWallet);
+
+            pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, clientIp, "");
 
             return userResponseMapper.toDto(savedUser);
         } else {

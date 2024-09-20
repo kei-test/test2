@@ -20,12 +20,12 @@ public interface WalletRepository extends JpaRepository<Wallet,Long> {
     @Query("SELECT w FROM wallet w JOIN FETCH w.user WHERE w.id = :walletId")
     Optional<Wallet> findByIdWithUser(@Param("walletId") Long walletId);
 
-    // 모든 Wallet의 sportsBalance 합계 조회
-    @Query("SELECT SUM(w.sportsBalance) FROM wallet w")
+    // ROLE_USER인 유저들의 sportsBalance 합계 조회
+    @Query("SELECT SUM(w.sportsBalance) FROM wallet w JOIN w.user u WHERE u.role = 'ROLE_USER'")
     Long sumAllSportsBalance();
 
-    // 모든 Wallet의 point 합계 조회
-    @Query("SELECT SUM(w.point) FROM wallet w")
+    // ROLE_USER인 유저들의 point 합계 조회
+    @Query("SELECT SUM(w.point) FROM wallet w JOIN w.user u WHERE u.role = 'ROLE_USER'")
     Long sumAllPoint();
 
     @Query("SELECT COUNT(w) FROM wallet w WHERE w.todayChargedCount = 1")

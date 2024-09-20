@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2")
@@ -17,15 +18,15 @@ public class ExpSettingController {
     private final ExpSettingService expSettingService;
 
     @PostMapping("/managers/exp-settings")
-    public ResponseEntity<ExpSettingResDTO> createExpSetting(@RequestBody ExpSettingReqDTO reqDTO) {
-        ExpSettingResDTO createdExpSetting = expSettingService.createExpSetting(reqDTO);
-        return ResponseEntity.ok(createdExpSetting);
+    public ResponseEntity<List<ExpSettingResDTO>> createExpSettings(@RequestBody List<ExpSettingReqDTO> reqDTOList) {
+        List<ExpSettingResDTO> createdExpSettings = expSettingService.createExpSettings(reqDTOList);
+        return ResponseEntity.ok(createdExpSettings);
     }
 
-    @PutMapping("/managers/exp-settings/update/{id}")
-    public ResponseEntity<ExpSettingResDTO> updateExpSetting(@PathVariable Long id, @RequestBody ExpSettingReqDTO reqDTO) {
-        ExpSettingResDTO updatedExpSetting = expSettingService.updateExpSetting(id, reqDTO);
-        return ResponseEntity.ok(updatedExpSetting);
+    @PutMapping("/managers/exp-settings/update")
+    public ResponseEntity<List<ExpSettingResDTO>> updateExpSetting(@RequestBody List<ExpSettingReqDTO> reqDTOList) {
+        List<ExpSettingResDTO> updatedExpSettings = expSettingService.updateExpSettings(reqDTOList);
+        return ResponseEntity.ok(updatedExpSettings);
     }
 
     @GetMapping("/managers/exp-settings")

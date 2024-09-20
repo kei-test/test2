@@ -20,23 +20,27 @@ public class ExpSettingService {
 
     private final ExpSettingRepository expSettingRepository;
 
-    public ExpSettingResDTO createExpSetting(ExpSettingReqDTO reqDTO) {
-        ExpSetting expSetting = new ExpSetting();
-        expSetting.setMinExp(reqDTO.getMinExp());
-        expSetting.setMaxExp(reqDTO.getMaxExp());
-        expSetting.setLv(reqDTO.getLv());
-        ExpSetting savedExpSetting = expSettingRepository.save(expSetting);
-        return new ExpSettingResDTO(savedExpSetting.getId(), savedExpSetting.getMinExp(), savedExpSetting.getMaxExp(), savedExpSetting.getLv());
+    public List<ExpSettingResDTO> createExpSettings(List<ExpSettingReqDTO> reqDTOList) {
+        return reqDTOList.stream().map(reqDTO -> {
+            ExpSetting expSetting = new ExpSetting();
+            expSetting.setMinExp(reqDTO.getMinExp());
+            expSetting.setMaxExp(reqDTO.getMaxExp());
+            expSetting.setLv(reqDTO.getLv());
+            ExpSetting savedExpSetting = expSettingRepository.save(expSetting);
+            return new ExpSettingResDTO(savedExpSetting.getId(), savedExpSetting.getMinExp(), savedExpSetting.getMaxExp(), savedExpSetting.getLv());
+        }).collect(Collectors.toList());
     }
 
-    public ExpSettingResDTO updateExpSetting(Long id, ExpSettingReqDTO reqDTO) {
-        ExpSetting expSetting = expSettingRepository.findById(id)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND));
-        expSetting.setMinExp(reqDTO.getMinExp());
-        expSetting.setMaxExp(reqDTO.getMaxExp());
-        expSetting.setLv(reqDTO.getLv());
-        ExpSetting updatedExpSetting = expSettingRepository.save(expSetting);
-        return new ExpSettingResDTO(updatedExpSetting.getId(), updatedExpSetting.getMinExp(), updatedExpSetting.getMaxExp(), updatedExpSetting.getLv());
+    public List<ExpSettingResDTO> updateExpSettings(List<ExpSettingReqDTO> reqDTOList) {
+        return reqDTOList.stream().map(reqDTO -> {
+            ExpSetting expSetting = expSettingRepository.findById(reqDTO.getId())
+                    .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND));
+            expSetting.setMinExp(reqDTO.getMinExp());
+            expSetting.setMaxExp(reqDTO.getMaxExp());
+            expSetting.setLv(reqDTO.getLv());
+            ExpSetting updatedExpSetting = expSettingRepository.save(expSetting);
+            return new ExpSettingResDTO(updatedExpSetting.getId(), updatedExpSetting.getMinExp(), updatedExpSetting.getMaxExp(), updatedExpSetting.getLv());
+        }).collect(Collectors.toList());
     }
 
     public List<ExpSettingResDTO> getAllExpSettings() {

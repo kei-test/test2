@@ -110,10 +110,10 @@ public class UserService {
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
                 // 파트너 유형에 따라 분기 처리
                 if ("대본사".equals(referrer.getPartnerType())) {
-                    user.setDistributor(referrer.getDistributor());
+                    user.setDistributor(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
-                    user.setStore(referrer.getDistributor());
+                    user.setStore(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 }
                 user.setReferredBy(referrer.getUsername());
@@ -125,6 +125,12 @@ public class UserService {
                 recommendedUsers.add(user.getUsername());
                 referrer.setRecommendedUsers(recommendedUsers);
                 referrer.setRecommendedCount(referrer.getRecommendedCount() + 1);
+
+                expRecordService.recordDailyExp(referrer.getId(), referrer.getUsername(), referrer.getNickname(), 30, ip, ExpRecordEnum.신규회원추천경험치);
+
+                userRepository.save(referrer);
+            } else {
+                throw new RestControllerException(ExceptionCode.REFERRER_NOT_FOUNT, "존재하지 않는 추천인(추천코드)입니다.");
             }
         }
 
@@ -173,17 +179,10 @@ public class UserService {
         wallet.setTotalAmazonDeposit(0);
         wallet.setTotalAmazonWithdraw(0);
         wallet.setTotalAmazonSettlement(0);
-
-        JoinPoint joinPoint = joinPointRepository.findById(1L)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "JoinPoint 설정을 찾을 수 없습니다."));
-        int point = joinPoint.getPoint();
-        wallet.setPoint(wallet.getPoint() + point);
         walletRepository.save(wallet);
 
         savedUser.setWallet(wallet);
         userRepository.save(savedUser);
-
-        pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, ip, "");
 
         return userResponseMapper.toDto(savedUser);
     }
@@ -320,10 +319,10 @@ public class UserService {
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
                 // 파트너 유형에 따라 분기 처리
                 if ("대본사".equals(referrer.getPartnerType())) {
-                    user.setDistributor(referrer.getDistributor());
+                    user.setDistributor(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
-                    user.setStore(referrer.getDistributor());
+                    user.setStore(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 }
                 user.setReferredBy(referrer.getUsername());
@@ -335,6 +334,12 @@ public class UserService {
                 recommendedUsers.add(user.getUsername());
                 referrer.setRecommendedUsers(recommendedUsers);
                 referrer.setRecommendedCount(referrer.getRecommendedCount() + 1);
+
+                expRecordService.recordDailyExp(referrer.getId(), referrer.getUsername(), referrer.getNickname(), 30, ip, ExpRecordEnum.신규회원추천경험치);
+
+                userRepository.save(referrer);
+            } else {
+                throw new RestControllerException(ExceptionCode.REFERRER_NOT_FOUNT, "존재하지 않는 추천인(추천코드)입니다.");
             }
         }
 
