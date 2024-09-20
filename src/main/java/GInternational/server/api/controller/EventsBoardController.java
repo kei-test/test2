@@ -54,7 +54,7 @@ public class EventsBoardController {
      * @param request 관리자 ip 정보
      * @return 수정된 이벤트 정보
      */
-    @PatchMapping("/managers/{eventId}")
+    @PatchMapping("/managers/{eventId}/events/update")
     public ResponseEntity<SingleResponseDto<EventsBoardResponseDTO>> updateEvents(@PathVariable("eventId") @Positive Long eventId,
                                                                                   @RequestBody EventsBoardRequestDTO eventsBoardRequestDTO,
                                                                                   HttpServletRequest request,
