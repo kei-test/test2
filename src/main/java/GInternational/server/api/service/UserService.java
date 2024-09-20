@@ -103,7 +103,9 @@ public class UserService {
         boolean isAmazonCode = false;
         if (referrer == null) {
             List<User> referrerList = userRepository.findByAmazonCode(referrerInput);
-            if (!referrerList.isEmpty()) {
+            if (referrerList.isEmpty()) {
+                throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "추천인 또는 추천코드를 정확하게 입력하세요");
+            } else if (!referrerList.isEmpty()) {
                 referrer = referrerList.get(0); // 첫 번째 요소를 추천인으로 설정
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
                 // 파트너 유형에 따라 분기 처리
@@ -177,6 +179,9 @@ public class UserService {
         int point = joinPoint.getPoint();
         wallet.setPoint(wallet.getPoint() + point);
         walletRepository.save(wallet);
+
+        savedUser.setWallet(wallet);
+        userRepository.save(savedUser);
 
         pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, ip, "");
 
@@ -313,8 +318,23 @@ public class UserService {
             if (!referrerList.isEmpty()) {
                 referrer = referrerList.get(0); // 첫 번째 요소를 추천인으로 설정
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
-                user.setDistributor(referrer.getDistributor());
-                user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+                // 파트너 유형에 따라 분기 처리
+                if ("대본사".equals(referrer.getPartnerType())) {
+                    user.setDistributor(referrer.getDistributor());
+                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+                } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
+                    user.setStore(referrer.getDistributor());
+                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+                }
+                user.setReferredBy(referrer.getUsername());
+
+                List<String> recommendedUsers = referrer.getRecommendedUsers();
+                if (recommendedUsers == null) {
+                    recommendedUsers = new ArrayList<>();
+                }
+                recommendedUsers.add(user.getUsername());
+                referrer.setRecommendedUsers(recommendedUsers);
+                referrer.setRecommendedCount(referrer.getRecommendedCount() + 1);
             }
         }
 
@@ -370,6 +390,9 @@ public class UserService {
         int point = joinPoint.getPoint();
         wallet.setPoint(wallet.getPoint() + point);
         walletRepository.save(wallet);
+
+        savedUser.setWallet(wallet);
+        userRepository.save(savedUser);
 
         pointLogService.recordPointLog(savedUser.getId(), (long) point, PointLogCategoryEnum.가입축하포인트, ip, "");
 
@@ -547,10 +570,6 @@ public class UserService {
 
         user.setLastVisit(LocalDateTime.now());
         userRepository.save(user);
-    }
-
-    public User findPartnerUserByUsername(String username) {
-        return userRepository.findByUsername(username);
     }
 }
 
