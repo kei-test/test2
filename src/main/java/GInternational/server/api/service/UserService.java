@@ -194,12 +194,15 @@ public class UserService {
      */
     private String calculateStructure(User referrer) {
         StringBuilder structure = new StringBuilder();
+        User currentReferrer = referrer;
+
+        System.out.println("calculateStructure 메서드 / referrer의 username : " + referrer.getUsername());
+        System.out.println("calculateStructure 메서드 / referrer의 partnerType : " + referrer.getPartnerType());
 
         // 상위 파트너 찾기
-        User currentReferrer = referrer;
         while (currentReferrer != null) {
             if ("DST".equals(currentReferrer.getPartnerType())) {
-                structure.insert(0, "대본사(" + currentReferrer.getUsername() + ")");
+                structure.insert(0, "DST(" + currentReferrer.getUsername() + ")");
                 return structure.toString(); // DST인 경우 즉시 반환
             }
             if (currentReferrer.getPartnerType() != null && !currentReferrer.getPartnerType().isEmpty()) {
@@ -207,41 +210,73 @@ public class UserService {
             } else {
                 structure.insert(0, "()");
             }
-            if ("대본사".equals(currentReferrer.getPartnerType())) {
-                break;
+
+            // 상위 파트너 탐색
+            switch (currentReferrer.getPartnerType()) {
+                case "본사":
+                    Optional<User> optionalReferrer = userRepository.findById(currentReferrer.getDaeId());
+                    if (optionalReferrer.isPresent()) {
+                        currentReferrer = optionalReferrer.get();
+                    }
+                    break;
+                case "부본사":
+                    Optional<User> optionalReferrerForBon = userRepository.findById(currentReferrer.getBonId());
+                    if (optionalReferrerForBon.isPresent()) {
+                        currentReferrer = optionalReferrerForBon.get();
+                    }
+                    break;
+                case "총판":
+                    Optional<User> optionalReferrerForBu = userRepository.findById(currentReferrer.getBuId());
+                    if (optionalReferrerForBu.isPresent()) {
+                        currentReferrer = optionalReferrerForBu.get();
+                    }
+                    break;
+                case "매장":
+                    Optional<User> optionalReferrerForChong = userRepository.findById(currentReferrer.getChongId());
+                    if (optionalReferrerForChong.isPresent()) {
+                        currentReferrer = optionalReferrerForChong.get();
+                    }
+                    break;
+                case "대본사":
+                    currentReferrer = null; // 대본사일 경우 더 이상 상위 파트너 없음
+                    break;
+                default:
+                    currentReferrer = null;
             }
-            currentReferrer = userRepository.findByUsername(currentReferrer.getReferredBy());
+
             if (currentReferrer != null) {
                 structure.insert(0, "-");
             }
         }
 
-        // 필요한 계층을 모두 포함하도록 빈 문자열로 초기화된 파트너 타입을 설정
-        String[] partnerTypes = {"본사", "부본사", "총판", "매장"};
+        // 하위 파트너 탐색
+        String nextPartnerType = "본사";
+        User currentPartner = referrer;
+        String[] partnerTypes = {"부본사", "총판", "매장"};
         Map<String, String> partnerMap = new HashMap<>();
         for (String type : partnerTypes) {
             partnerMap.put(type, "");
         }
 
-        // 하위 파트너 찾기
-        String nextPartnerType = "본사";
         while (!nextPartnerType.isEmpty()) {
-            assert referrer != null;
+            assert currentPartner != null;
             String finalNextPartnerType = nextPartnerType;
-            List<User> recommendedUsers = referrer.getRecommendedUsers().stream()
+
+            List<User> lowerLevelUsers = currentPartner.getRecommendedUsers().stream()
                     .map(userRepository::findByUsername)
                     .filter(user -> user != null && finalNextPartnerType.equals(user.getPartnerType()))
                     .sorted(Comparator.comparing(User::getCreatedAt))
                     .collect(Collectors.toList());
 
-            if (!recommendedUsers.isEmpty()) {
-                User nextReferrer = recommendedUsers.get(0);
+            if (!lowerLevelUsers.isEmpty()) {
+                User nextReferrer = lowerLevelUsers.get(0); // 하위 파트너 중 가장 먼저 생성된 파트너
                 partnerMap.put(nextReferrer.getPartnerType(), nextReferrer.getUsername());
-                referrer = nextReferrer;
+                currentPartner = nextReferrer;
             } else {
                 break;
             }
 
+            // 다음 파트너타입으로 전환
             switch (nextPartnerType) {
                 case "본사":
                     nextPartnerType = "부본사";
@@ -255,17 +290,12 @@ public class UserService {
                 default:
                     nextPartnerType = "";
             }
-
-            if ("매장".equals(nextPartnerType)) {
-                break;
-            }
         }
 
-        // 모든 계층을 문자열로 조합
-        structure = new StringBuilder("대본사(" + referrer.getUsername() + ")");
-        for (String type : partnerTypes) {
-            structure.append("-").append(type).append("(").append(partnerMap.get(type)).append(")");
-        }
+        // 최종 계층 구조 조합
+        structure.append("-부본사(").append(partnerMap.get("부본사")).append(")")
+                .append("-총판(").append(partnerMap.get("총판")).append(")")
+                .append("-매장(").append(partnerMap.get("매장")).append(")");
 
         return structure.toString();
     }
@@ -309,21 +339,35 @@ public class UserService {
         user.setRecommendationCodeIssuedAt(null);
 
         String referrerInput = userRequestDTO.getReferredBy();
+        System.out.println("입력된 referredBy : " + userRequestDTO.getReferredBy());
+        System.out.println("String으로 변환된 referrerInput : " + referrerInput);
         User referrer = userRepository.findByUsernameOrRecommendationCode(referrerInput, referrerInput);
 
         boolean isAmazonCode = false;
         if (referrer == null) {
             List<User> referrerList = userRepository.findByAmazonCode(referrerInput);
+            System.out.println(referrerList);
             if (!referrerList.isEmpty()) {
                 referrer = referrerList.get(0); // 첫 번째 요소를 추천인으로 설정
+
+                System.out.println("아마존 코드를 갖고있는 파트너유저 : " + referrer);
+                System.out.println("해당 파트너유저의 username : " + referrer.getUsername());
+                System.out.println("해당 파트너유저의 partnerType : " + referrer.getPartnerType());
+
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
                 // 파트너 유형에 따라 분기 처리
                 if ("대본사".equals(referrer.getPartnerType())) {
                     user.setDistributor(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+
+                    System.out.println("대본사 추천인의 username : " + referrer.getUsername());
+                    System.out.println("대본사 추천인의 파트너 타입 : " + referrer.getPartnerType());
                 } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
                     user.setStore(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
                     user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+
+                    System.out.println("대본사가 아닌 추천인의 username : " + referrer.getUsername());
+                    System.out.println("대본사가 아닌 추천인의 파트너 타입 : " + referrer.getPartnerType());
                 }
                 user.setReferredBy(referrer.getUsername());
 
@@ -368,6 +412,11 @@ public class UserService {
         }
 
         User savedUser = userRepository.save(user);
+
+        System.out.println("saved structure : " + user.getStructure());
+        System.out.println("saved distributor : " + user.getDistributor());
+        System.out.println("saved store : " + user.getStore());
+
         if ("ROLE_USER".equals(user.getRole())) {
             loginStatisticService.recordCreateUser();
         }
