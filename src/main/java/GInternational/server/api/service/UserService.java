@@ -101,6 +101,11 @@ public class UserService {
         User referrer = userRepository.findByUsernameOrRecommendationCode(referrerInput, referrerInput);
 
         boolean isAmazonCode = false;
+        /**
+         * Structure 관련로직 임시 보류
+         * 대본사,DST 일땐 distributor에 저장
+         * 그외 하위파트너는 store에 저장
+         */
         if (referrer == null) {
             List<User> referrerList = userRepository.findByAmazonCode(referrerInput);
             if (referrerList.isEmpty()) {
@@ -111,10 +116,10 @@ public class UserService {
                 // 파트너 유형에 따라 분기 처리
                 if ("대본사".equals(referrer.getPartnerType())) {
                     user.setDistributor(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
-                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+//                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
                     user.setStore(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
-                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
+//                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 }
                 user.setReferredBy(referrer.getUsername());
 
@@ -140,7 +145,8 @@ public class UserService {
             }
 
             user.setReferredBy(referrer.getUsername()); // 추천인의 username을 저장
-            user.setDistributor(""); // 총판에 의한 추천이 아니므로 빈 문자열 저장
+//            user.setDistributor(null);
+//            user.setStore(null);
             user.setAmazonUser(isAmazonCode); // 총판 추천에 의해 가입된 유저인지 구분
 
             List<String> recommendedUsers = referrer.getRecommendedUsers();
@@ -195,9 +201,6 @@ public class UserService {
     private String calculateStructure(User referrer) {
         StringBuilder structure = new StringBuilder();
         User currentReferrer = referrer;
-
-        System.out.println("calculateStructure 메서드 / referrer의 username : " + referrer.getUsername());
-        System.out.println("calculateStructure 메서드 / referrer의 partnerType : " + referrer.getPartnerType());
 
         // 상위 파트너 찾기
         while (currentReferrer != null) {
@@ -339,10 +342,12 @@ public class UserService {
         user.setRecommendationCodeIssuedAt(null);
 
         String referrerInput = userRequestDTO.getReferredBy();
-        System.out.println("입력된 referredBy : " + userRequestDTO.getReferredBy());
-        System.out.println("String으로 변환된 referrerInput : " + referrerInput);
         User referrer = userRepository.findByUsernameOrRecommendationCode(referrerInput, referrerInput);
-
+        /**
+         * Structure 관련로직 임시 보류
+         * 대본사,DST 일땐 distributor에 저장
+         * 그외 하위파트너는 store에 저장
+         */
         boolean isAmazonCode = false;
         if (referrer == null) {
             List<User> referrerList = userRepository.findByAmazonCode(referrerInput);
@@ -350,24 +355,14 @@ public class UserService {
             if (!referrerList.isEmpty()) {
                 referrer = referrerList.get(0); // 첫 번째 요소를 추천인으로 설정
 
-                System.out.println("아마존 코드를 갖고있는 파트너유저 : " + referrer);
-                System.out.println("해당 파트너유저의 username : " + referrer.getUsername());
-                System.out.println("해당 파트너유저의 partnerType : " + referrer.getPartnerType());
-
                 isAmazonCode = true; // 아마존 코드로 찾아진 경우
                 // 파트너 유형에 따라 분기 처리
                 if ("대본사".equals(referrer.getPartnerType())) {
                     user.setDistributor(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
-                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
-
-                    System.out.println("대본사 추천인의 username : " + referrer.getUsername());
-                    System.out.println("대본사 추천인의 파트너 타입 : " + referrer.getPartnerType());
+//                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 } else if (Arrays.asList("본사", "부본사", "총판", "매장").contains(referrer.getPartnerType())) {
                     user.setStore(referrer.getPartnerType() + "(" + referrer.getUsername() + ")");
-                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
-
-                    System.out.println("대본사가 아닌 추천인의 username : " + referrer.getUsername());
-                    System.out.println("대본사가 아닌 추천인의 파트너 타입 : " + referrer.getPartnerType());
+//                    user.setStructure(calculateStructure(referrer)); // 계층 구조 계산 및 설정
                 }
                 user.setReferredBy(referrer.getUsername());
 
@@ -393,7 +388,8 @@ public class UserService {
             }
 
             user.setReferredBy(referrer.getUsername()); // 추천인의 username을 저장
-            user.setDistributor(""); // 총판에 의한 추천이 아니므로 빈 문자열 저장
+//            user.setDistributor(null);
+//            user.setStore(null);
             user.setAmazonUser(isAmazonCode); // 총판 추천에 의해 가입된 유저인지 구분
 
             List<String> recommendedUsers = referrer.getRecommendedUsers();
