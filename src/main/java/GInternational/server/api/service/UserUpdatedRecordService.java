@@ -73,38 +73,39 @@ public class UserUpdatedRecordService {
 
     public void recordChanges(Long userId, User user, Map<String, String> prevState) {
         Map<String, Object> currentState = new HashMap<>();
+
         // 현재 상태 맵핑
-        currentState.put("username", Optional.ofNullable(user.getUsername()).orElse(""));
-        currentState.put("nickname", Optional.ofNullable(user.getNickname()).orElse(""));
-        currentState.put("password", Optional.ofNullable(user.getPassword()).orElse(""));
-        currentState.put("phone", Optional.ofNullable(user.getPhone()).orElse(""));
-        currentState.put("bankName", Optional.ofNullable(user.getWallet().getBankName()).orElse(""));
-        currentState.put("number", Optional.of(user.getWallet().getNumber().toString()).orElse(""));
-        currentState.put("email", Optional.ofNullable(user.getEmail()).orElse(""));
-        currentState.put("ownerName", Optional.ofNullable(user.getWallet().getOwnerName()).orElse(""));
+        currentState.put("username", user.getUsername());
+        currentState.put("nickname", user.getNickname());
+        currentState.put("password", user.getPassword());
+        currentState.put("phone", user.getPhone());
+        currentState.put("bankName", user.getWallet().getBankName());
+        currentState.put("number", user.getWallet().getNumber() != null ? String.valueOf(user.getWallet().getNumber()) : null);
+        currentState.put("email", user.getEmail());
+        currentState.put("ownerName", user.getWallet().getOwnerName());
         currentState.put("lv", String.valueOf(user.getLv()));
 
         UserGubunEnum gubun = user.getUserGubunEnum();
-        currentState.put("user_gubun", gubun != null ? gubun.name() : ""); // user_gubun이 null이 아니면 이름을, null이면 빈 문자열을 사용
+        currentState.put("user_gubun", gubun != null ? gubun.name() : null); // user_gubun이 null이 아니면 이름을, null이면 null 사용
 
-        currentState.put("referredBy", Optional.ofNullable(user.getReferredBy()).orElse(""));
-        currentState.put("distributor", Optional.ofNullable(user.getDistributor()).orElse(""));
-        currentState.put("store", Optional.ofNullable(user.getStore()).orElse(""));
+        currentState.put("referredBy", user.getReferredBy());
+        currentState.put("distributor", user.getDistributor());
+        currentState.put("store", user.getStore());
         currentState.put("isAmazonUser", String.valueOf(user.isAmazonUser()));
         currentState.put("isDstUser", String.valueOf(user.isDstUser()));
         currentState.put("isKakaoRegistered", String.valueOf(user.isKakaoRegistered()));
-        currentState.put("kakaoId", Optional.ofNullable(user.getKakaoId()));
+        currentState.put("kakaoId", user.getKakaoId());
         currentState.put("isTelegramRegistered", String.valueOf(user.isTelegramRegistered()));
-        currentState.put("telegramId", Optional.ofNullable(user.getTelegramId()));
+        currentState.put("telegramId", user.getTelegramId());
         currentState.put("isVirtualAccountEnabled", String.valueOf(user.isVirtualAccountEnabled()));
-        currentState.put("virtualAccountOwnerName", Optional.ofNullable(user.getVirtualAccountOwnerName()));
-        currentState.put("virtualAccountNumber", Optional.ofNullable(user.getVirtualAccountNumber()));
-        currentState.put("memo1", Optional.ofNullable(user.getMemo1()));
-        currentState.put("memo2", Optional.ofNullable(user.getMemo2()));
-        currentState.put("memo3", Optional.ofNullable(user.getMemo3()));
-        currentState.put("memo4", Optional.ofNullable(user.getMemo4()));
-        currentState.put("memo5", Optional.ofNullable(user.getMemo5()));
-        currentState.put("memo6", Optional.ofNullable(user.getMemo6()));
+        currentState.put("virtualAccountOwnerName", user.getVirtualAccountOwnerName());
+        currentState.put("virtualAccountNumber", user.getVirtualAccountNumber());
+        currentState.put("memo1", user.getMemo1());
+        currentState.put("memo2", user.getMemo2());
+        currentState.put("memo3", user.getMemo3());
+        currentState.put("memo4", user.getMemo4());
+        currentState.put("memo5", user.getMemo5());
+        currentState.put("memo6", user.getMemo6());
         currentState.put("isSmsReceipt", String.valueOf(user.isSmsReceipt()));
         currentState.put("isAmazonVisible", String.valueOf(user.isAmazonVisible()));
         currentState.put("isAccountVisible", String.valueOf(user.isAccountVisible()));
@@ -114,7 +115,8 @@ public class UserUpdatedRecordService {
 
         currentState.forEach((key, value) -> {
             String prevValue = prevState.get(key);
-            if ((prevValue == null && !String.valueOf(value).isEmpty()) || (prevValue != null && !prevValue.equals(value))) {
+            // 이전 값이 null이었고 현재 값이 null이 아닌 경우 또는 이전 값과 현재 값이 다른 경우에만 저장
+            if ((prevValue == null && value != null) || (prevValue != null && !prevValue.equals(String.valueOf(value)))) {
                 UserUpdatedRecord record = createUserUpdatedRecord(userId, user, key, prevValue, String.valueOf(value));
                 userUpdatedRecordRepository.save(record);
             }
@@ -127,30 +129,30 @@ public class UserUpdatedRecordService {
         prevState.put("nickname", user.getNickname());
         prevState.put("password", user.getPassword());
         prevState.put("phone", user.getPhone());
-        prevState.put("bankName", user.getWallet().getBankName());
-        prevState.put("number", String.valueOf(user.getWallet().getNumber()));
+        prevState.put("bankName", user.getWallet() != null ? user.getWallet().getBankName() : "");
+        prevState.put("number", user.getWallet() != null ? String.valueOf(user.getWallet().getNumber()) : "");
         prevState.put("email", user.getEmail());
-        prevState.put("ownerName", user.getWallet().getOwnerName());
+        prevState.put("ownerName", user.getWallet() != null ? user.getWallet().getOwnerName() : "");
         prevState.put("lv", String.valueOf(user.getLv()));
-        prevState.put("user_gubun", String.valueOf(user.getUserGubunEnum()));
+        prevState.put("user_gubun", user.getUserGubunEnum() != null ? user.getUserGubunEnum().name() : "");
         prevState.put("referredBy", user.getReferredBy());
         prevState.put("distributor", user.getDistributor());
         prevState.put("store", user.getStore());
         prevState.put("isAmazonUser", String.valueOf(user.isAmazonUser()));
         prevState.put("isDstUser", String.valueOf(user.isDstUser()));
         prevState.put("isKakaoRegistered", String.valueOf(user.isKakaoRegistered()));
-        prevState.put("kakaoId", String.valueOf((user.getKakaoId())));
+        prevState.put("kakaoId", user.getKakaoId() != null ? user.getKakaoId() : "");
         prevState.put("isTelegramRegistered", String.valueOf(user.isTelegramRegistered()));
-        prevState.put("telegramId", String.valueOf((user.getTelegramId())));
+        prevState.put("telegramId", user.getTelegramId() != null ? user.getTelegramId() : "");
         prevState.put("isVirtualAccountEnabled", String.valueOf(user.isVirtualAccountEnabled()));
-        prevState.put("virtualAccountOwnerName", user.getVirtualAccountOwnerName());
-        prevState.put("virtualAccountNumber", user.getVirtualAccountNumber());
-        prevState.put("memo1", String.valueOf(Optional.ofNullable(user.getMemo1())));
-        prevState.put("memo2", String.valueOf(Optional.ofNullable(user.getMemo2())));
-        prevState.put("memo3", String.valueOf(Optional.ofNullable(user.getMemo3())));
-        prevState.put("memo4", String.valueOf(Optional.ofNullable(user.getMemo4())));
-        prevState.put("memo5", String.valueOf(Optional.ofNullable(user.getMemo5())));
-        prevState.put("memo6", String.valueOf(Optional.ofNullable(user.getMemo6())));
+        prevState.put("virtualAccountOwnerName", user.getVirtualAccountOwnerName() != null ? user.getVirtualAccountOwnerName() : "");
+        prevState.put("virtualAccountNumber", user.getVirtualAccountNumber() != null ? user.getVirtualAccountNumber() : "");
+        prevState.put("memo1", user.getMemo1() != null ? user.getMemo1() : "");
+        prevState.put("memo2", user.getMemo2() != null ? user.getMemo2() : "");
+        prevState.put("memo3", user.getMemo3() != null ? user.getMemo3() : "");
+        prevState.put("memo4", user.getMemo4() != null ? user.getMemo4() : "");
+        prevState.put("memo5", user.getMemo5() != null ? user.getMemo5() : "");
+        prevState.put("memo6", user.getMemo6() != null ? user.getMemo6() : "");
         prevState.put("isSmsReceipt", String.valueOf(user.isSmsReceipt()));
         prevState.put("isAmazonVisible", String.valueOf(user.isAmazonVisible()));
         prevState.put("isAccountVisible", String.valueOf(user.isAccountVisible()));
