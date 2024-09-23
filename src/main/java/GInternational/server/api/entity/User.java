@@ -170,19 +170,19 @@ public class User extends BaseEntity implements Serializable {
 
     private String site = "test";
 
-    /**
-     *  아마존 계층구조
-     *  "대본사(username)-본사(username)-부본사(username)-총판(username)-매장(username)" 형식으로 기입.
-     *  이 유저를 추천한 파트너의 username이 "qwe123" 파트너타입이 "본사"라면
-     *  예)
-     *  대본사(qwe123의 referrerBy값)-본사(qwe123)-부본사(qwe123의 recommendedUsers중 partnerType이 "부본사"인 유저의 첫번째값)-총판(부본사 username의 recommendedUsers중 partnerType이 "본사"인 유저의 첫번째값)-매장(총판 username의 recommendedUsers중 partnerType이 "총판"인 유저의 첫번째값)
-     *  위 예시처럼 이 유저를 추천한 파트너의 계층구조 위치를 파악하고, 상위, 하위 파트너들의 username을 모두 찾아야 함.
-     *  recommendedUsers는 여러명이 있을 수 있으며, 그 여러명 중 파트너가 아닌 일반유저가 있을수 있으므로 위 예시처럼 조건을 달아놓았음.
-     *  단, 이 유저를 추천한 파트너(qwe123)의 partnerType이 "DST"인 경우 "대본사(qwe123)" 형식으로만 기입한다. DST는 계층구조가 없다.
-     *  ROLE_USER가 아니면 이 값이 "" 빈칸임.
-     */
-    @Column(name = "structure")
-    private String structure = "";
+//    /**
+//     *  아마존 계층구조
+//     *  "대본사(username)-본사(username)-부본사(username)-총판(username)-매장(username)" 형식으로 기입.
+//     *  이 유저를 추천한 파트너의 username이 "qwe123" 파트너타입이 "본사"라면
+//     *  예)
+//     *  대본사(qwe123의 referrerBy값)-본사(qwe123)-부본사(qwe123의 recommendedUsers중 partnerType이 "부본사"인 유저의 첫번째값)-총판(부본사 username의 recommendedUsers중 partnerType이 "본사"인 유저의 첫번째값)-매장(총판 username의 recommendedUsers중 partnerType이 "총판"인 유저의 첫번째값)
+//     *  위 예시처럼 이 유저를 추천한 파트너의 계층구조 위치를 파악하고, 상위, 하위 파트너들의 username을 모두 찾아야 함.
+//     *  recommendedUsers는 여러명이 있을 수 있으며, 그 여러명 중 파트너가 아닌 일반유저가 있을수 있으므로 위 예시처럼 조건을 달아놓았음.
+//     *  단, 이 유저를 추천한 파트너(qwe123)의 partnerType이 "DST"인 경우 "대본사(qwe123)" 형식으로만 기입한다. DST는 계층구조가 없다.
+//     *  ROLE_USER가 아니면 이 값이 "" 빈칸임.
+//     */
+//    @Column(name = "structure")
+//    private String structure = "";
 
     @Column(name = "sms_receipt")
     private boolean smsReceipt = true; // sms 수신여부

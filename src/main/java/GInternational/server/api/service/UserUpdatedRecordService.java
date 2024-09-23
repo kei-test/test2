@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Column;
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,6 +42,26 @@ public class UserUpdatedRecordService {
         record.setStore(user.getStore());
         record.setIsAmazonUser(user.isAmazonUser());
         record.setIsDstUser(user.isDstUser());
+
+        record.setKakaoRegistered(user.isKakaoRegistered());
+        record.setKakaoId(user.getKakaoId());
+        record.setTelegramRegistered(user.isTelegramRegistered());
+        record.setTelegramId(user.getTelegramId());
+        record.setVirtualAccountEnabled(user.isVirtualAccountEnabled());
+        record.setVirtualAccountOwnerName(user.getVirtualAccountOwnerName());
+        record.setVirtualAccountNumber(user.getVirtualAccountNumber());
+        record.setMemo1(user.getMemo1());
+        record.setMemo2(user.getMemo2());
+        record.setMemo3(user.getMemo3());
+        record.setMemo4(user.getMemo4());
+        record.setMemo5(user.getMemo5());
+        record.setMemo6(user.getMemo6());
+        record.setSmsReceipt(user.isSmsReceipt());
+        record.setAmazonVisible(user.isAmazonVisible());
+        record.setAccountVisible(user.isAccountVisible());
+        record.setCanRecommend(user.isCanRecommend());
+        record.setCanPost(user.isCanPost());
+        record.setCanBonus(user.isCanBonus());
         // 변경된 정보 설정
         record.setChangedColumn(changedColumn);
         record.setBeforeData(beforeData);
@@ -71,6 +92,25 @@ public class UserUpdatedRecordService {
         currentState.put("store", Optional.ofNullable(user.getStore()).orElse(""));
         currentState.put("isAmazonUser", String.valueOf(user.isAmazonUser()));
         currentState.put("isDstUser", String.valueOf(user.isDstUser()));
+        currentState.put("isKakaoRegistered", String.valueOf(user.isKakaoRegistered()));
+        currentState.put("kakaoId", Optional.ofNullable(user.getKakaoId()));
+        currentState.put("isTelegramRegistered", String.valueOf(user.isTelegramRegistered()));
+        currentState.put("telegramId", Optional.ofNullable(user.getTelegramId()));
+        currentState.put("isVirtualAccountEnabled", String.valueOf(user.isVirtualAccountEnabled()));
+        currentState.put("virtualAccountOwnerName", Optional.ofNullable(user.getVirtualAccountOwnerName()));
+        currentState.put("virtualAccountNumber", Optional.ofNullable(user.getVirtualAccountNumber()));
+        currentState.put("memo1", Optional.ofNullable(user.getMemo1()));
+        currentState.put("memo2", Optional.ofNullable(user.getMemo2()));
+        currentState.put("memo3", Optional.ofNullable(user.getMemo3()));
+        currentState.put("memo4", Optional.ofNullable(user.getMemo4()));
+        currentState.put("memo5", Optional.ofNullable(user.getMemo5()));
+        currentState.put("memo6", Optional.ofNullable(user.getMemo6()));
+        currentState.put("isSmsReceipt", String.valueOf(user.isSmsReceipt()));
+        currentState.put("isAmazonVisible", String.valueOf(user.isAmazonVisible()));
+        currentState.put("isAccountVisible", String.valueOf(user.isAccountVisible()));
+        currentState.put("isCanRecommend", String.valueOf(user.isCanRecommend()));
+        currentState.put("isCanPost", String.valueOf(user.isCanPost()));
+        currentState.put("isCanBonus", String.valueOf(user.isCanBonus()));
 
         currentState.forEach((key, value) -> {
             String prevValue = prevState.get(key);
@@ -98,6 +138,26 @@ public class UserUpdatedRecordService {
         prevState.put("store", user.getStore());
         prevState.put("isAmazonUser", String.valueOf(user.isAmazonUser()));
         prevState.put("isDstUser", String.valueOf(user.isDstUser()));
+        prevState.put("isKakaoRegistered", String.valueOf(user.isKakaoRegistered()));
+        prevState.put("kakaoId", Optional.ofNullable(user.getKakaoId()).orElse(""));
+        prevState.put("isTelegramRegistered", String.valueOf(user.isTelegramRegistered()));
+        prevState.put("telegramId", Optional.ofNullable(user.getTelegramId()).orElse(""));
+        prevState.put("isVirtualAccountEnabled", String.valueOf(user.isVirtualAccountEnabled()));
+        prevState.put("virtualAccountOwnerName", Optional.ofNullable(user.getVirtualAccountOwnerName()).orElse(""));
+        prevState.put("virtualAccountNumber", Optional.ofNullable(user.getVirtualAccountNumber()).orElse(""));
+        prevState.put("memo1", Optional.ofNullable(user.getMemo1()).orElse(""));
+        prevState.put("memo2", Optional.ofNullable(user.getMemo2()).orElse(""));
+        prevState.put("memo3", Optional.ofNullable(user.getMemo3()).orElse(""));
+        prevState.put("memo4", Optional.ofNullable(user.getMemo4()).orElse(""));
+        prevState.put("memo5", Optional.ofNullable(user.getMemo5()).orElse(""));
+        prevState.put("memo6", Optional.ofNullable(user.getMemo6()).orElse(""));
+        prevState.put("isSmsReceipt", String.valueOf(user.isSmsReceipt()));
+        prevState.put("isAmazonVisible", String.valueOf(user.isAmazonVisible()));
+        prevState.put("isAccountVisible", String.valueOf(user.isAccountVisible()));
+        prevState.put("isCanRecommend", String.valueOf(user.isCanRecommend()));
+        prevState.put("isCanPost", String.valueOf(user.isCanPost()));
+        prevState.put("isCanBonus", String.valueOf(user.isCanBonus()));
+
         return prevState;
     }
 

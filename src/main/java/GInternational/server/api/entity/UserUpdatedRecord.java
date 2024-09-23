@@ -44,6 +44,50 @@ public class UserUpdatedRecord {
     @Column(name = "is_dst_user", columnDefinition = "bit(1) default 0")
     private Boolean isDstUser; // DST로 가입된 계정인지 여부 (총판 회원조회/관리를 위한 값)
 
+    @Column(name = "kakao_registered")
+    private Boolean kakaoRegistered = false; // 카카오톡 등록 여부
+    @Column(name = "kakao_id")
+    private String kakaoId; // 카카오톡 아이디
+    @Column(name = "telegram_registered")
+    private Boolean telegramRegistered = false; // 텔레그램 등록 여부
+    @Column(name = "telegram_id")
+    private String telegramId; // 텔레그램 아이디
+
+    @Column(name = "virtual_account_enabled")
+    private Boolean virtualAccountEnabled = false; // 가상계좌 사용여부
+    @Column(name = "virtual_account_owner_name")
+    private String virtualAccountOwnerName; // 가상계좌 예금주
+    @Column(name = "virtual_account_number")
+    private String virtualAccountNumber; // 가상계좌 계좌번호
+
+    @Column(columnDefinition = "TEXT")
+    private String memo1;
+    @Column(columnDefinition = "TEXT")
+    private String memo2;
+    @Column(columnDefinition = "TEXT")
+    private String memo3;
+    @Column(columnDefinition = "TEXT")
+    private String memo4;
+    @Column(columnDefinition = "TEXT")
+    private String memo5;
+    @Column(columnDefinition = "TEXT")
+    private String memo6;
+
+    @Column(name = "sms_receipt")
+    private boolean smsReceipt = true; // sms 수신여부
+    @Column(name = "amazon_visible")
+    private boolean amazonVisible = false; // 아마존(총판)페이지 노출여부
+    @Column(name = "account_visible")
+    private boolean accountVisible = false; // 계좌 노출여부
+    @Column(name = "can_recommend")
+    private boolean canRecommend = false; // 추천 가능여부
+    @Column(name = "can_post")
+    private boolean canPost = true; // 게시글 작성 가능여부
+    @Column(name = "can_comment")
+    private boolean canComment = true; // 댓글 작성 가능여부
+    @Column(name = "can_bonus")
+    private boolean canBonus = true; // 매충 지급여부
+
 //    @Column(name = "changed_by")
 //    private String changedBy;     // 관리자가 변경 = (관), 유저가 변경 = (유)
 

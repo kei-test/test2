@@ -409,10 +409,6 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        System.out.println("saved structure : " + user.getStructure());
-        System.out.println("saved distributor : " + user.getDistributor());
-        System.out.println("saved store : " + user.getStore());
-
         if ("ROLE_USER".equals(user.getRole())) {
             loginStatisticService.recordCreateUser();
         }
