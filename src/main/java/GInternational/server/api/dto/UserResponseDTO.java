@@ -90,6 +90,7 @@ public class UserResponseDTO {
         this.birth = user.getBirth();
         this.email = user.getEmail();
         this.distributor = user.getDistributor();
+        this.store = user.getStore();
         this.role = user.getRole();
         this.lv = user.getLv();
         this.ip = user.getIp();
