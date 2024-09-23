@@ -72,6 +72,7 @@ public class AmazonUserService {
         bigHeadOffice.setMonitoringStatus(UserMonitoringStatusEnum.정상);
         bigHeadOffice.setSlotRolling(Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0);
         bigHeadOffice.setCasinoRolling(Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0);
+        bigHeadOffice.setCanRecommend(true);
         User savedBigHeadOffice = userRepository.save(bigHeadOffice);
 
         Wallet wallet = new Wallet();
@@ -134,7 +135,7 @@ public class AmazonUserService {
         subAccount.setReferredBy(principalDetails.getUsername());
         subAccount.setUserGubunEnum(UserGubunEnum.정상);
         subAccount.setMonitoringStatus(UserMonitoringStatusEnum.정상);
-
+        subAccount.setCanRecommend(true);
         User upperAccount = principalDetails.getUser();
 
         double maxSlotRolling = upperAccount.getSlotRolling();
