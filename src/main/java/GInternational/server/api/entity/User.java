@@ -191,7 +191,7 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "account_visible")
     private boolean accountVisible = false; // 계좌 노출여부
     @Column(name = "can_recommend")
-    private boolean canRecommend = true; // 추천 가능여부
+    private boolean canRecommend = false; // 추천 가능여부
     @Column(name = "can_post")
     private boolean canPost = true; // 게시글 작성 가능여부
     @Column(name = "can_comment")

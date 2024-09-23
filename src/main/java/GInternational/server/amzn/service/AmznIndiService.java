@@ -58,11 +58,12 @@ public class AmznIndiService {
         List<AmznIndiPartnerResDTO> r1 = amznIndiRepositoryImpl.getResults(startDate, endDate);
         List<AmznIndiPartnerResDTO> responseList = new ArrayList<>();
 
-        if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType().equals("대본사")) {
+
+        if (user.getRole().equals("ROLE_ADMIN")) {
             return r1;
-        } else if (user.getPartnerType().equals("본사")) {
+        } else if (user.getPartnerType().equals("대본사")) {
             for (AmznIndiPartnerResDTO r : r1) {
-                if (r.getId().equals(user.getId()) && r.getPartnerType().equals("본사")) {
+                if (r.getId().equals(user.getId()) && r.getPartnerType().equals("대본사")) {
                     responseList.add(r);
                 }
                 boolean isReferredByInResponseList = responseList.stream()

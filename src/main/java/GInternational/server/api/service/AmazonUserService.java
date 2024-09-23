@@ -114,7 +114,7 @@ public class AmazonUserService {
         }
 
         if ("매장".equals(parentPartnerType)) {
-            throw new IllegalArgumentException("매장의 하부는 추가할 수 없습니다.");
+            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "매장의 하부는 추가할 수 없습니다.");
         }
 
         String ip = request.getRemoteAddr();
@@ -137,26 +137,22 @@ public class AmazonUserService {
 
         User upperAccount = principalDetails.getUser();
 
-        // 상위 계정의 롤링 값을 가져와서 비교
         double maxSlotRolling = upperAccount.getSlotRolling();
         double maxCasinoRolling = upperAccount.getCasinoRolling();
 
         if (requestDTO.getSlotRolling() > maxSlotRolling || requestDTO.getCasinoRolling() > maxCasinoRolling) {
-            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 범위를 초과합니다.");
+            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "롤링 값이 상위 계정의 롤링값을 초과합니다.");
         }
 
         double slotRolling = Math.round(requestDTO.getSlotRolling() * 100.0) / 100.0;
         double casinoRolling = Math.round(requestDTO.getCasinoRolling() * 100.0) / 100.0;
         subAccount.setSlotRolling(slotRolling);
         subAccount.setCasinoRolling(casinoRolling);
-
         assignSubAccountToParent(subAccount, parentUser, parentPartnerType);
-
         User savedSubAccount = userRepository.save(subAccount);
 
         recommendedUsers.add(subAccount.getUsername());
         upperAccount.setRecommendedUsers(recommendedUsers);
-        upperAccount.setRecommendedCount(upperAccount.getRecommendedCount() + 1);
         upperAccount.decreaseSlotRolling(slotRolling);
         upperAccount.decreaseCasinoRolling(casinoRolling);
         expRecordService.recordDailyExp(upperAccount.getId(), upperAccount.getUsername(), upperAccount.getNickname(), 30, ip, ExpRecordEnum.신규회원추천경험치);
@@ -393,8 +389,10 @@ public class AmazonUserService {
                 }
             } else return null;
         }
-
-        if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType().equals("대본사")) {
+        if (user.getRole().equals("ROLE_ADMIN")) {
+            return daeList;
+        } else if (user.getPartnerType().equals("대본사")) {
+            daeList.removeIf(dae -> !dae.getDae().getId().equals(userId));
             return daeList;
         } else if (user.getPartnerType().equals("본사")) {
             bonList.removeIf(bon -> !bon.getBon().getId().equals(userId));

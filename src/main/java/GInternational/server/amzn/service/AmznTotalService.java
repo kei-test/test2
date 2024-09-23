@@ -27,6 +27,19 @@ public class AmznTotalService {
     private final UserRepository userRepository;
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+
+
+
+
+    public List<AmznDaeOrDSTResDTO> getDaeOrDSTList(PrincipalDetails principalDetails) {
+        User user = userRepository.findByUsername(principalDetails.getUsername());
+        if (user.getRole().equals("ROLE_ADMIN")) {
+            return amznRepositoryImpl.getDaeOrDSTPartner();
+        } return null;
+    }
+
+
+
     //1.daeId ~ maeId 까지 검증 후 null이 아닌 값을 rate 에 할당 v
     //  ㄴ daeId == userId 로 참조해서 조회가능 v
     //2.조회되는 파트너에 의해 가입된 isAmazonUser 의 수를 중복없이 카운트하여 recommendedUser 에 할당 v
@@ -187,7 +200,10 @@ public class AmznTotalService {
                 }
             } else return null;
         }
-        if (user.getRole().equals("ROLE_ADMIN") || user.getPartnerType().equals("대본사")) {
+        if (user.getRole().equals("ROLE_ADMIN")) {
+            return daeList;
+        } else if (user.getPartnerType().equals("대본사")) {
+            daeList.removeIf(dae -> !dae.getDae().getId().equals(userId));
             return daeList;
         } else if (user.getPartnerType().equals("본사")) {
             bonList.removeIf(bon -> !bon.getBon().getId().equals(userId));

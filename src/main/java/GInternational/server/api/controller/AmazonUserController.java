@@ -1,6 +1,8 @@
 package GInternational.server.api.controller;
 
+import GInternational.server.common.advice.ErrorResponse;
 import GInternational.server.common.dto.SingleResponseDto;
+import GInternational.server.common.exception.RestControllerException;
 import GInternational.server.security.auth.PrincipalDetails;
 import GInternational.server.api.dto.AmazonUserHierarchyResponseDTO;
 import GInternational.server.api.dto.AmazonUserInfoDTO;
@@ -101,12 +103,20 @@ public class AmazonUserController {
      * @return 생성된 파트너 정보
      */
     @PostMapping("/users/sub-account")
-    public ResponseEntity<AmazonUserResponseDTO> createSubAccountForPartner(@RequestBody AmazonUserRequestDTO requestDTO,
-                                                                            HttpServletRequest request,
-                                                                            Authentication authentication) {
-        PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-        AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, principal, request);
-        return ResponseEntity.ok(responseDTO);
+    public ResponseEntity<?> createSubAccountForPartner(@RequestBody AmazonUserRequestDTO requestDTO,
+                                                        HttpServletRequest request,
+                                                        Authentication authentication) {
+        try {
+            PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
+            AmazonUserResponseDTO responseDTO = amazonUserService.createSubAccountForPartner(requestDTO, principal, request);
+            return ResponseEntity.ok(responseDTO);
+        } catch (RestControllerException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(ex.getExceptionCode().getStatus(), ex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse(500, "서버에서 문제가 발생했습니다."));
+        }
     }
 
     /**
