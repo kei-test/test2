@@ -50,6 +50,25 @@ public class MoneyLogService {
     public List<MoneyLogResponseDTO> getAllMoneyTrackingTransactions(PrincipalDetails principalDetails, Long userId, MoneyLogCategoryEnum category,
                                                                      Long usedSportsBalance, LocalDate startDate, LocalDate endDate, String username,
                                                                      String nickname, String distributor, String store) {
+
+        Long totalBet;
+        Long totalWin;
+
+        LocalDateTime lastRechargeDate = null;
+
+        // userId가 입력된 경우, 해당 사용자의 마지막 충전 이후의 합계를 계산
+        if (userId != null) {
+            lastRechargeDate = moneyLogRepository.findLastRechargeDateByUserId(userId);
+            totalBet = moneyLogRepository.sumByCategoryAndUserIdSince(MoneyLogCategoryEnum.베팅차감, userId, lastRechargeDate);
+            totalWin = moneyLogRepository.sumByCategoryAndUserIdSince(MoneyLogCategoryEnum.당첨, userId, lastRechargeDate);
+        } else {
+            // userId가 없는 경우 모든 유저의 합계를 계산
+            totalBet = moneyLogRepository.sumByCategory(MoneyLogCategoryEnum.베팅차감);
+            totalWin = moneyLogRepository.sumByCategory(MoneyLogCategoryEnum.당첨);
+        }
+
+        Long finalTotalBet = totalBet;
+        Long finalTotalWin = totalWin;
         return moneyLogRepository.findAll((root, query, cb) -> {
                     List<Predicate> predicates = new ArrayList<>();
 
@@ -94,11 +113,15 @@ public class MoneyLogService {
                         predicates.add(cb.equal(root.get("user").get("store"), store));
                     }
 
-
-
                     return cb.and(predicates.toArray(new Predicate[0]));
                 }, Sort.by(Sort.Direction.DESC, "createdAt")).stream()
-                .map(moneyLogResponseMapper::toDto)
+                .map(moneyLog -> {
+                    MoneyLogResponseDTO dto = moneyLogResponseMapper.toDto(moneyLog);
+                    // 베팅차감 합계와 당첨 합계를 DTO에 추가
+                    dto.setTotalBet(finalTotalBet);
+                    dto.setTotalWin(finalTotalWin);
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 

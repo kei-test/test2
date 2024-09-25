@@ -88,6 +88,9 @@ public class UserUpdatedRecord {
     @Column(name = "can_bonus")
     private boolean canBonus = true; // 매충 지급여부
 
+    @Column(name = "exp")
+    private Long exp;
+
 //    @Column(name = "changed_by")
 //    private String changedBy;     // 관리자가 변경 = (관), 유저가 변경 = (유)
 

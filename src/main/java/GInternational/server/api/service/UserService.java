@@ -610,12 +610,14 @@ public class UserService {
         return recommendedUsers;
     }
 
-    public void updateUserLastVisit(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다."));
+    public void updateUsersLastVisit(List<Long> userIds) {
+        for (Long userId : userIds) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다."));
 
-        user.setLastVisit(LocalDateTime.now());
-        userRepository.save(user);
+            user.setLastVisit(LocalDateTime.now());
+            userRepository.save(user);
+        }
     }
 }
 

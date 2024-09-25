@@ -34,20 +34,35 @@ public class AddPointService {
         Wallet wallet = walletRepository.findById(walletId)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.WALLET_NOT_FOUND, "지갑을 찾을 수 없습니다."));
 
+        String message;
+        PointLogCategoryEnum category;
+
+        // 메모가 있으면 메모를 message로 설정, category는 enum 값으로 설정
+        if (requestDTO.getMemo() != null && !requestDTO.getMemo().isEmpty()) {
+            message = requestDTO.getMemo();
+            category = "지급".equals(requestDTO.getOperation()) ? PointLogCategoryEnum.포인트수동지급 : PointLogCategoryEnum.포인트수동차감;
+        } else {
+            // 메모가 없으면 "포인트수동지급" 또는 "포인트수동차감" 설정
+            message = "지급".equals(requestDTO.getOperation()) ? "포인트수동지급" : "포인트수동차감";
+            category = PointLogCategoryEnum.valueOf(message);
+        }
+
         if ("지급".equals(requestDTO.getOperation())) {
             wallet.setPoint(wallet.getPoint() + requestDTO.getPoint());
-            audit("포인트수동지급", requestDTO.getPoint(), user, principalDetails, request, requestDTO.getMemo());
+            audit(message, category, requestDTO.getPoint(), user, principalDetails, request, requestDTO.getMemo());
         } else if ("차감".equals(requestDTO.getOperation())) {
             wallet.setPoint(wallet.getPoint() - requestDTO.getPoint());
-            audit("포인트수동차감", requestDTO.getPoint(), user, principalDetails, request, requestDTO.getMemo());
+            audit(message, category, requestDTO.getPoint(), user, principalDetails, request, requestDTO.getMemo());
         }
 
         walletRepository.save(wallet);
     }
 
-    private void audit(String message, Long points, User user, PrincipalDetails principalDetails, HttpServletRequest request, String memo) {
+    private void audit(String message, PointLogCategoryEnum category, Long points, User user, PrincipalDetails principalDetails, HttpServletRequest request, String memo) {
         String clientIp = request.getRemoteAddr();
-        pointLogService.recordPointLog(user.getId(), points, PointLogCategoryEnum.valueOf(message), clientIp, memo);
+
+        // category는 enum 값으로 기록, memo는 그대로 로그에 남김
+        pointLogService.recordPointLog(user.getId(), points, category, clientIp, memo != null && !memo.isEmpty() ? memo : message);
 
         AuditContext context = AuditContextHolder.getContext();
         context.setIp(clientIp);

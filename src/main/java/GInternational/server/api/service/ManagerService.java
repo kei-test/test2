@@ -293,6 +293,8 @@ public class ManagerService {
                 predicates.add(cb.equal(root.get("store"), store));
             }
 
+            predicates.add(cb.or(cb.isNull(root.get("partnerType")), cb.equal(root.get("partnerType"), "")));
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 

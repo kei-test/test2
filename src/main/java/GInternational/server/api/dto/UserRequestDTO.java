@@ -44,6 +44,7 @@ public class UserRequestDTO {
     private LocalDateTime lastVisit;
     private boolean isAmazonUser;
     private boolean isDstUser;
+    private Long exp;
 
     private Boolean kakaoRegistered;
     private String kakaoId;

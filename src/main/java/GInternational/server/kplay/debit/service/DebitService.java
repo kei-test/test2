@@ -111,11 +111,11 @@ public class DebitService {
 
 
             long newWalletCasinoBalance = user.getWallet().getCasinoBalance() - debitRequestDTO.getAmount();
-            moneyLogService.recordMoneyUsage(user.getId(), usedAmount,wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.베팅차감, description);
+            moneyLogService.recordMoneyUsage(user.getId(), usedAmount ,wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.베팅차감, description);
 
             if (debitRequestDTO.getCredit_amount() != 0) {
                 newWalletCasinoBalance += debitRequestDTO.getCredit_amount();
-                moneyLogService.recordMoneyUsage(user.getId(), (long) debitRequestDTO.getCredit_amount(),wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.당첨, description);
+                moneyLogService.recordMoneyUsage(user.getId(), (long) debitRequestDTO.getCredit_amount(), wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.당첨, description);
             }
 
             Debit savedDebit = Debit.builder()

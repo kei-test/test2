@@ -212,26 +212,45 @@ public class AdminLoginHistoryService {
     }
 
     /**
-     * 관리자의 접속 가능 IP 변경
+     * 관리자의 접속 가능 IP 및 메모 변경
      *
      * @param userId 관리자의 사용자 ID
-     * @param newApproveIp 새로운 접속 가능 IP 주소
+     * @param newApproveIp 새로운 접속 가능 IP 주소 (옵션)
+     * @param adminMemo 새로운 관리자 메모 (옵션)
      * @param principalDetails 인증된 관리자의 세부 정보
      */
-    @AuditLogService.Audit("관리자 접속가능 ip 변경")
-    public void updateApproveIp(Long userId, String newApproveIp, PrincipalDetails principalDetails, HttpServletRequest request) {
+    @AuditLogService.Audit("관리자 접속가능 ip 및 메모 변경")
+    public void updateAdminInfo(Long userId, String newApproveIp, String adminMemo, PrincipalDetails principalDetails, HttpServletRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND));
 
         String clientIp = request.getRemoteAddr();
 
-        user.setApproveIp(newApproveIp);
-        user.setUpdatedAtApproveIp(LocalDateTime.now());
+        // newApproveIp가 입력된 경우에만 IP 업데이트
+        if (newApproveIp != null && !newApproveIp.isEmpty()) {
+            user.setApproveIp(newApproveIp);
+            user.setUpdatedAtApproveIp(LocalDateTime.now());
+        }
+
+        // adminMemo가 입력된 경우에만 메모 업데이트
+        if (adminMemo != null && !adminMemo.isEmpty()) {
+            user.setAdminMemo(adminMemo);
+        }
 
         AuditContext context = AuditContextHolder.getContext();
         context.setIp(clientIp);
         context.setTargetId(String.valueOf(user.getId()));
         context.setUsername(user.getUsername());
-        context.setDetails(user.getUsername() + "의 접속가능 ip 변경");
+
+        String details = user.getUsername() + "의 ";
+        if (newApproveIp != null && !newApproveIp.isEmpty()) {
+            details += "접속 가능 IP ";
+        }
+        if (adminMemo != null && !adminMemo.isEmpty()) {
+            details += "관리자 메모 ";
+        }
+        details += "변경";
+
+        context.setDetails(details);
         context.setAdminUsername(principalDetails.getUsername());
         context.setTimestamp(LocalDateTime.now());
 
@@ -258,6 +277,7 @@ public class AdminLoginHistoryService {
             userInfo.put("수정일", user.getUpdatedAtApproveIp());
             userInfo.put("userId", user.getId());
             userInfo.put("site", user.getSite());
+            userInfo.put("어드민 메모", user.getAdminMemo());
 
             result.add(userInfo);
         }

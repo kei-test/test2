@@ -23,4 +23,5 @@ public class AdminRequestDTO {
     private String nickname;
     private String phone;
     private String approveIp;
+    private String adminMemo;
 }

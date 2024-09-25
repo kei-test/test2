@@ -184,13 +184,14 @@ public class ArticleController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String username,
+            @RequestParam(required = false) String ownerName,
             Authentication authentication) {
 
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(23, 59, 59) : null;
 
-        List<ArticlesListDTO> response = articleService.searchArticles(title, content, nickname, startDateTime, endDateTime, username, principal);
+        List<ArticlesListDTO> response = articleService.searchArticles(title, content, nickname, startDateTime, endDateTime, username, ownerName, principal);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -208,13 +209,14 @@ public class ArticleController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(required = false) String username,
+            @RequestParam(required = false) String ownerName,
             Authentication authentication) {
 
         PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
         LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
         LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(23, 59, 59, 999999) : null;
 
-        List<ArticlesListDTO> response = articleService.findAllCustomerCenterArticles(title, content, nickname, startDateTime, endDateTime, username, principal);
+        List<ArticlesListDTO> response = articleService.findAllCustomerCenterArticles(title, content, nickname, startDateTime, endDateTime, username, ownerName, principal);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -18,5 +18,5 @@ public interface ArticleRepositoryCustom {
 
     Long findMaxId();
 
-    List<Articles> searchByAdvancedCriteria(String title, String content, String nickname, String viewStatus, String categoryName, LocalDateTime startDateTime, LocalDateTime endDateTime, String username);
+    List<Articles> searchByAdvancedCriteria(String title, String content, String nickname, String viewStatus, String categoryName, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, String ownerName);
 }

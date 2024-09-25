@@ -228,6 +228,9 @@ public class User extends BaseEntity implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String memo6;
 
+    @Column(name = "admin_memo", columnDefinition = "TEXT")
+    private String adminMemo; // 관리자들이 누가사용하는 계정인지 구분하기 위한 메모
+
     /**
      * 연관관계 외래키로 인해 유저 객체 삭제 불가
      * charged_count null 로 잡히는 부분 확인해야함

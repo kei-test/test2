@@ -405,11 +405,11 @@ public class ArticleService {
     }
 
     // 게시판 게시글 조회
-    public List<ArticlesListDTO> searchArticles(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, PrincipalDetails principalDetails) {
+    public List<ArticlesListDTO> searchArticles(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, String ownerName, PrincipalDetails principalDetails) {
         String viewStatus = isAdminOrManager(principalDetails) ? null : "노출";
         String categoryName = "게시판";
 
-        List<Articles> articlesList = searchArticlesByCriteria(title, content, nickname, startDateTime, endDateTime, viewStatus, categoryName, username, principalDetails);
+        List<Articles> articlesList = searchArticlesByCriteria(title, content, nickname, startDateTime, endDateTime, viewStatus, categoryName, username, ownerName, principalDetails);
 
         return articlesList.stream()
                 .map(articleListResponseMapper::toDto)
@@ -417,11 +417,11 @@ public class ArticleService {
     }
 
     // 고객센터 게시글 조회
-    public List<ArticlesListDTO> findAllCustomerCenterArticles(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, PrincipalDetails principalDetails) {
+    public List<ArticlesListDTO> findAllCustomerCenterArticles(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, String ownerName, PrincipalDetails principalDetails) {
         String viewStatus = isAdminOrManager(principalDetails) ? null : "노출";
         String categoryName = "고객센터";
 
-        List<Articles> articlesList = searchArticlesByCriteria(title, content, nickname, startDateTime, endDateTime, viewStatus, categoryName, username, principalDetails);
+        List<Articles> articlesList = searchArticlesByCriteria(title, content, nickname, startDateTime, endDateTime, viewStatus, categoryName, username, ownerName, principalDetails);
 
         return articlesList.stream()
                 .map(articleListResponseMapper::toDto)
@@ -432,8 +432,8 @@ public class ArticleService {
         return "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole());
     }
 
-    private List<Articles> searchArticlesByCriteria(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String viewStatus, String categoryName, String username, PrincipalDetails principalDetails) {
-        return articleRepository.searchByAdvancedCriteria(title, content, nickname, viewStatus, categoryName, startDateTime, endDateTime, username);
+    private List<Articles> searchArticlesByCriteria(String title, String content, String nickname, LocalDateTime startDateTime, LocalDateTime endDateTime, String viewStatus, String categoryName, String username, String ownerName, PrincipalDetails principalDetails) {
+        return articleRepository.searchByAdvancedCriteria(title, content, nickname, viewStatus, categoryName, startDateTime, endDateTime, username, ownerName);
     }
 
     /**

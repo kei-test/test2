@@ -61,6 +61,7 @@ public class AdminService {
         user.setPhone(adminRequestDTO.getPhone());
         user.setApproveIp(adminRequestDTO.getApproveIp());
         user.setAdminEnum(adminRequestDTO.getAdminEnum());
+        user.setAdminMemo(adminRequestDTO.getAdminMemo());
 
         // 나머지 필드는 기본값으로 설정
         user.setLv(10);
@@ -220,6 +221,7 @@ public class AdminService {
         Optional.ofNullable(userRequestDTO.getVirtualAccountEnabled()).ifPresent(user::setVirtualAccountEnabled);
         Optional.ofNullable(userRequestDTO.getVirtualAccountNumber()).ifPresent(user::setVirtualAccountNumber);
         Optional.ofNullable(userRequestDTO.getVirtualAccountOwnerName()).ifPresent(user::setVirtualAccountOwnerName);
+        Optional.ofNullable(userRequestDTO.getExp()).ifPresent(user::setExp);
 
         user.setUpdatedAt(LocalDateTime.now());
 

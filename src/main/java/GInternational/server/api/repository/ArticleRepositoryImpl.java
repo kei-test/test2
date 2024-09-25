@@ -99,7 +99,7 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom{
     }
 
     @Override
-    public List<Articles> searchByAdvancedCriteria(String title, String content, String nickname, String viewStatus, String categoryName, LocalDateTime startDateTime, LocalDateTime endDateTime, String username) {
+    public List<Articles> searchByAdvancedCriteria(String title, String content, String nickname, String viewStatus, String categoryName, LocalDateTime startDateTime, LocalDateTime endDateTime, String username, String ownerName) {
         QArticles articles = QArticles.articles;
         BooleanBuilder builder = new BooleanBuilder();
 
@@ -123,6 +123,9 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom{
         }
         if (username != null) {
             builder.and(articles.writer.username.eq(username));
+        }
+        if (ownerName != null) {
+            builder.and(articles.writer.wallet.ownerName.eq(ownerName));
         }
 
         return queryFactory

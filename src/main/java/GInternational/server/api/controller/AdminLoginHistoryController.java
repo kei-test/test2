@@ -118,21 +118,23 @@ public class AdminLoginHistoryController {
     }
 
     /**
-     * 관리자의 접속 가능 IP 수정 API
+     * 관리자의 접속 가능 IP 및 메모 수정 API
      *
      * @param userId 관리자의 사용자 ID
-     * @param newApproveIp 새로운 접속 가능 IP 주소
+     * @param newApproveIp 새로운 접속 가능 IP 주소 (옵션)
+     * @param adminMemo 새로운 관리자 메모 (옵션)
      * @param authentication 인증 정보
      * @return ResponseEntity with status
      */
-    @PatchMapping("/admins/update-approve-ip/{userId}")
-    public ResponseEntity<?> updateApproveIp(@PathVariable Long userId,
-                                             @RequestParam String newApproveIp,
+    @PatchMapping("/admins/update-admin-info/{userId}")
+    public ResponseEntity<?> updateAdminInfo(@PathVariable Long userId,
+                                             @RequestParam(required = false) String newApproveIp,
+                                             @RequestParam(required = false) String adminMemo,
                                              HttpServletRequest request,
                                              Authentication authentication) {
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-        adminLoginHistoryService.updateApproveIp(userId, newApproveIp, principalDetails, request);
-        return ResponseEntity.ok().body("접속가능 ip가 업데이트 되었습니다.");
+        adminLoginHistoryService.updateAdminInfo(userId, newApproveIp, adminMemo, principalDetails, request);
+        return ResponseEntity.ok().body("관리자 정보가 업데이트 되었습니다.");
     }
 
     /**

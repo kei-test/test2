@@ -28,6 +28,9 @@ public class MoneyLogResponseDTO {
 
     private MoneyLogCategoryEnum category; // 충전, 환전, 베팅차감, 당첨, 포인트전환
 
+    private Long totalBet; // 베팅차감 합계
+    private Long totalWin; // 당첨 합계
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd 'T' HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt; // 등록일시
 }

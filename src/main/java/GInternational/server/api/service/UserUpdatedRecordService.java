@@ -62,6 +62,7 @@ public class UserUpdatedRecordService {
         record.setCanRecommend(user.isCanRecommend());
         record.setCanPost(user.isCanPost());
         record.setCanBonus(user.isCanBonus());
+        record.setExp(user.getExp());
         // 변경된 정보 설정
         record.setChangedColumn(changedColumn);
         record.setBeforeData(beforeData);
@@ -112,6 +113,7 @@ public class UserUpdatedRecordService {
         currentState.put("isCanRecommend", String.valueOf(user.isCanRecommend()));
         currentState.put("isCanPost", String.valueOf(user.isCanPost()));
         currentState.put("isCanBonus", String.valueOf(user.isCanBonus()));
+        currentState.put("exp", String.valueOf(user.getExp()));
 
         currentState.forEach((key, value) -> {
             String prevValue = prevState.get(key);
@@ -159,6 +161,7 @@ public class UserUpdatedRecordService {
         prevState.put("isCanRecommend", String.valueOf(user.isCanRecommend()));
         prevState.put("isCanPost", String.valueOf(user.isCanPost()));
         prevState.put("isCanBonus", String.valueOf(user.isCanBonus()));
+        prevState.put("exp", String.valueOf(user.getExp()));
 
         return prevState;
     }

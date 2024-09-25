@@ -212,14 +212,19 @@ public class UserController {
 
     /**
      * 사용자의 마지막 방문 시간을 현재 시간으로 업데이트하여 로그아웃 시키는 기능
+     * 여러 개의 userId 또는 하나의 userId를 입력 가능
      *
-     * @param userId 업데이트할 사용자의 ID
+     * @param userIds 업데이트할 사용자의 ID 리스트
      * @return ResponseEntity with status OK if successful
      */
-    @PatchMapping("/users/logoutUser/{userId}")
-    public ResponseEntity<String> logoutUser(@PathVariable Long userId) {
-        userService.updateUserLastVisit(userId);
-        return ResponseEntity.ok("해당유저가 로그아웃 되엇습니다.");
+    @PatchMapping("/users/logoutUsers")
+    public ResponseEntity<String> logoutUsers(@RequestBody List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return ResponseEntity.badRequest().body("유저 ID 리스트가 비어있습니다.");
+        }
+
+        userService.updateUsersLastVisit(userIds);
+        return ResponseEntity.ok("해당 유저들이 로그아웃 되었습니다.");
     }
 }
 
