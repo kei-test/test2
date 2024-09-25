@@ -35,6 +35,10 @@ public class MoneyLog extends BaseEntity {
 
     @Column(name = "final_sports_balance")
     private Long finalSportsBalance; // 최종머니
+
+    @Column(name = "final_casino_balance")
+    private Long finalCasinoBalance;
+
     private String bigo; // 비고
 
     private String site; // 사이트 (윈드 메가 등)
@@ -44,12 +48,13 @@ public class MoneyLog extends BaseEntity {
 
 
     @Builder
-    public MoneyLog(User user, String username, String nickname, Long usedSportsBalance, Long finalSportsBalance, String bigo, String site, MoneyLogCategoryEnum category) {
+    public MoneyLog(User user, String username, String nickname, Long usedSportsBalance, Long finalSportsBalance, Long finalCasinoBalance, String bigo, String site, MoneyLogCategoryEnum category) {
         this.user = user;
         this.username = username;
         this.nickname = nickname;
         this.usedSportsBalance = usedSportsBalance;
         this.finalSportsBalance = finalSportsBalance;
+        this.finalCasinoBalance = finalCasinoBalance;
         this.bigo = bigo;
         this.site = site;
         this.category = category;

@@ -179,7 +179,7 @@ public class CouponService {
         }
 
         if (transaction.getStatus() != CouponTransactionEnum.WAITING) {
-            throw new RestControllerException(ExceptionCode.TRANSACTION_ALREADY_PROCESSED, "이미 처리된 트랜잭션입니다.");
+            throw new RestControllerException(ExceptionCode.TRANSACTION_ALREADY_PROCESSED, "이미 사용된 쿠폰입니다.");
         }
 
         if (transaction.getCouponTypeEnum() != expectedCouponType) {
@@ -204,10 +204,11 @@ public class CouponService {
         if (sportsBalanceToAdd > 0) {
             user.getWallet().setSportsBalance(user.getWallet().getSportsBalance() + sportsBalanceToAdd);
             moneyLogService.recordMoneyUsage(user.getId(),
-                                             sportsBalanceToAdd,
-                                             user.getWallet().getSportsBalance() + sportsBalanceToAdd,
-                                             MoneyLogCategoryEnum.머니쿠폰,
-                                             "");
+                    sportsBalanceToAdd,
+                    user.getWallet().getSportsBalance(),
+                    user.getWallet().getCasinoBalance(),
+                    MoneyLogCategoryEnum.머니쿠폰,
+                    "");
         }
 
         if (pointsToAdd > 0) {

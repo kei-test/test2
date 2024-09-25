@@ -69,6 +69,8 @@ public interface UserRepository extends JpaRepository<User,Long>, UserRepository
 
     Long countByRole(String role);
 
+    Long countByRoleAndUserGubun(String role, UserGubunEnum userGubun);
+
     @Query("SELECT u.referredBy FROM users u WHERE u.role = :role ORDER BY u.createdAt ASC")
     List<String> findOldestGuestReferredBy(@Param("role") String role, Pageable pageable);
 

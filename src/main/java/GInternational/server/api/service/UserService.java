@@ -93,7 +93,7 @@ public class UserService {
         user.setCanPost(true);
         user.setCanComment(true);
         user.setCanBonus(true);
-        user.setCanRecommend(true);
+        user.setCanRecommend(false);
         user.setRecommendationCode(null);
         user.setRecommendationCodeIssuedAt(null);
 
@@ -145,8 +145,8 @@ public class UserService {
             }
 
             user.setReferredBy(referrer.getUsername()); // 추천인의 username을 저장
-//            user.setDistributor(null);
-//            user.setStore(null);
+            user.setDistributor(null);
+            user.setStore(null);
             user.setAmazonUser(isAmazonCode); // 총판 추천에 의해 가입된 유저인지 구분
 
             List<String> recommendedUsers = referrer.getRecommendedUsers();
@@ -337,7 +337,7 @@ public class UserService {
         user.setCanPost(true);
         user.setCanComment(true);
         user.setCanBonus(true);
-        user.setCanRecommend(true);
+        user.setCanRecommend(false);
         user.setRecommendationCode(null);
         user.setRecommendationCodeIssuedAt(null);
 
@@ -388,8 +388,8 @@ public class UserService {
             }
 
             user.setReferredBy(referrer.getUsername()); // 추천인의 username을 저장
-//            user.setDistributor(null);
-//            user.setStore(null);
+            user.setDistributor(null);
+            user.setStore(null);
             user.setAmazonUser(isAmazonCode); // 총판 추천에 의해 가입된 유저인지 구분
 
             List<String> recommendedUsers = referrer.getRecommendedUsers();

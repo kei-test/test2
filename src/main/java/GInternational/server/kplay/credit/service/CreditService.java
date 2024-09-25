@@ -14,6 +14,8 @@ import GInternational.server.kplay.debit.entity.Debit;
 import GInternational.server.kplay.debit.repository.DebitRepository;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
+import GInternational.server.kplay.game.entity.Game;
+import GInternational.server.kplay.game.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class CreditService {
     private final CreditRepository creditRepository;
     private final DebitRepository debitRepository;
     private final MoneyLogService moneyLogService;
+    private final GameRepository gameRepository;
 
     @Value("${secret.secret-key}")
     private String secretKey;
@@ -82,10 +85,14 @@ public class CreditService {
         user.getWallet().setCasinoBalance(newCasinoBalance);
         walletRepository.save(user.getWallet());
 
+
+
         String bettingCategory = getBettingCategory(creditRequestDTO.getPrd_id());
-        String description = creditRequestDTO.getGame_id() + "(" + bettingCategory + ")";
+        Game game = gameRepository.searchByPrdIdAndGameIndex(creditRequestDTO.getPrd_id(),creditRequestDTO.getGame_id()).orElse(null);
+        String description = game.getName() + "(" + bettingCategory + ")";
+
         if (creditRequestDTO.getAmount() > 0) {
-            moneyLogService.recordMoneyUsage(user.getId(), Long.valueOf(creditRequestDTO.getAmount()), user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.당첨, description);
+            moneyLogService.recordMoneyUsage(user.getId(), Long.valueOf(creditRequestDTO.getAmount()),wallet.getSportsBalance(), user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.당첨, description);
         }
 
         String error = getErrorMessage(status, user, secretHeader);
@@ -122,13 +129,21 @@ public class CreditService {
      * @param prdId 제품 ID
      * @return "카지노" 또는 "슬롯"
      */
+//    private String getBettingCategory(int prdId) {
+//        if (prdId >= 1 && prdId <= 99) {
+//            return "카지노";
+//        } else if (prdId >= 200 && prdId <= 299) {
+//            return "슬롯";
+//        } else {
+//            return "기타";
+//        }
+//    }
+
     private String getBettingCategory(int prdId) {
-        if (prdId >= 1 && prdId <= 99) {
-            return "카지노";
-        } else if (prdId >= 200 && prdId <= 299) {
-            return "슬롯";
-        } else {
-            return "기타";
-        }
+        if (prdId >= 1 && prdId <= 50) return "카지노";
+        else if (prdId >= 200 && prdId <= 299) return "슬롯";
+        else if (prdId >= 101 && prdId <= 199) return "케이플레이 스포츠";
+        else if (prdId == 300 || prdId == 301 || prdId >= 10002 && prdId <= 10003) return "아케이드";
+        else return "기타";
     }
 }

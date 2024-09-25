@@ -48,4 +48,8 @@ public interface ArticleRepository extends JpaRepository<Articles, Long>, JpaSpe
     int countByAnswerStatus(String answerStatus);
 
     int countByWriterAndCategoryAndCreatedAtBetween(User writer, Category category, LocalDateTime startDate, LocalDateTime endDate);
+
+    boolean existsByWriterAndCategoryAndAnswerStatusIn(User writer, Category category, List<String> answerStatuses);
+
+    boolean existsByWriterNameAndCategoryAndAnswerStatusIn(String writerName, Category category, List<String> answerStatuses);
 }

@@ -43,7 +43,7 @@ public class LoginHistoryService {
      * @param countryName 국가명
      */
     public void saveLoginHistory(LoginRequestDto loginRequestDto, String attemptIP, IPResponse ipResponse,
-                                 String attemptNickname, HttpServletRequest request, String countryName) {
+                                 String attemptNickname, HttpServletRequest request, String countryName,String bigo) {
         LoginHistory loginHistory = new LoginHistory();
         loginHistory.setAttemptUsername(loginRequestDto.getUsername());
 
@@ -62,6 +62,7 @@ public class LoginHistoryService {
         String userAgent = request.getHeader("User-Agent");
         String attemptDevice = ipInfoService.extractDeviceTypeFromUserAgent(userAgent);
         loginHistory.setAttemptDevice(attemptDevice);
+        loginHistory.setBigo(bigo);
 
         String attemptUrl = extractFullRequestURL(request);
         loginHistory.setAttemptUrl(attemptUrl);

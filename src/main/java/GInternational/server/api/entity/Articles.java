@@ -75,7 +75,7 @@ public class Articles extends BaseEntity {
     @Column(name = "read_count")
     private int readCount;       // 게시글 조회수 getMyArticle로 조회할 때 마다 +1 증가
     @Column(name = "answer_status")
-    private String answerStatus; // 답변 상태를 위한 필드(로그인 문의 포함) // 답변대기, 답변완료
+    private String answerStatus; // 답변 상태를 위한 필드(로그인 문의 포함) // 답변요청, 답변대기, 답변완료
 
     // 어드민페이지 게시판을 위한 컬럼
     @Column(name = "comment_count")

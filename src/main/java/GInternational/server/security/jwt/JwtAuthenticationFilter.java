@@ -101,11 +101,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             if (whiteIpOptional.isEmpty() || user.getRole().equals("ROLE_USER") || user.getRole().equals("ROLE_TEST")) {
                 if (user != null) {
-                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode);
+                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode,"회원가입 신청이 미승인된 유저의 로그인");
                 } else if (user.getPartnerType() != null) {
                     amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType);
                 } else {
-                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
+                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"회원가입 신청이 미승인된 유저의 로그인");
                 }
             }
 
@@ -131,7 +131,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         }
                     }
                     if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
+                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
                         handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
                         if (user.getPartnerType() != null) {
                             amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
@@ -179,7 +179,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         }
                     }
                     if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
+                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
                         handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
                         if (user.getPartnerType() != null) {
                             amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
@@ -234,7 +234,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                         }
                     }
                     if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode);
+                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
                         handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
                         if (user.getPartnerType() != null) {
                             amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");

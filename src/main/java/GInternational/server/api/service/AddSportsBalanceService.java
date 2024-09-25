@@ -49,7 +49,7 @@ public class AddSportsBalanceService {
 
     private void audit(String message, Long sportsBalance, User user, PrincipalDetails principalDetails, HttpServletRequest request, String memo) {
         String clientIp = request.getRemoteAddr();
-        moneyLogService.recordMoneyUsage(user.getId(), sportsBalance, user.getWallet().getSportsBalance(), MoneyLogCategoryEnum.valueOf(message), memo);
+        moneyLogService.recordMoneyUsage(user.getId(), sportsBalance, user.getWallet().getSportsBalance(),user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.valueOf(message), memo);
 
         AuditContext context = AuditContextHolder.getContext();
         context.setIp(clientIp);

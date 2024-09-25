@@ -399,7 +399,7 @@ public class ManagerService {
         List<String> waitingAnswerStatuses = Arrays.asList("답변대기", "로그인문의 답변대기");
         Long waitingAnswerCount = articleRepository.countByAnswerStatuses(waitingAnswerStatuses);
         Long userCount = userRepository.countByRole("ROLE_USER");
-        Long guestCount = userRepository.countByRole("ROLE_GUEST");
+        Long guestCount = userRepository.countByRoleAndUserGubun("ROLE_GUEST", UserGubunEnum.대기);
 
         Pageable firstItem = PageRequest.of(0, 1);
         List<String> oldestGuestReferredByList = userRepository.findOldestGuestReferredBy("ROLE_GUEST", firstItem);

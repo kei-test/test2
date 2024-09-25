@@ -49,17 +49,25 @@ public class ArticleService {
     @AuditLogService.Audit("게시물 작성")
     public ArticlesResponseDTO insertArticle(Long categoryId, ArticlesRequestDTO articlesRequestDTO, PrincipalDetails principalDetails, HttpServletRequest request) {
         User user = userRepository.findById(principalDetails.getUser().getId()).orElseThrow
-                (()-> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다."));
+                (() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "유저를 찾을 수 없습니다."));
         if (!user.isCanPost()) {
             throw new RestControllerException(ExceptionCode.PERMISSION_DENIED, "게시글 작성이 불가능합니다. 관리자에게 문의하세요.");
         }
         Category category = categoryRepository.findById(categoryId).orElseThrow
-                (()-> new RestControllerException(ExceptionCode.CATEGORY_NOT_FOUND, "카테로리를 찾을 수 없습니다."));
+                (() -> new RestControllerException(ExceptionCode.CATEGORY_NOT_FOUND, "카테고리를 찾을 수 없습니다."));
 
         DailyLimit dailyLimit = dailyLimitRepository.findById(1L)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.DATA_NOT_FOUND, "DailyLimit 설정을 찾을 수 없습니다."));
 
         String clientIp = request.getRemoteAddr();
+
+        if ("고객센터".equals(category.getName())) {
+            boolean hasPendingInquiry = articleRepository.existsByWriterAndCategoryAndAnswerStatusIn(
+                    user, category, Arrays.asList("답변요청", "답변대기", "로그인문의 답변요청", "로그인문의 답변대기"));
+            if (hasPendingInquiry) {
+                throw new RestControllerException(ExceptionCode.LIMIT_EXCEEDED, "이미 처리되지 않은 문의가 존재합니다.");
+            }
+        }
 
         // "게시판" 카테고리에서 유저의 일일 게시글 등록 제한 체크
         if ("게시판".equals(category.getName())) {
@@ -512,6 +520,13 @@ public class ArticleService {
     public ArticlesResponseDTO createLoginInquiryArticle(ArticlesLoginInquiryDTO articlesLoginInquiryDTO, HttpServletRequest request) {
         Category category = categoryRepository.findByName("고객센터")
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.CATEGORY_NOT_FOUND));
+
+        // 작성자의 중복 문의 게시글 여부 확인
+        boolean hasPendingInquiry = articleRepository.existsByWriterNameAndCategoryAndAnswerStatusIn(
+                articlesLoginInquiryDTO.getUsername(), category, Arrays.asList("답변요청", "답변대기", "로그인문의 답변요청", "로그인문의 답변대기"));
+        if (hasPendingInquiry) {
+            throw new RestControllerException(ExceptionCode.LIMIT_EXCEEDED, "이미 처리되지 않은 문의가 존재합니다.");
+        }
 
         String clientIp = request.getRemoteAddr();
 

@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 public class RecommendationCodeResDTO {
     private Long id;
     private String distributor;
-    private String store;
     private String username;
     private String nickname;
     private int recommendedCount;
     private String recommendationCode;
+    private String store;
     private LocalDateTime createdAt;
 }

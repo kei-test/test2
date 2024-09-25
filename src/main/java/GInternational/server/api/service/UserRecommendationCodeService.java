@@ -62,11 +62,11 @@ public class UserRecommendationCodeService {
         return users.stream().map(user -> new RecommendationCodeResDTO(
                 user.getId(),
                 user.getDistributor(),
-                user.getStore(),
                 user.getUsername(),
                 user.getNickname(),
                 user.getRecommendedCount(),
                 user.getRecommendationCode(),
+                user.getStore(),
                 user.getRecommendationCodeIssuedAt()
         )).collect(Collectors.toList());
     }

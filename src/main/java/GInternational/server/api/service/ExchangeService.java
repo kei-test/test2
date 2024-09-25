@@ -98,7 +98,7 @@ public class ExchangeService {
             walletRepository.save(wallet);
 
             exchangeResponseMapper.toDto(wallet);
-            moneyLogService.recordMoneyUsage(user.getId(), transaction.getExchangeAmount(), wallet.getSportsBalance(), MoneyLogCategoryEnum.환전, "");
+            moneyLogService.recordMoneyUsage(user.getId(), transaction.getExchangeAmount(), wallet.getSportsBalance(), wallet.getCasinoBalance(), MoneyLogCategoryEnum.환전, "");
         } else {
             throw new RestControllerException(ExceptionCode.INSUFFICIENT_FUNDS_OR_INVALID_AMOUNT, "환전 금액이 0보다 커야하고 지갑 잔액이 충분해야 합니다.");
         }
@@ -257,7 +257,7 @@ public class ExchangeService {
                 wallet.setSportsBalance(wallet.getSportsBalance() + savedTransaction.getExchangeAmount());
                 walletRepository.save(wallet);
 
-                moneyLogService.recordMoneyUsage(user.getId(), savedTransaction.getExchangeAmount(), wallet.getSportsBalance(), MoneyLogCategoryEnum.환전취소, "");
+                moneyLogService.recordMoneyUsage(user.getId(), savedTransaction.getExchangeAmount(), wallet.getSportsBalance(),wallet.getCasinoBalance(), MoneyLogCategoryEnum.환전취소, "");
             }
         }
     }

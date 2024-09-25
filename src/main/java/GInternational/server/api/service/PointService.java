@@ -71,7 +71,7 @@ public class PointService {
             wallet.setPoint(wallet.getPoint() - pointRequestDTO.getExchangePoint());
 
             pointLogService.recordPointLog(user.getId(), (long) pointRequestDTO.getExchangePoint(), PointLogCategoryEnum.포인트전환, clientIp, "");
-            moneyLogService.recordMoneyUsage(user.getId(), (long) pointRequestDTO.getExchangePoint(), wallet.getSportsBalance(), MoneyLogCategoryEnum.포인트전환, "");
+            moneyLogService.recordMoneyUsage(user.getId(), (long) pointRequestDTO.getExchangePoint(), wallet.getSportsBalance(),wallet.getCasinoBalance(), MoneyLogCategoryEnum.포인트전환, "");
 
             walletRepository.save(wallet);
 

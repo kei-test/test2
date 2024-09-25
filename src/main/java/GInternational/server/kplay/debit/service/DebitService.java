@@ -19,11 +19,14 @@ import GInternational.server.kplay.debit.repository.DebitRepository;
 import GInternational.server.api.service.LoginStatisticService;
 import GInternational.server.api.service.MoneyLogService;
 import GInternational.server.api.vo.MoneyLogCategoryEnum;
+import GInternational.server.kplay.game.entity.Game;
+import GInternational.server.kplay.game.repository.GameRepository;
 import GInternational.server.security.auth.PrincipalDetails;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.sun.jdi.LongValue;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,7 @@ import static GInternational.server.kplay.game.entity.QGame.game;
 import static GInternational.server.kplay.product.entity.QProduct.product;
 import static GInternational.server.api.entity.QUser.user;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional(value = "clientServerTransactionManager")
@@ -63,6 +67,7 @@ public class DebitService {
     private final AmazonRollingTransactionRepository amazonRollingTransactionRepository;
     private final AmznRollingTransactionService amznRollingTransactionService;
     private final UserService userService;
+    private final GameRepository gameRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DebitService.class);
 
@@ -97,17 +102,20 @@ public class DebitService {
                 wallet = walletRepository.findById(user.getWallet().getId()).orElseThrow
                         (() -> new RestControllerException(ExceptionCode.WALLET_INFO_NOT_FOUND, "지갑 정보 없음"));
             }
-            Long usedAmount = -(long) debitRequestDTO.getAmount();
+
+            long usedAmount = Long.valueOf(debitRequestDTO.getAmount());
 
             String bettingCategory = getBettingCategory(debitRequestDTO.getPrd_id());
-            String description = debitRequestDTO.getGame_id() + "(" + bettingCategory + ")";
+            Game game = gameRepository.searchByPrdIdAndGameIndex(debitRequestDTO.getPrd_id(),debitRequestDTO.getGame_id()).orElse(null);
+            String description = game.getName() + "(" + bettingCategory + ")";
+
 
             long newWalletCasinoBalance = user.getWallet().getCasinoBalance() - debitRequestDTO.getAmount();
-            moneyLogService.recordMoneyUsage(user.getId(), usedAmount, newWalletCasinoBalance, MoneyLogCategoryEnum.베팅차감, description);
+            moneyLogService.recordMoneyUsage(user.getId(), usedAmount,wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.베팅차감, description);
 
             if (debitRequestDTO.getCredit_amount() != 0) {
                 newWalletCasinoBalance += debitRequestDTO.getCredit_amount();
-                moneyLogService.recordMoneyUsage(user.getId(), (long) debitRequestDTO.getCredit_amount(), newWalletCasinoBalance, MoneyLogCategoryEnum.당첨, description);
+                moneyLogService.recordMoneyUsage(user.getId(), (long) debitRequestDTO.getCredit_amount(),wallet.getSportsBalance(), newWalletCasinoBalance, MoneyLogCategoryEnum.당첨, description);
             }
 
             Debit savedDebit = Debit.builder()
@@ -215,22 +223,22 @@ public class DebitService {
                     amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
                 }
             } else if (user.isAmazonUser()) {
-                    String referredBy = user.getReferredBy();
-                    partnerUser = userRepository.findByUsername(referredBy);
+                String referredBy = user.getReferredBy();
+                partnerUser = userRepository.findByUsername(referredBy);
 
-                    if (bettingCategory.equals("카지노")) {
-                        double cRolling = partnerUser.getCasinoRolling();
-                        rollingAmount = betAmount * (cRolling / 100);
-                    } else if (bettingCategory.equals("슬롯")) {
-                        double sRolling = partnerUser.getSlotRolling();
-                        rollingAmount = betAmount * (sRolling / 100);
-                    }
+                if (bettingCategory.equals("카지노")) {
+                    double cRolling = partnerUser.getCasinoRolling();
+                    rollingAmount = betAmount * (cRolling / 100);
+                } else if (bettingCategory.equals("슬롯")) {
+                    double sRolling = partnerUser.getSlotRolling();
+                    rollingAmount = betAmount * (sRolling / 100);
+                }
 
-                    Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
-                    long cvtAmount = (long) Math.ceil(rollingAmount);
-                    pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
-                    walletRepository.save(pWallet);
-                    amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
+                Wallet pWallet = walletRepository.findByUser(partnerUser).orElse(null);
+                long cvtAmount = (long) Math.ceil(rollingAmount);
+                pWallet.setAmazonMileage(pWallet.getAmazonMileage() + cvtAmount);
+                walletRepository.save(pWallet);
+                amznRollingTransactionService.createTransaction(user, bettingCategory,betAmount,cvtAmount,partnerUser.getId(),savedDebit, pWallet);
             }
 
 
@@ -361,11 +369,8 @@ public class DebitService {
      * @return Page<DebitAmazonResponseDTO> 아마존 서비스를 통한 사용자 베팅 내역 페이지
      */
     public Page<DebitAmazonResponseDTO> searchMyDebits(int size, String type, int page, LocalDateTime startDate, LocalDateTime endDate, PrincipalDetails principalDetails) {
-
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("debit.id").descending());
-
         Page<DebitAmazonResponseDTO> results = debitRepository.findByUserIdWithCreditAmount(type, startDate, endDate, pageable, principalDetails);
-
         return results;
     }
 

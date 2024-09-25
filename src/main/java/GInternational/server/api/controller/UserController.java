@@ -150,7 +150,7 @@ public class UserController {
      */
     @GetMapping("/users/{userId}/detail/info")
     public UserResponseDTO getUserDetail(@PathVariable("userId") Long userId,
-                                                                            Authentication authentication) {
+                                         Authentication authentication) {
         PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
         UserResponseDTO userDetail = userService.detailUserInfo(userId, principalDetails);
         return userDetail;
@@ -167,9 +167,9 @@ public class UserController {
         try {
             boolean isDuplicate = userService.isUsernameDuplicate(username);
             if (isDuplicate) {
-                return ResponseEntity.badRequest().body("중복된 유저네임입니다.");
+                return ResponseEntity.badRequest().body("사용 가능하지 않은 아이디 입니다.");
             }
-            return ResponseEntity.ok().body("사용 가능한 유저네임입니다.");
+            return ResponseEntity.ok().body("사용 가능한 아이디 입니다.");
         } catch (IllegalCharsetNameException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -187,9 +187,9 @@ public class UserController {
         try {
             boolean isDuplicate = userService.isNicknameDuplicate(nickname);
             if (isDuplicate) {
-                return ResponseEntity.badRequest().body("중복된 닉네임입니다.");
+                return ResponseEntity.badRequest().body("사용 가능하지 않은 닉네임 입니다.");
             }
-            return ResponseEntity.ok("사용 가능한 유저네임입니다.");
+            return ResponseEntity.ok("사용 가능한 닉네임 입니다.");
         } catch (IllegalCharsetNameException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

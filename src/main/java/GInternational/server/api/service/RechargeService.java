@@ -337,7 +337,7 @@ public class RechargeService {
                 walletRepository.save(wallet);
                 userRepository.save(user);
 
-                moneyLogService.recordMoneyUsage(user.getId(), rechargeAmount, wallet.getSportsBalance(), MoneyLogCategoryEnum.충전, "");
+                moneyLogService.recordMoneyUsage(user.getId(), rechargeAmount, wallet.getSportsBalance(),wallet.getCasinoBalance(), MoneyLogCategoryEnum.충전, "");
                 pointLogService.recordPointLog(user.getId(), (long) bonusValue, PointLogCategoryEnum.충전, originalRechargeTransaction.getIp(), "");
                 rouletteService.bonusRouletteSpinForRecharge(user.getId(), new BigDecimal(rechargeAmount));
                 checkAttendanceService.chargeAndCheckAttendance(user.getId(), new BigDecimal(rechargeAmount));
@@ -461,7 +461,7 @@ public class RechargeService {
             walletRepository.save(wallet);
             userRepository.save(user);
 
-            moneyLogService.recordMoneyUsage(user.getId(), rechargeAmount, wallet.getSportsBalance(), MoneyLogCategoryEnum.자동충전, "");
+            moneyLogService.recordMoneyUsage(user.getId(), rechargeAmount, wallet.getSportsBalance(),wallet.getCasinoBalance(), MoneyLogCategoryEnum.자동충전, "");
             pointLogService.recordPointLog(user.getId(), bonusValue, PointLogCategoryEnum.자동충전, rechargeTransaction.getIp(), "");
             rouletteService.bonusRouletteSpinForRecharge(user.getId(), new BigDecimal(rechargeAmount));
             checkAttendanceService.chargeAndCheckAttendance(user.getId(), new BigDecimal(rechargeAmount));

@@ -94,6 +94,8 @@ public class MoneyLogService {
                         predicates.add(cb.equal(root.get("user").get("store"), store));
                     }
 
+
+
                     return cb.and(predicates.toArray(new Predicate[0]));
                 }, Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(moneyLogResponseMapper::toDto)
@@ -109,7 +111,7 @@ public class MoneyLogService {
      * @param category           카테고리.
      * @param bigo               비고.
      */
-    public void recordMoneyUsage(Long userId, Long usedSportsBalance, Long finalSportsBalance, MoneyLogCategoryEnum category, String bigo) {
+    public void recordMoneyUsage(Long userId, Long usedSportsBalance, Long finalSportsBalance,Long finalCasinoBalance, MoneyLogCategoryEnum category, String bigo) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RestControllerException(ExceptionCode.USER_NOT_FOUND, "사용자를 찾을 수 없습니다."));
         MoneyLog moneyLog = new MoneyLog();
@@ -118,6 +120,7 @@ public class MoneyLogService {
         moneyLog.setNickname(user.getNickname());
         moneyLog.setUsedSportsBalance(usedSportsBalance);
         moneyLog.setFinalSportsBalance(finalSportsBalance);
+        moneyLog.setFinalCasinoBalance(finalCasinoBalance);
         moneyLog.setCategory(category);
         moneyLog.setBigo(bigo);
         moneyLog.setSite("test");

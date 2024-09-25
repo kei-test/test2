@@ -141,7 +141,7 @@ public class AmazonExchangeService {
                 if ("ROLE_USER".equals(savedTransaction.getUser().getRole())) {
                     loginStatisticService.recordExchange();
                 }
-                moneyLogService.recordMoneyUsage(user.getId(), originalTransaction.getExchangeAmount(), wallet.getSportsBalance(), MoneyLogCategoryEnum.환전, "");
+                moneyLogService.recordMoneyUsage(user.getId(), originalTransaction.getExchangeAmount(), wallet.getSportsBalance(),wallet.getCasinoBalance(), MoneyLogCategoryEnum.환전, "");
             } else {
                 throw new RuntimeException("환전 대기중인 내역만 승인가능합니다.");
             }

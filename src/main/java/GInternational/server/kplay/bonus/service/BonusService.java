@@ -10,6 +10,8 @@ import GInternational.server.kplay.bonus.dto.BonusRequestDTO;
 import GInternational.server.kplay.bonus.dto.BonusResponseDTO;
 import GInternational.server.kplay.bonus.repository.BonusRepository;
 import GInternational.server.api.entity.User;
+import GInternational.server.kplay.game.entity.Game;
+import GInternational.server.kplay.game.repository.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class BonusService {
     private final WalletRepository walletRepository;
     private final BonusRepository bonusRepository;
     private final MoneyLogService moneyLogService;
+    private final GameRepository gameRepository;
 
     @Value("${secret.secret-key}")
     private String secretKey;
@@ -48,9 +51,14 @@ public class BonusService {
         wallet.setCasinoBalance(user.getWallet().getCasinoBalance() + bonusRequestDTO.getAmount());
         walletRepository.save(wallet);
 
+
+
+
         String bettingCategory = getBettingCategory(bonusRequestDTO.getPrd_id());
-        String description = bonusRequestDTO.getGame_id() + "(" + bettingCategory + ")";
-        moneyLogService.recordMoneyUsage(user.getId(), (long) bonusRequestDTO.getAmount(), user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.보너스, description);
+        Game game = gameRepository.searchByPrdIdAndGameIndex(bonusRequestDTO.getPrd_id(),bonusRequestDTO.getGame_id()).orElse(null);
+        String description = game.getName() + "(" + bettingCategory + ")";
+
+        moneyLogService.recordMoneyUsage(user.getId(), (long) bonusRequestDTO.getAmount(),wallet.getSportsBalance(), wallet.getCasinoBalance(), MoneyLogCategoryEnum.보너스, description);
 
         int status = (secretHeader.equals(secretKey) &&
                 user.getAasId().equals(bonusRequestDTO.getUser_id())) ? 1 : 0;

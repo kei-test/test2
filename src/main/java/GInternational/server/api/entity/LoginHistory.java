@@ -43,6 +43,9 @@ public class LoginHistory {
     @Column(name = "attempt_url")
     private String attemptUrl;
 
+    @Column(name = "bigo")
+    private String bigo;
+
     @CreatedDate
     @Column(name = "attempt_date", updatable = false)
     private LocalDateTime attemptDate;

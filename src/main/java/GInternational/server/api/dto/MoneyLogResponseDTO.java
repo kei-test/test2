@@ -20,7 +20,8 @@ public class MoneyLogResponseDTO {
     private String nickname;
 
     private Long usedSportsBalance; // 사용머니
-    private Long finalSportsBalance; // 최종머니
+    private Long finalSportsBalance; // 최종 스포츠머니
+    private Long finalCasinoBalance; // 최종 카지노머니
     private String bigo; // 비고
 
     private String site; // 사이트

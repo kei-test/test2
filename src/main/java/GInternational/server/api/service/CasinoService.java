@@ -66,7 +66,7 @@ public class CasinoService {
             wallet.setExchangedCount((int) casinoTransaction.getExchangedCount());
             walletRepository.save(wallet);
 
-            moneyLogService.recordMoneyUsage(user.getId(), casinoRequestDTO.getExchangeSportsBalance(), casinoTransaction.getRemainingSportsBalance(), MoneyLogCategoryEnum.카지노머니로전환, "스->카");
+            moneyLogService.recordMoneyUsage(user.getId(), casinoRequestDTO.getExchangeSportsBalance(), casinoTransaction.getRemainingSportsBalance(),casinoTransaction.getRemainingCasinoBalance(), MoneyLogCategoryEnum.카지노머니로전환, "스->카");
 
             CasinoResponseDTO casinoResponseDTO = new CasinoResponseDTO();
             casinoResponseDTO.setCasinoBalance(wallet.getCasinoBalance());
@@ -116,7 +116,7 @@ public class CasinoService {
             wallet.setExchangedCount((int) casinoTransaction.getExchangedCount());
             walletRepository.save(wallet);
 
-            moneyLogService.recordMoneyUsage(user.getId(), casinoRequestDTO.getExchangeCasinoBalance(), casinoTransaction.getRemainingSportsBalance(), MoneyLogCategoryEnum.스포츠머니로전환, "카->스");
+            moneyLogService.recordMoneyUsage(user.getId(), casinoRequestDTO.getExchangeCasinoBalance(), casinoTransaction.getRemainingSportsBalance(),casinoTransaction.getRemainingCasinoBalance(), MoneyLogCategoryEnum.스포츠머니로전환, "카->스");
 
             CasinoResponseDTO pointResponseDTO = new CasinoResponseDTO();
             pointResponseDTO.setSportsBalance(wallet.getSportsBalance());

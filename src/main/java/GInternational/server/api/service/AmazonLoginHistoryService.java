@@ -35,7 +35,7 @@ public class AmazonLoginHistoryService {
      * @param attemptIP 시도한 IP 주소
      * @param attemptNickname 시도한 사용자의 닉네임
      */
-    public void saveAmazonLoginHistory(LoginRequestDto loginRequestDto, String attemptIP, String attemptNickname, String result, String gubun) {
+    public void saveAmazonLoginHistory(LoginRequestDto loginRequestDto, String attemptIP, String attemptNickname, String result, String gubun ) {
         AmazonLoginHistory amazonLoginHistory = new AmazonLoginHistory();
         amazonLoginHistory.setAttemptUsername(loginRequestDto.getUsername());
 
@@ -48,6 +48,7 @@ public class AmazonLoginHistoryService {
         amazonLoginHistory.setAttemptIP(attemptIP);
         amazonLoginHistory.setResult(result);
         amazonLoginHistory.setGubun(gubun);
+
 
         amazonLoginHistoryRepository.save(amazonLoginHistory);
     }

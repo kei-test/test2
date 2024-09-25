@@ -145,7 +145,7 @@ public class BetHistoryService {
         user.getWallet().setSportsBalance(user.getWallet().getSportsBalance() - totalBetAmount);
         walletRepository.save(user.getWallet());
 
-        moneyLogService.recordMoneyUsage(user.getId(), totalBetAmount, user.getWallet().getSportsBalance(), MoneyLogCategoryEnum.베팅차감, betGroupId + "(SPORTS)");
+        moneyLogService.recordMoneyUsage(user.getId(), totalBetAmount, user.getWallet().getSportsBalance(),user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.베팅차감, betGroupId + "(SPORTS)");
 
         matchMetaRepository.saveAll(metaMatches);  //경기 카운트,금액 누적
 
