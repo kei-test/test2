@@ -16,6 +16,8 @@ import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
 import GInternational.server.kplay.game.entity.Game;
 import GInternational.server.kplay.game.repository.GameRepository;
+import GInternational.server.kplay.product.entity.Product;
+import GInternational.server.kplay.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class CreditService {
     private final DebitRepository debitRepository;
     private final MoneyLogService moneyLogService;
     private final GameRepository gameRepository;
+    private final ProductRepository productRepository;
 
     @Value("${secret.secret-key}")
     private String secretKey;
@@ -85,11 +88,16 @@ public class CreditService {
         user.getWallet().setCasinoBalance(newCasinoBalance);
         walletRepository.save(user.getWallet());
 
-
+        String description = null;
 
         String bettingCategory = getBettingCategory(creditRequestDTO.getPrd_id());
-        Game game = gameRepository.searchByPrdIdAndGameIndex(creditRequestDTO.getPrd_id(),creditRequestDTO.getGame_id()).orElse(null);
-        String description = game.getName() + "(" + bettingCategory + ")";
+        if (bettingCategory.equals("카지노")) {
+            Product product = productRepository.findByPrdId(creditRequestDTO.getPrd_id()).orElse(null);
+            description = product.getPrd_name() + "(" + bettingCategory + ")";
+        } else {
+            Game game = gameRepository.searchByPrdIdAndGameIndex(creditRequestDTO.getPrd_id(),creditRequestDTO.getGame_id()).orElse(null);
+            description = game.getName() + "(" + bettingCategory + ")";
+        }
 
         if (creditRequestDTO.getAmount() > 0) {
             moneyLogService.recordMoneyUsage(user.getId(), Long.valueOf(creditRequestDTO.getAmount()),wallet.getSportsBalance(), user.getWallet().getCasinoBalance(), MoneyLogCategoryEnum.당첨, description);

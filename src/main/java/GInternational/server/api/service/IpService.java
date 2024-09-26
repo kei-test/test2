@@ -38,34 +38,38 @@ public class IpService {
      * @return 저장된 Ip 엔티티
      */
     @AuditLogService.Audit("아이피 차단")
-    public Ip blockIp(IpReqDTO ipReqDTO, PrincipalDetails principalDetails, HttpServletRequest request) {
-        if (ipReqDTO.getIpContent() == null || ipReqDTO.getIpContent().trim().isEmpty()) {
-            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "아이피를 입력하세요");
+    public List<Ip> blockIp(List<IpReqDTO> ipReqDTOList, PrincipalDetails principalDetails, HttpServletRequest request) {
+        List<Ip> blockedIps = new ArrayList<>();
+
+        for (IpReqDTO ipReqDTO : ipReqDTOList) {
+
+            if (ipReqDTO.getIpContent() == null || ipReqDTO.getIpContent().trim().isEmpty()) {
+                throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "아이피를 입력하세요");
+            }
+            if (ipReqDTO.getNote() == null || ipReqDTO.getNote().trim().isEmpty()) {
+                throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "비고를 입력하세요");
+            }
+            Optional<Ip> existingIp = Optional.ofNullable(ipRepository.findByIpContent(ipReqDTO.getIpContent()));
+            if (existingIp.isPresent()) {
+                continue;
+            }
+
+            Ip ip = new Ip();
+            ip.setIpContent(ipReqDTO.getIpContent());
+            ip.setNote(ipReqDTO.getNote());
+            ip.setEnabled(true);
+
+            AuditContext context = AuditContextHolder.getContext();
+            String clientIp = request.getRemoteAddr();
+            context.setIp(clientIp);
+            context.setTargetId(null);
+            context.setUsername(null);
+            context.setDetails(ipReqDTO.getIpContent() + " 아이피 차단");
+            context.setAdminUsername(principalDetails.getUsername());
+            context.setTimestamp(LocalDateTime.now());
+            ipRepository.save(ip);
         }
-        if (ipReqDTO.getNote() == null || ipReqDTO.getNote().trim().isEmpty()) {
-            throw new RestControllerException(ExceptionCode.INVALID_REQUEST, "비고를 입력하세요");
-        }
-
-        Optional<Ip> existingIp = Optional.ofNullable(ipRepository.findByIpContent(ipReqDTO.getIpContent()));
-        if (existingIp.isPresent()) {
-            throw new RestControllerException(ExceptionCode.DUPLICATE_ENTRY, "이미 차단된 아이피입니다.");
-        }
-
-        Ip ip = new Ip();
-        ip.setIpContent(ipReqDTO.getIpContent());
-        ip.setNote(ipReqDTO.getNote());
-        ip.setEnabled(true);
-
-        AuditContext context = AuditContextHolder.getContext();
-        String clientIp = request.getRemoteAddr();
-        context.setIp(clientIp);
-        context.setTargetId(null);
-        context.setUsername(null);
-        context.setDetails(ipReqDTO.getIpContent() + " 아이피 차단");
-        context.setAdminUsername(principalDetails.getUsername());
-        context.setTimestamp(LocalDateTime.now());
-
-        return ipRepository.save(ip);
+        return blockedIps;
     }
 
     /**

@@ -155,7 +155,7 @@ public class EditResultsService {
                                     .usedSportsBalance(tempProfit)
                                     .finalSportsBalance(wallet.getSportsBalance())
                                     .bigo(history.getBetGroupId() + "(SPORT)")
-                                    .site("test")
+                                    .site("rain")
                                     .build();
                             moneyLogRepository.save(moneyLog);
                         }

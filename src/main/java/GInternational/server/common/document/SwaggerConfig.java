@@ -19,8 +19,8 @@ public class SwaggerConfig {
         final String apiTitle = String.format("%s API", StringUtils.capitalize("API 타이틀"));
         Info info = new Info()
                 .version("v2")
-                .title("테스트")
-                .description("테스트 프로젝트");
+                .title("레인")
+                .description("레인 프로젝트");
 
         return new OpenAPI()
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
@@ -35,7 +35,7 @@ public class SwaggerConfig {
                 )
                 .info(info)
                 .servers(Collections.singletonList(
-                        new Server().url("https://dailymodelapp.com")
+                        new Server().url("rain7777.com")
                 ));
     }
 }

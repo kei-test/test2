@@ -334,7 +334,7 @@ public class JdbcBatchService {
                         totalBalance,
                         bigo,
                         "당첨",
-                        "test"
+                        "rain"
                 });
             }
             jdbcTemplate.batchUpdate(insertSql, batchInsert);

@@ -405,7 +405,7 @@ public class BetHistoryService {
                 .usedSportsBalance(bet)
                 .finalSportsBalance(value)
                 .bigo(distinctBetHistory.getBetGroupId() + "(SPORT)")
-                .site("test")
+                .site("rain")
                 .build();
         moneyLogRepository.save(moneyLog);
 

@@ -12,6 +12,8 @@ import GInternational.server.kplay.bonus.repository.BonusRepository;
 import GInternational.server.api.entity.User;
 import GInternational.server.kplay.game.entity.Game;
 import GInternational.server.kplay.game.repository.GameRepository;
+import GInternational.server.kplay.product.entity.Product;
+import GInternational.server.kplay.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class BonusService {
     private final BonusRepository bonusRepository;
     private final MoneyLogService moneyLogService;
     private final GameRepository gameRepository;
+    private final ProductRepository productRepository;
 
     @Value("${secret.secret-key}")
     private String secretKey;
@@ -51,12 +54,16 @@ public class BonusService {
         wallet.setCasinoBalance(user.getWallet().getCasinoBalance() + bonusRequestDTO.getAmount());
         walletRepository.save(wallet);
 
-
-
+        String description = null;
 
         String bettingCategory = getBettingCategory(bonusRequestDTO.getPrd_id());
-        Game game = gameRepository.searchByPrdIdAndGameIndex(bonusRequestDTO.getPrd_id(),bonusRequestDTO.getGame_id()).orElse(null);
-        String description = game.getName() + "(" + bettingCategory + ")";
+        if (bettingCategory.equals("카지노")) {
+            Product product = productRepository.findByPrdId(bonusRequestDTO.getPrd_id()).orElse(null);
+            description = product.getPrd_name() + "(" + bettingCategory + ")";
+        } else {
+            Game game = gameRepository.searchByPrdIdAndGameIndex(bonusRequestDTO.getPrd_id(),bonusRequestDTO.getGame_id()).orElse(null);
+            description = game.getName() + "(" + bettingCategory + ")";
+        }
 
         moneyLogService.recordMoneyUsage(user.getId(), (long) bonusRequestDTO.getAmount(),wallet.getSportsBalance(), wallet.getCasinoBalance(), MoneyLogCategoryEnum.보너스, description);
 

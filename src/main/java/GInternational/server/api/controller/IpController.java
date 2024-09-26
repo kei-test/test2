@@ -41,12 +41,12 @@ public class IpController {
      * @return ResponseEntity 차단된 IP 정보와 메시지를 담은 ResponseEntity 객체
      */
     @PostMapping("/managers/ip")
-    public ResponseEntity<?> blockIp(@RequestBody IpReqDTO ipReqDTO,
+    public ResponseEntity<?> blockIp(@RequestBody List<IpReqDTO> ipReqDTO,
                                      HttpServletRequest request,
                                      Authentication authentication) {
         try {
             PrincipalDetails principal = (PrincipalDetails) authentication.getPrincipal();
-            Ip response = ipService.blockIp(ipReqDTO, principal, request);
+            List<Ip> response = ipService.blockIp(ipReqDTO, principal, request);
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("data", new SingleResponseDto<>(response));
             responseBody.put("message", "IP가 차단되었습니다.");

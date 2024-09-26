@@ -146,7 +146,7 @@ public class MoneyLogService {
         moneyLog.setFinalCasinoBalance(finalCasinoBalance);
         moneyLog.setCategory(category);
         moneyLog.setBigo(bigo);
-        moneyLog.setSite("test");
+        moneyLog.setSite("rain");
         moneyLogRepository.save(moneyLog);
     }
 }

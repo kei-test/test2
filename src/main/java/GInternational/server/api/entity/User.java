@@ -168,7 +168,7 @@ public class User extends BaseEntity implements Serializable {
     @Column(name = "store")
     private String store; // 총판 중 "대본사" 제외하고 본사,부본사,총판,매장을 의미함.
 
-    private String site = "test";
+    private String site = "rain";
 
 //    /**
 //     *  아마존 계층구조

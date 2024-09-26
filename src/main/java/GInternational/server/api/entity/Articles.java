@@ -40,7 +40,7 @@ public class Articles extends BaseEntity {
     @Column(name = "next_article_id")
     private Long nextArticleId;
 
-    private String site = "test";
+    private String site = "rain";
 
     @JsonIgnore
     @ManyToOne(fetch = LAZY)

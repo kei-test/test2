@@ -36,7 +36,7 @@ public class Messages extends BaseEntity {
     @Column(name = "read_date")
     private LocalDateTime readDate;
 
-    private String site = "test";
+    private String site = "rain";
 
     @Column(name = "deleted_by_sender")
     private boolean deletedBySender;

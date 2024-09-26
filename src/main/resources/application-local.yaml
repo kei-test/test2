@@ -2,13 +2,13 @@ spring:
   primary:
     datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://database-1.cxmouqa8kd3e.ap-northeast-2.rds.amazonaws.com:3306/test?serverTimezone=Asia/Seoul
+      jdbc-url: jdbc:mysql://rain-database.c9yqwsw226cm.ap-northeast-2.rds.amazonaws.com:3306/rain?serverTimezone=Asia/Seoul
       username: admin
       password: 'qweqwe123'
   secondary:
     datasource:
       driver-class-name: com.mysql.cj.jdbc.Driver
-      jdbc-url: jdbc:mysql://rmq.cxmouqa8kd3e.ap-northeast-2.rds.amazonaws.com:3306/lsports?serverTimezone=Asia/Seoul
+      jdbc-url: jdbc:mysql://rmq-database.c9yqwsw226cm.ap-northeast-2.rds.amazonaws.com:3306/lsports?serverTimezone=Asia/Seoul
       username: admin
       password: 'qweqwe123'
 springdoc:

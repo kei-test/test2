@@ -46,7 +46,7 @@ public class EventsBoard extends BaseEntity {
     @Column(name = "view_status")
     private String viewStatus; // 노출, 비노출 // 비노출일때 유저페이지에서 게시글 조회 안됨.
 
-    private String site = "test";
+    private String site = "rain";
 
     @Column(nullable = false)
     private String title;

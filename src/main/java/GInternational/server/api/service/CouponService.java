@@ -60,7 +60,7 @@ public class CouponService {
         for (int i = 0; i < requestDTO.getQuantity(); i++) {
             CouponTransaction transaction = new CouponTransaction();
             transaction.setUser(user);
-            transaction.setSite("test");
+            transaction.setSite("rain");
             transaction.setNickname(user.getNickname());
             transaction.setUsername(user.getUsername());
             transaction.setCouponName(requestDTO.getCouponName());

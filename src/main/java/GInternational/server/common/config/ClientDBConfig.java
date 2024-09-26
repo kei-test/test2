@@ -78,7 +78,7 @@ public class ClientDBConfig {
         em.setJpaVendorAdapter(vendorAdapter);
 
         HashMap<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.hbm2ddl.auto", "validate");
         properties.put("hibernate.show_sql", "true");
         properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
         em.setJpaPropertyMap(properties);

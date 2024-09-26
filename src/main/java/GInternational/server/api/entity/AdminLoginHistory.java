@@ -29,7 +29,7 @@ public class AdminLoginHistory {
     private String nickname; // 관리자로 등록된 닉네임
     private String role; // 관리자로 등록된 Role (예: admin, manager)
     private String status; // 관리자의 상태 (예: 활성, 비활성)
-    private String site = "test";
+    private String site = "rain";
 
     @Column(name = "created_at")
     private LocalDateTime createdAt; // 관리자 계정의 생성 시간

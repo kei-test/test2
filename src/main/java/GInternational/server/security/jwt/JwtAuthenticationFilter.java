@@ -15,7 +15,7 @@ import GInternational.server.api.vo.ExpRecordEnum;
 import GInternational.server.api.vo.UserGubunEnum;
 import GInternational.server.common.ipinfo.service.IpInfoService;
 import GInternational.server.security.auth.PrincipalDetails;
-import GInternational.server.security.dto.AuthenticationResDTO;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,12 +23,14 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.ipinfo.api.model.IPResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.AuthenticationServiceException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -69,6 +71,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         LoginRequestDto loginRequestDto = null;
         User user = null;
         String countryCode = null;
+        String loginType = null;
+        loginRequestDto = om.readValue(request.getInputStream(), LoginRequestDto.class);
 
         String ip = ipInfoService.getClientIp(request);
         Optional<WhiteIp> whiteIpOptional = whiteIpRepository.findByWhiteIp(ip);
@@ -78,210 +82,144 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String deviceType = ipInfoService.extractDeviceTypeFromUserAgentForAdmin(userAgentString);
 
         Ip validateCheckIp = ipRepository.findByIpContent(ip);
-        try {
-            loginRequestDto = om.readValue(request.getInputStream(), LoginRequestDto.class);
-        } catch (Exception e) {
-            handleAuthenticationFailure(response, "잘못된 로그인 요청입니다.");
+        IPResponse ipResponse = ipInfoService.getIpInfo(ip);
+        countryCode = ipResponse.getCountryCode();
+        Set<UserGubunEnum> blockedStatuses = EnumSet.of(
+                UserGubunEnum.거절,
+                UserGubunEnum.정지,
+                UserGubunEnum.하락탈퇴,
+                UserGubunEnum.탈퇴1,
+                UserGubunEnum.탈퇴2,
+                UserGubunEnum.탈퇴3);
+
+        user = userRepository.findByUsername(loginRequestDto.getUsername());
+        if (user == null) {
+            AuthenticationException exception = new AuthenticationServiceException("가입한 회원 정보를 확인해주세요.");
+            loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode, "불특정 비회원의 로그인 시도");
+            unsuccessfulAuthentication(request, response, exception);
             return null;
         }
+        String role = user.getRole();
+        String partnerType = user.getPartnerType();
+        System.out.println(partnerType +"@@@@@@@@@@@@@");
+        if (user.getPartnerType() != null) {
+            loginType = "파트너";
+        } else if ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
+            loginType = "관리자";
+        }
 
-
-        if (loginRequestDto != null) {
-            user = userRepository.findByUsername(loginRequestDto.getUsername());
-            String loginType = null;
-            if (user.getPartnerType() != null) {
-                loginType = "파트너";
-            } else if ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
-                loginType = "관리자";
-            }
-
-            IPResponse ipResponse = ipInfoService.getIpInfo(ip);
-            countryCode = ipResponse.getCountryCode();
-
-
-            if (whiteIpOptional.isEmpty() || user.getRole().equals("ROLE_USER") || user.getRole().equals("ROLE_TEST")) {
-                if (user != null) {
-                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode,"회원가입 신청이 미승인된 유저의 로그인");
-                } else if (user.getPartnerType() != null) {
-                    amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType);
-                } else {
-                    loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"회원가입 신청이 미승인된 유저의 로그인");
+        if (user != null && loginRequestDto.getUrlGubun().equals("user")) {
+            if (user != null && user.getRole().equals("ROLE_GUEST")) {
+                loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode, "회원가입 신청이 미승인된 회원의 로그인");
+                AuthenticationException exception = new AuthenticationServiceException("회원가입 신청이 미승인된 회원입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if (user.getPartnerType() != null) {
+                AuthenticationException exception = new AuthenticationServiceException("파트너 회원은 접근이 불가합니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if (user != null && validateCheckIp != null) {
+                loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, user.getNickname(), request, countryCode, "차단 IP");
+                AuthenticationException exception = new AuthenticationServiceException("접근이 차단된 IP입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if ((user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) &&
+                    user.getAdminEnum() != null &&
+                    user.getAdminEnum().equals(AdminEnum.사용불가)) {
+                AuthenticationException exception = new AuthenticationServiceException("계정이 사용 불가 상태입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
+                if (blockedStatuses.contains(user.getUserGubunEnum())) {
+                    recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                    AuthenticationException exception = new AuthenticationServiceException("정지 또는 삭제된 회원입니다.");
+                    unsuccessfulAuthentication(request, response, exception);
+                    return null;
                 }
             }
-
-            if (user != null && loginRequestDto.getUrlGubun().equals("user")) {
-                String role = user.getRole();
-                Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
-
-                if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                    if (blockedStatuses.contains(user.getUserGubunEnum())) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "정지 또는 삭제된 유저입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
-                        }
-                    }
-                    if ("ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                        if (user.getAdminEnum() == AdminEnum.사용불가) {
-                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-                            handleAuthenticationFailure(response, "계정이 사용 불가 상태입니다.");
-                            if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
-                            }
-                        }
-                    }
-                    if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
-                        handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
-                        }
-                    }
-                    try {
-                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
-                        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-                        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-
-                        if (principalDetails.getUser().getPartnerType() != null || "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
-                        }
-                        return authentication;
-                    } catch (BadCredentialsException e) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "아이디 또는 비밀번호가 일치하지 않습니다.");
-
-                        if (user.getPartnerType() != null || "ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 아이디 또는 비밀번호 불일치");
-                        }
-                    }
-                } else {
-                    handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+            return authentication;
+        } else if (user != null && loginRequestDto.getUrlGubun().equals("amazon")) {
+            if (user.getRole().equals("ROLE_USER") && user.getPartnerType() == null) {
+                AuthenticationException exception = new AuthenticationServiceException("파트너 페이지입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if (user != null && user.getRole().equals("ROLE_GUEST")) {
+                AuthenticationException exception = new AuthenticationServiceException("미승인된 회원입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if (user != null && validateCheckIp != null) {
+                AuthenticationException exception = new AuthenticationServiceException("접근이 차단된 IP입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if ((user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) &&
+                    user.getAdminEnum() != null &&
+                    user.getAdminEnum().equals(AdminEnum.사용불가)) {
+                AuthenticationException exception = new AuthenticationServiceException("계정이 사용 불가 상태입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                if (user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) {
+                    recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
                 }
-            } else if (user != null && loginRequestDto.getUrlGubun().equals("amazon")) {
-                String role = user.getRole();
-                Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
-
-                if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                    if (blockedStatuses.contains(user.getUserGubunEnum())) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "정지 또는 삭제된 유저입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
-                        }
-                    }
-                    if ("ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                        if (user.getAdminEnum() == AdminEnum.사용불가) {
-                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-                            handleAuthenticationFailure(response, "계정이 사용 불가 상태입니다.");
-                            if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
-                            }
-                        }
-                    }
-                    if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
-                        handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
-                        }
-                    }
-                    try {
-                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
-                        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-                        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-
-                        if (principalDetails.getUser().getPartnerType() != null || "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
-                        }
-                        return authentication;
-                    } catch (BadCredentialsException e) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "아이디 또는 비밀번호가 일치하지 않습니다.");
-
-                        if (user.getPartnerType() != null || "ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 아이디 또는 비밀번호 불일치");
-                        }
-                    }
-                } else {
-                    handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
-                }
-            } else if (user != null && loginRequestDto.getUrlGubun().equals("admin")) {
-                String role = user.getRole();
-                Set<UserGubunEnum> blockedStatuses = EnumSet.of(UserGubunEnum.거절, UserGubunEnum.정지, UserGubunEnum.하락탈퇴, UserGubunEnum.탈퇴1, UserGubunEnum.탈퇴2, UserGubunEnum.탈퇴3);
-
-                if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                    if (blockedStatuses.contains(user.getUserGubunEnum())) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "정지 또는 삭제된 유저입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
-                        }
-                    }
-                    if ("ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
-                        if (user.getAdminEnum() == AdminEnum.사용불가) {
-                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-                            handleAuthenticationFailure(response, "계정이 사용 불가 상태입니다.");
-                            if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
-                            }
-                        }
-                        if (user.getApproveIp() == null || !user.getApproveIp().equals(ip)) {
-                            adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
-                            handleAuthenticationFailure(response, "승인되지 않은 IP입니다.");
-                            if (user.getPartnerType() != null) {
-                                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 승인되지 않은 IP");
-                            }
-                        }
-                    }
-                    if (validateCheckIp != null) {
-                        loginHistoryService.saveLoginHistory(loginRequestDto, ip, ipResponse, null, request, countryCode,"차단 IP");
-                        handleAuthenticationFailure(response, "접근이 차단된 IP입니다.");
-                        if (user.getPartnerType() != null) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 접근이 차단된 IP");
-                        }
-                    }
-                    try {
-                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
-                        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-                        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-
-                        if (principalDetails.getUser().getPartnerType() != null || "ROLE_ADMIN".equals(principalDetails.getUser().getRole()) || "ROLE_MANAGER".equals(principalDetails.getUser().getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
-                        }
-                        return authentication;
-                    } catch (BadCredentialsException e) {
-                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
-                        handleAuthenticationFailure(response, "아이디 또는 비밀번호가 일치하지 않습니다.");
-
-                        if (user.getPartnerType() != null || "ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
-                            amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 아이디 또는 비밀번호 불일치");
-                        }
-                    }
-                } else {
-                    handleAuthenticationFailure(response, "게스트 유저는 로그인 할 수 없습니다.");
-                }
-            } else if (user != null && ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole()))) {
-                adminLoginHistoryService.recordLoginAttempt(loginRequestDto.getUsername(), false, ip, null, countryCode, deviceType);
                 if (user.getPartnerType() != null) {
-                    amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", "구분");
+                    amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 계정 사용 불가 상태");
+                }
+                return null;
+            } else if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
+                if (blockedStatuses.contains(user.getUserGubunEnum())) {
+                    AuthenticationException exception = new AuthenticationServiceException("정지 또는 삭제된 회원입니다.");
+                    unsuccessfulAuthentication(request, response, exception);
+                    if (user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) {
+                        recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                    }
+                    if (user.getPartnerType() != null) {
+                        amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, null, "실패", loginType + " - 정지 또는 삭제된 계정");
+                    }
+                    return null;
+                }
+
+
+            }
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+            if (principalDetails.getUser().getPartnerType() != null) {
+                amazonLoginHistoryService.saveAmazonLoginHistory(loginRequestDto, ip, user.getNickname(), "성공", loginType);
+            }
+            return authentication;
+
+        } else if (user != null && loginRequestDto.getUrlGubun().equals("admin")) {
+            if (user != null && user.getRole().equals("ROLE_GUEST") || user.getRole().equals("ROLE_USER")) {
+                AuthenticationException exception = new AuthenticationServiceException("관리자 페이지입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if (user != null && validateCheckIp != null) {
+                recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                AuthenticationException exception = new AuthenticationServiceException("접근이 차단된 IP입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if ((user.getRole().equals("ROLE_ADMIN") || user.getRole().equals("ROLE_MANAGER")) &&
+                    user.getAdminEnum() != null &&
+                    user.getAdminEnum().equals(AdminEnum.사용불가)) {
+                AuthenticationException exception = new AuthenticationServiceException("계정이 사용 불가 상태입니다.");
+                unsuccessfulAuthentication(request, response, exception);
+                return null;
+            } else if ("ROLE_USER".equals(role) || "ROLE_TEST".equals(role) || "ROLE_ADMIN".equals(role) || "ROLE_MANAGER".equals(role)) {
+                if (blockedStatuses.contains(user.getUserGubunEnum())) {
+                    recordAdminLoginAttemptIfAdmin(user, loginRequestDto.getUsername(), false, ip, countryCode, deviceType);
+                    AuthenticationException exception = new AuthenticationServiceException("정지 또는 삭제된 회원입니다.");
+                    unsuccessfulAuthentication(request, response, exception);
+                    return null;
                 }
             }
-            else {
-                handleAuthenticationFailure(response, "유저를 찾을 수 없거나 유효하지 않은 유저 상태입니다.");
-            }
-        } else {
-            handleAuthenticationFailure(response, "잘못된 로그인 요청입니다.");
-        } return null;
+        }
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginRequestDto.getUsername(), loginRequestDto.getPassword());
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+        return authentication;
     }
 
-
-    private void handleAuthenticationFailure(HttpServletResponse response, String errorMessage) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        ObjectMapper mapper = new ObjectMapper();
-        AuthenticationResDTO resDTO = AuthenticationResDTO.createFailureResponse(errorMessage);
-        response.getWriter().write(mapper.writeValueAsString(resDTO));
-    }
 
     private void recordAdminLoginAttemptIfAdmin(User user, String username, boolean success, String ip, String countryCode, String deviceType) {
         if ("ROLE_ADMIN".equals(user.getRole()) || "ROLE_MANAGER".equals(user.getRole())) {
@@ -290,9 +228,50 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     }
 
     @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.setContentType("application/json");
+        String message;
+        try {
+            if (failed.getMessage().equals("접근이 차단된 IP입니다.")) {
+                message = "접근이 차단된 IP입니다.";
+            } else if (failed.getMessage().equals("회원가입 신청이 미승인된 회원입니다.")) {
+                message = "회원가입 신청이 미승인된 회원입니다.";
+            } else if (failed.getMessage().equals("정지 또는 삭제된 회원입니다.")) {
+                message = "정지 또는 삭제된 회원입니다.";
+            } else if (failed.getMessage().equals("계정이 사용 불가 상태입니다.")) {
+                message = "계정이 사용 불가 상태입니다.";
+            } else if (failed.getMessage().equals("아이디 또는 비밀번호가 일치하지 않습니다.")) {
+                message = "아이디 또는 비밀번호가 일치하지 않습니다.";
+            } else if (failed.getMessage().equals("가입한 회원 정보를 확인해주세요.")) {
+                message = "가입한 회원 정보를 확인해주세요.";
+            } else if (failed.getMessage().equals("올바른 회원 정보를 입력해주세요.")) {
+                message = "올바른 회원 정보를 입력해주세요.";
+            } else if (failed.getMessage().equals("관리자 페이지입니다.")) {
+                message = "관리자 페이지입니다.";
+            } else if (failed.getMessage().equals("미승인된 회원입니다.")) {
+                message = "미승인된 회원입니다.";
+            } else if (failed.getMessage().equals("파트너 회원은 접근이 불가합니다.")) {
+                message = "파트너 회원은 접근이 불가합니다.";
+            } else if (failed.getMessage().equals("파트너 페이지입니다.")) {
+                message = "파트너 페이지입니다.";
+            } else {
+                message = "잘못된 요청입니다.";
+            }
+            OutputStream outputStream = response.getOutputStream();
+            outputStream.write(message.getBytes());
+            outputStream.flush();
+        } catch (Exception e) {
+            throw new IllegalStateException("sad");
+        }
+    }
+
+    @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
         PrincipalDetails principalDetails = (PrincipalDetails) authResult.getPrincipal();
+
+        logger.info("성공");
 
         // 로그인 시 방문(로그잇 횟수) 증가
         User user = principalDetails.getUser();
@@ -366,7 +345,6 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.setContentType("application/json");
         OutputStream outputStream = response.getOutputStream();
-        // Write response body
         outputStream.write(responseBody.getBytes());
         outputStream.flush();
     }

@@ -44,7 +44,7 @@ public class AccountService {
                     .bank(accountReqDTO.getBank())
                     .owner(accountReqDTO.getOwner())
                     .number(accountReqDTO.getNumber())
-                    .site("test")
+                    .site("rain")
                     .user(user)
                     .createdAt(LocalDateTime.now())
                     .status(AppStatus.WAIT)

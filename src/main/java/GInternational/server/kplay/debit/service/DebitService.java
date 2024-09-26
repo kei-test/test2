@@ -21,6 +21,8 @@ import GInternational.server.api.service.MoneyLogService;
 import GInternational.server.api.vo.MoneyLogCategoryEnum;
 import GInternational.server.kplay.game.entity.Game;
 import GInternational.server.kplay.game.repository.GameRepository;
+import GInternational.server.kplay.product.entity.Product;
+import GInternational.server.kplay.product.repository.ProductRepository;
 import GInternational.server.security.auth.PrincipalDetails;
 import GInternational.server.api.entity.User;
 import GInternational.server.api.repository.UserRepository;
@@ -68,6 +70,7 @@ public class DebitService {
     private final AmznRollingTransactionService amznRollingTransactionService;
     private final UserService userService;
     private final GameRepository gameRepository;
+    private final ProductRepository productRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(DebitService.class);
 
@@ -104,10 +107,19 @@ public class DebitService {
             }
 
             long usedAmount = Long.valueOf(debitRequestDTO.getAmount());
+            String description = null;
 
             String bettingCategory = getBettingCategory(debitRequestDTO.getPrd_id());
-            Game game = gameRepository.searchByPrdIdAndGameIndex(debitRequestDTO.getPrd_id(),debitRequestDTO.getGame_id()).orElse(null);
-            String description = game.getName() + "(" + bettingCategory + ")";
+            if (bettingCategory.equals("카지노")) {
+                Product product = productRepository.findByPrdId(debitRequestDTO.getPrd_id()).orElse(null);
+                description = product.getPrd_name() + "(" + bettingCategory + ")";
+            } else {
+                Game game = gameRepository.searchByPrdIdAndGameIndex(debitRequestDTO.getPrd_id(),debitRequestDTO.getGame_id()).orElse(null);
+                description = game.getName() + "(" + bettingCategory + ")";
+            }
+
+
+
 
 
             long newWalletCasinoBalance = user.getWallet().getCasinoBalance() - debitRequestDTO.getAmount();
